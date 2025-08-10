@@ -4,6 +4,8 @@ import cn.ktorfitx.common.ksp.util.check.compileCheck
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
 import cn.ktorfitx.multiplatform.ksp.model.*
+import cn.ktorfitx.multiplatform.ksp.model.FieldsKind.LIST
+import cn.ktorfitx.multiplatform.ksp.model.FieldsKind.MAP
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.Modifier
@@ -28,8 +30,8 @@ internal fun KSFunctionDeclaration.getQueriesModels(): List<QueriesModel> {
 		if (!parameter.hasAnnotation(TypeNames.Queries)) return@mapNotNull null
 		val name = parameter.name!!.asString()
 		val type = parameter.type.resolve()
-		parameter.compileCheck(type.isMapOfStringToAny()) {
-			"${simpleName.asString()} 函数的 $name 参数只允许使用 Map<String, *> 类型或是此类型的具体化子类型或派生类型"
+		parameter.compileCheck(type.isMapOfStringToAny() || type.isListOfStringPair()) {
+			"${simpleName.asString()} 函数的 $name 参数只允许使用 Map<String, *> 或 List<Pair<String, *>> 类型或是它的具体化子类型或派生类型"
 		}
 		QueriesModel(name)
 	}
@@ -87,8 +89,9 @@ internal fun KSFunctionDeclaration.getAttributesModels(): List<AttributesModel> 
 	return this.parameters.mapNotNull { parameter ->
 		if (!parameter.hasAnnotation(TypeNames.Attributes)) return@mapNotNull null
 		val varName = parameter.name!!.asString()
-		parameter.compileCheck(parameter.type.resolve().isMapOfStringToAny(valueNullable = false)) {
-			"${simpleName.asString()} 函数的 $varName 参数只允许使用 Map<String, Any> 类型或是此类型的具体化子类型或派生类型"
+		val type = parameter.type.resolve()
+		parameter.compileCheck(type.isMapOfStringToAny(false) || type.isListOfStringPair(false)) {
+			"${simpleName.asString()} 函数的 $varName 参数只允许使用 Map<String, Any> 或 List<Pair<String, Any>> 类型或是它的具体化子类型或派生类型"
 		}
 		AttributesModel(varName)
 	}
@@ -118,34 +121,34 @@ internal fun KSFunctionDeclaration.isPrepareType(
 	return isPrepareType
 }
 
-private enum class RequestBodyType {
+private enum class RequestBodyKind {
 	BODY,
 	PART,
 	FIELD
 }
 
-private val requestBodyMap = mapOf(
-	TypeNames.Body to RequestBodyType.BODY,
-	TypeNames.Part to RequestBodyType.PART,
-	TypeNames.Field to RequestBodyType.FIELD,
-	TypeNames.Fields to RequestBodyType.FIELD
+private val requestBodyKindMap = mapOf(
+	TypeNames.Body to RequestBodyKind.BODY,
+	TypeNames.Part to RequestBodyKind.PART,
+	TypeNames.Field to RequestBodyKind.FIELD,
+	TypeNames.Fields to RequestBodyKind.FIELD
 )
 
 internal fun KSFunctionDeclaration.getRequestBodyModel(): RequestBodyModel? {
 	val classNames = this.parameters.mapNotNull { parameter ->
-		requestBodyMap.keys.find { parameter.hasAnnotation(it) }
+		requestBodyKindMap.keys.find { parameter.hasAnnotation(it) }
 	}.toSet()
 	if (classNames.isEmpty()) return null
-	val useRequestBodyMap = classNames.groupBy { requestBodyMap[it]!! }
+	val useRequestBodyMap = classNames.groupBy { requestBodyKindMap[it]!! }
 	this.compileCheck(useRequestBodyMap.size == 1) {
 		val useTypeNames = useRequestBodyMap.values.flatten().joinToString { "@${it.simpleName}" }
 		"${simpleName.asString()} 函数使用了不兼容的注解 $useTypeNames"
 	}
 	val type = useRequestBodyMap.entries.first().key
 	return when (type) {
-		RequestBodyType.BODY -> this.getBodyModel()
-		RequestBodyType.PART -> this.getPartModels()
-		RequestBodyType.FIELD -> this.getFieldModels()
+		RequestBodyKind.BODY -> this.getBodyModel()
+		RequestBodyKind.PART -> this.getPartModels()
+		RequestBodyKind.FIELD -> this.getFieldModels()
 	}
 }
 
@@ -185,11 +188,20 @@ private fun KSFunctionDeclaration.getFieldModels(): FieldModels {
 		parameter.getKSAnnotationByType(TypeNames.Fields) ?: return@mapNotNull null
 		val name = parameter.name!!.asString()
 		val type = parameter.type.resolve()
-		parameter.compileCheck(type.isMapOfStringToAny()) {
-			"${simpleName.asString()} 函数的 $name 参数只允许使用 Map<String, *> 类型或是此类型的具体化子类型或派生类型"
+		val fieldsKind = when {
+			type.isMapOfStringToAny() -> FieldsKind.MAP
+			type.isListOfStringPair() -> FieldsKind.LIST
+			else -> null
 		}
-		val valueTypeName = (type.toTypeName() as ParameterizedTypeName).typeArguments[1]
-		FieldsModel(name, valueTypeName.equals(TypeNames.String, ignoreNullable = true), valueTypeName.isNullable)
+		parameter.compileCheck(fieldsKind != null) {
+			"${simpleName.asString()} 函数的 $name 参数只允许使用 Map<String, *> 或 List<Pair<String, *>> 类型或是它的具体化子类型或派生类型"
+		}
+		val typeName = type.toTypeName() as ParameterizedTypeName
+		val valueTypeName = when (fieldsKind) {
+			LIST -> (typeName.typeArguments.first() as ParameterizedTypeName).typeArguments[1]
+			MAP -> typeName.typeArguments[1]
+		}
+		FieldsModel(name, fieldsKind, valueTypeName.equals(TypeNames.String, ignoreNullable = true), valueTypeName.isNullable)
 	}
 	return FieldModels(fieldModels, fieldsModels)
 }

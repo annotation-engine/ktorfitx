@@ -16,3 +16,18 @@ val TypeName.rawType: ClassName
 		is ClassName -> this
 		else -> error("不允许使用 rawType 属性")
 	}
+
+fun TypeName.asNotNullable(): TypeName {
+	return if (this.isNullable) this.copy(nullable = false) else this
+}
+
+fun TypeName.asNullable(): TypeName {
+	return if (this.isNullable) this else this.copy(nullable = true)
+}
+
+fun TypeName.equals(other: TypeName, ignoreNullable: Boolean): Boolean {
+	if (ignoreNullable) {
+		return this.asNotNullable() == other.asNotNullable()
+	}
+	return this == other
+}

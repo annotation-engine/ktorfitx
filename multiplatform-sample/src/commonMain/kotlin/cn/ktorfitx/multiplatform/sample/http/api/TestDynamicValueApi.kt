@@ -8,7 +8,7 @@ interface TestDynamicValueApi {
 	
 	@POST(url = "queries01")
 	suspend fun queries01(
-		@Queries queries: Map<String, *>
+		@Queries queries: List<Pair<String, Int>>
 	): String
 	
 	@POST(url = "queries02")
@@ -20,7 +20,7 @@ interface TestDynamicValueApi {
 	@POST(url = "queries03")
 	suspend fun queries03(
 		@Queries queries1: Map<String, *>,
-		@Queries queries2: Map<String, *>,
+		@Queries queries2: List<Pair<String, String>>,
 		@Query id: Int,
 		@Query name: String
 	): String
@@ -54,14 +54,14 @@ interface TestDynamicValueApi {
 	
 	@POST(url = "fields02")
 	suspend fun fields02(
-		@Fields fields: Map<String, Int?>,
+		@Fields fields: List<Pair<String, Int?>>,
 		@Field field: String
 	): Result<List<String>>
 	
 	@POST(url = "fields03")
 	suspend fun fields03(
 		@Fields fields1: Map<String, Int>,
-		@Fields fields2: Map<String, String?>,
+		@Fields fields2: List<Pair<String, String?>>,
 		@Field field1: String,
 		@Field field2: Int?
 	): Result<List<String>>
@@ -75,7 +75,7 @@ interface TestDynamicValueApi {
 	@Mock(provider = StringMockProvider::class)
 	@POST(url = "fieldsMock02")
 	suspend fun fieldsMock02(
-		@Fields fields: Map<String, Int?>,
+		@Fields fields: List<Pair<String, Int?>>,
 		@Field field: String
 	): String
 	

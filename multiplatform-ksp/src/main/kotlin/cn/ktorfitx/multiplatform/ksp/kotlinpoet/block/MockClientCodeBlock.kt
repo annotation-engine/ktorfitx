@@ -147,11 +147,7 @@ internal class MockClientCodeBlock(
 		}
 		fieldsModels.forEach {
 			beginControlFlow("%N.forEach { (key, value) ->", it.varName)
-			if (it.valueIsString) {
-				addStatement("this.append(key, value)")
-			} else {
-				addStatement("this.append(key, value%L.toString())", if (it.valueIsNullable) "?" else "")
-			}
+			addStatement("this.append(key, value)")
 			endControlFlow()
 		}
 		endControlFlow()

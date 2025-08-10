@@ -198,10 +198,13 @@ internal class HttpClientCodeBlock(
 			}
 		}.let { if (it.isEmpty()) it else "listOf($it)" }
 		val fieldsCode = fieldsModels.joinToString(separator = " + ") {
-			if (it.valueIsString) {
-				"${it.varName}.toList()"
-			} else {
-				"${it.varName}.map { it.key to it.value${if (it.valueIsNullable) "?" else ""}.toString() }"
+			when (it.fieldsKind) {
+				FieldsKind.MAP if it.valueIsString -> "${it.varName}.toList()"
+				FieldsKind.MAP if it.valueIsNullable -> "${it.varName}.map { it.key to it.value?.toString() }"
+				FieldsKind.MAP -> "${it.varName}.map { it.key to it.value.toString() }"
+				FieldsKind.LIST if it.valueIsString -> it.varName
+				FieldsKind.LIST if it.valueIsNullable -> "${it.varName}.map { it.first to it.second?.toString() }"
+				FieldsKind.LIST -> "${it.varName}.map { it.first to it.second.toString() }"
 			}
 		}
 		val left = if (single) "" else "("

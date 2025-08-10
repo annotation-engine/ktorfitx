@@ -1,10 +1,10 @@
 package cn.ktorfitx.common.ksp.util.expends
 
 import cn.ktorfitx.common.ksp.util.constants.TypeNames
+import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName
-import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 
@@ -131,25 +131,30 @@ fun KSDeclaration.isGeneric(): Boolean {
 fun KSType.isMapOfStringToAny(
 	valueNullable: Boolean = true
 ): Boolean {
-	val typeName = this.toTypeName() as? ParameterizedTypeName ?: return false
-	if (typeName.rawType != TypeNames.Map) return false
+	val declaration = this.declaration as? KSClassDeclaration ?: return false
+	val typeName = (declaration.getAllSuperTypes().find {
+		if (it.declaration !is KSClassDeclaration) return@find false
+		it.declaration.qualifiedName?.asString() == TypeNames.Map.canonicalName
+	}?.toTypeName() ?: this.toTypeName()) as? ParameterizedTypeName ?: return false
 	val keyTypeName = typeName.typeArguments.first()
 	if (keyTypeName != TypeNames.String) return false
 	val valueTypeName = typeName.typeArguments[1]
 	return valueNullable || !valueTypeName.isNullable
 }
 
-fun TypeName.asNotNullable(): TypeName {
-	return if (this.isNullable) this.copy(nullable = false) else this
-}
-
-fun TypeName.asNullable(): TypeName {
-	return if (this.isNullable) this else this.copy(nullable = true)
-}
-
-fun TypeName.equals(other: TypeName, ignoreNullable: Boolean): Boolean {
-	if (ignoreNullable) {
-		return this.asNotNullable() == other.asNotNullable()
-	}
-	return this == other
+fun KSType.isListOfStringPair(
+	valueNullable: Boolean = true
+): Boolean {
+	val declaration = this.declaration as? KSClassDeclaration ?: return false
+	val typeName = (declaration.getAllSuperTypes().find {
+		if (it.declaration !is KSClassDeclaration) return@find false
+		it.declaration.qualifiedName?.asString() == TypeNames.List.canonicalName
+	}?.toTypeName() ?: this.toTypeName()) as? ParameterizedTypeName ?: return false
+	val pairTypeName = (typeName.typeArguments.first() as? ParameterizedTypeName)?.takeIf {
+		it.rawType == TypeNames.Pair
+	} ?: return false
+	val keyTypeName = pairTypeName.typeArguments.first()
+	if (keyTypeName != TypeNames.String) return false
+	val valueTypeName = pairTypeName.typeArguments[1]
+	return valueNullable || !valueTypeName.isNullable
 }

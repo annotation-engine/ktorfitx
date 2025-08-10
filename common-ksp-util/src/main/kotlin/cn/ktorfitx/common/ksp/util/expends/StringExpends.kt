@@ -29,7 +29,9 @@ fun String.toLowerCamelCase(): String {
 	}
 }
 
-private val httpMethodRegex = "^[A-Z0-9-]+$".toRegex()
+private val httpMethodRegex by lazy {
+	"^[A-Z0-9-]+$".toRegex()
+}
 
 fun String.isValidHttpMethod(): Boolean {
 	return httpMethodRegex.matches(this)
@@ -77,7 +79,9 @@ fun String.containsSchemeSeparator(): Boolean {
 	return SCHEME_SEPARATOR in this
 }
 
-private val headerCaseRegex = "([a-z])([A-Z])".toRegex()
+private val headerCaseRegex by lazy {
+	"([a-z])([A-Z])".toRegex()
+}
 
 fun String.camelToHeaderCase(): String {
 	return this.replace(headerCaseRegex) {

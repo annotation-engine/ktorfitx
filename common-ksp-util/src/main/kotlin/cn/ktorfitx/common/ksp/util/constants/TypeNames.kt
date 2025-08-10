@@ -14,5 +14,9 @@ internal object TypeNames {
 	
 	val String = ClassName("kotlin", "String")
 	
+	val List = ClassName("kotlin.collections", "List")
+	
 	val Map = ClassName("kotlin.collections", "Map")
+	
+	val Pair = ClassName("kotlin", "Pair")
 }
