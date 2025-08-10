@@ -5,6 +5,7 @@ import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName
+import com.squareup.kotlinpoet.WildcardTypeName
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 
@@ -139,7 +140,7 @@ fun KSType.isMapOfStringToAny(
 	val keyTypeName = typeName.typeArguments.first()
 	if (keyTypeName != TypeNames.String) return false
 	val valueTypeName = typeName.typeArguments[1]
-	return valueNullable || !valueTypeName.isNullable
+	return valueNullable || (valueTypeName !is WildcardTypeName && !valueTypeName.isNullable)
 }
 
 fun KSType.isListOfStringPair(
@@ -150,11 +151,10 @@ fun KSType.isListOfStringPair(
 		if (it.declaration !is KSClassDeclaration) return@find false
 		it.declaration.qualifiedName?.asString() == TypeNames.List.canonicalName
 	}?.toTypeName() ?: this.toTypeName()) as? ParameterizedTypeName ?: return false
-	val pairTypeName = (typeName.typeArguments.first() as? ParameterizedTypeName)?.takeIf {
-		it.rawType == TypeNames.Pair
-	} ?: return false
+	val pairTypeName = (typeName.typeArguments.first() as? ParameterizedTypeName)
+		?.takeIf { it.rawType == TypeNames.Pair } ?: return false
 	val keyTypeName = pairTypeName.typeArguments.first()
 	if (keyTypeName != TypeNames.String) return false
 	val valueTypeName = pairTypeName.typeArguments[1]
-	return valueNullable || !valueTypeName.isNullable
+	return valueNullable || (valueTypeName !is WildcardTypeName && !valueTypeName.isNullable)
 }

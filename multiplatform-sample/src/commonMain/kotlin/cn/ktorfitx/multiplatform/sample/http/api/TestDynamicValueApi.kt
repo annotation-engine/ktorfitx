@@ -102,7 +102,7 @@ interface TestDynamicValueApi {
 	@Mock(provider = StringMockProvider::class)
 	@POST(url = "attributesMock01")
 	suspend fun attributesMock01(
-		@Attributes attributes: Map<String, Int>
+		@Attributes attributes: Map<String, Any>
 	): String
 	
 	@Mock(provider = StringMockProvider::class)
