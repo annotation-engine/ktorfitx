@@ -8,7 +8,7 @@ import io.ktor.client.plugins.logging.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
-val testKtorfit = ktorfitx<TestApiScope> {
+val defaultKtorfitx = ktorfitx {
 	token { "<token>" }
 	baseUrl = "http://localhost:8080/api/"
 	httpClient(CIO) {
@@ -34,9 +34,7 @@ val testKtorfit = ktorfitx<TestApiScope> {
 
 sealed interface TestApiScope
 
-sealed interface Test2ApiScope
-
-val testKtorfit2 = ktorfitx {
+val testApiKtorfitx = ktorfitx<TestApiScope> {
 	token { "<token>" }
 	baseUrl = "http://localhost:8080/api/"
 	httpClient(CIO) {

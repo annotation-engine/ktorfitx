@@ -54,6 +54,8 @@ internal object TypeNames {
 	
 	val HttpStatement = ClassName("io.ktor.client.statement", "HttpStatement")
 	
+	val FormPart = ClassName("io.ktor.client.request.forms", "FormPart")
+	
 	val HttpMethod = ClassName("cn.ktorfitx.multiplatform.annotation", "HttpMethod")
 	
 	val Api = ClassName("cn.ktorfitx.multiplatform.annotation", "Api")

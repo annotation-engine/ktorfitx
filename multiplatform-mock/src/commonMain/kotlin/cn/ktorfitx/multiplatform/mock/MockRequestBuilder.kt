@@ -1,6 +1,8 @@
 package cn.ktorfitx.multiplatform.mock
 
 import cn.ktorfitx.multiplatform.annotation.MockDsl
+import cn.ktorfitx.multiplatform.annotation.SerializationFormat
+import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.util.date.*
 import kotlinx.serialization.StringFormat
@@ -8,7 +10,7 @@ import kotlinx.serialization.encodeToString
 
 @MockDsl
 class MockRequestBuilder internal constructor(
-	val format: StringFormat?
+	val stringFormat: StringFormat?
 ) {
 	
 	internal var urlString: String? = null
@@ -23,8 +25,8 @@ class MockRequestBuilder internal constructor(
 	private val _queries = mutableMapOf<String, Any?>()
 	internal val queries: Map<String, Any?> = _queries
 	
-	private val _parts = mutableMapOf<String, Any>()
-	internal val parts: Map<String, Any> = _parts
+	private val _parts = mutableListOf<FormPart<*>>()
+	internal val parts: List<FormPart<*>> = _parts
 	
 	private val _fields = mutableMapOf<String, Any?>()
 	internal val fields: Map<String, Any?> = _fields
@@ -38,7 +40,7 @@ class MockRequestBuilder internal constructor(
 	private val _attributes = mutableMapOf<String, Any>()
 	internal val attributes: Map<String, Any> = _attributes
 	
-	var body: String? = null
+	var body: MockBody? = null
 	
 	fun url(urlString: String) {
 		this.urlString = urlString
@@ -60,8 +62,8 @@ class MockRequestBuilder internal constructor(
 		this._queries += mutableMapOf<String, Any?>().apply(block)
 	}
 	
-	fun parts(block: MutableMap<String, Any>.() -> Unit) {
-		this._parts += mutableMapOf<String, Any>().apply(block)
+	fun parts(block: MutableList<FormPart<*>>.() -> Unit) {
+		this._parts += mutableListOf<FormPart<*>>().apply(block)
 	}
 	
 	fun fields(block: MutableMap<String, Any?>.() -> Unit) {
@@ -80,8 +82,8 @@ class MockRequestBuilder internal constructor(
 		this._attributes += mutableMapOf<String, Any>().apply(block)
 	}
 	
-	inline fun <reified T : Any> body(body: T) {
-		this.body = format?.encodeToString(body) ?: body.toString()
+	inline fun <reified T : Any> body(body: T, format: SerializationFormat) {
+		this.body = MockBody(stringFormat?.encodeToString(body) ?: body.toString(), format)
 	}
 	
 	fun <V> MutableMap<String, V>.append(name: String, value: V) {
@@ -158,3 +160,8 @@ private class TimeoutConfigImpl(
 	override var connectTimeoutMillis: Long? = null,
 	override var socketTimeoutMillis: Long? = null
 ) : TimeoutConfig
+
+data class MockBody(
+	val json: String,
+	val format: SerializationFormat,
+)

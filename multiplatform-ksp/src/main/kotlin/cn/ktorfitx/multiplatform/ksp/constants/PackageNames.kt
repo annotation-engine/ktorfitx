@@ -12,6 +12,8 @@ internal object PackageNames {
 	
 	const val KTOR_REQUEST = "io.ktor.client.request"
 	
+	const val KTOR_UTILS = "io.ktor.client.utils"
+	
 	const val KTOR_REQUEST_FORMS = "io.ktor.client.request.forms"
 	
 	const val KTOR_WEBSOCKET = "io.ktor.client.plugins.websocket"

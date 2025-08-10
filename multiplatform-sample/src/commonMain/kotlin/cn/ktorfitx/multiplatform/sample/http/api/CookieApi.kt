@@ -7,7 +7,7 @@ import cn.ktorfitx.multiplatform.annotation.POST
 import cn.ktorfitx.multiplatform.sample.http.mock.StringMockProvider
 
 @Api("cookie")
-interface TestCookieApi {
+interface CookieApi {
 	
 	@POST("test2")
 	suspend fun getTest1(

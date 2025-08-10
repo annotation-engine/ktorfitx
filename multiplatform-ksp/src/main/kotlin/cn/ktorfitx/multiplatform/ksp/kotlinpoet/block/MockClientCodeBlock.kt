@@ -132,7 +132,23 @@ internal class MockClientCodeBlock(
 	override fun CodeBlock.Builder.buildParts(partModels: List<PartModel>) {
 		beginControlFlow("this.parts")
 		partModels.forEach {
-			addStatement("this.append(%S, %N)", it.name, it.varName)
+			when {
+				it.isFormPart -> addStatement("this += %N", it.varName)
+				it.headers.isNullOrEmpty() -> addStatement("this += %T(%S, %N)", TypeNames.FormPart, it.name, it.varName)
+				else -> {
+					fileSpecBuilder.addImport(PackageNames.KTOR_UTILS, "buildHeaders")
+					val headersCodeBlock = buildCodeBlock {
+						add("buildHeaders {\n")
+						indent()
+						it.headers.forEach { (key, value) ->
+							addStatement("this[%S] = %S", key, value)
+						}
+						unindent()
+						add("}")
+					}
+					add("this += %T(%S, %N, %L)", TypeNames.FormPart, it.name, it.varName, headersCodeBlock)
+				}
+			}
 		}
 		endControlFlow()
 	}
@@ -207,6 +223,6 @@ internal class MockClientCodeBlock(
 	}
 	
 	override fun CodeBlock.Builder.buildBody(bodyModel: BodyModel) {
-		addStatement("this.body(%N)", bodyModel.varName)
+		addStatement("this.body(%N, %T)", bodyModel.varName, bodyModel.formatClassName)
 	}
 }

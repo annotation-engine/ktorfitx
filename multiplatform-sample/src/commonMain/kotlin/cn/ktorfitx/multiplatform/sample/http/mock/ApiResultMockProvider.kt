@@ -1,11 +1,11 @@
 package cn.ktorfitx.multiplatform.sample.http.mock
 
 import cn.ktorfitx.multiplatform.mock.MockProvider
-import cn.ktorfitx.multiplatform.sample.http.TestResponse
+import cn.ktorfitx.multiplatform.sample.http.ApiResult
 
-data object ApiResultMockProvider : MockProvider<TestResponse> {
+data object ApiResultMockProvider : MockProvider<ApiResult<Unit>> {
 	
-	override fun provide(): TestResponse {
-		throw IllegalStateException("错误")
+	override fun provide(): ApiResult<Unit> {
+		throw IllegalStateException()
 	}
 }

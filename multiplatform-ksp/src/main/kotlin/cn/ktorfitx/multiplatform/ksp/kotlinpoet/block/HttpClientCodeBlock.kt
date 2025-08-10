@@ -172,13 +172,30 @@ internal class HttpClientCodeBlock(
 		fileSpecBuilder.addImport(PackageNames.KTOR_REQUEST, "setBody")
 		fileSpecBuilder.addImport(PackageNames.KTOR_REQUEST_FORMS, "formData", "MultiPartFormDataContent")
 		addStatement("this.contentType(ContentType.MultiPart.FormData)")
-		beginControlFlow("formData {")
+		add("formData {\n")
+		indent()
 		partModels.forEach {
-			addStatement("this.append(%S, %N)", it.name, it.varName)
+			when {
+				it.isFormPart -> addStatement("this.append(%N)", it.varName)
+				it.headers.isNullOrEmpty() -> addStatement("this.append(%T(%S, %N))", TypeNames.FormPart, it.name, it.varName)
+				else -> {
+					fileSpecBuilder.addImport(PackageNames.KTOR_UTILS, "buildHeaders")
+					val headersCodeBlock = buildCodeBlock {
+						add("buildHeaders {\n")
+						indent()
+						val headers = it.headers
+						headers.forEach { (key, value) ->
+							addStatement("this[%S] = %S", key, value)
+						}
+						unindent()
+						add("}")
+					}
+					add("this.append(%T(%S, %N, %L))\n", TypeNames.FormPart, it.name, it.varName, headersCodeBlock)
+				}
+			}
 		}
-		nextControlFlow(".let")
-		addStatement("this.setBody(MultiPartFormDataContent(it))")
-		endControlFlow()
+		unindent()
+		addStatement("}.let { this.setBody(MultiPartFormDataContent(it)) }")
 	}
 	
 	override fun CodeBlock.Builder.buildFields(

@@ -95,7 +95,8 @@ class MockLogging internal constructor(
 						}
 					}
 					if (mockRequest.body != null) {
-						appendLine("BODY START: LENGTH=${mockRequest.body!!.length}")
+						val body = mockRequest.body!!
+						appendLine("BODY START: LENGTH=${body.json.length} FORMAT=${body.format}")
 						appendLine(mockRequest.body!!)
 						appendLine("BODY END")
 					}

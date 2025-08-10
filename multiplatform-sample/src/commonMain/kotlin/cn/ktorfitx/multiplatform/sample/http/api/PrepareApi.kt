@@ -4,18 +4,18 @@ import cn.ktorfitx.multiplatform.annotation.*
 import io.ktor.client.statement.*
 
 @Api(url = "prepare")
-interface TestPrepareApi {
+interface PrepareApi {
 	
 	@Prepare
-	@GET(url = "test")
-	suspend fun test(): HttpStatement
+	@GET(url = "test01")
+	suspend fun test01(): HttpStatement
 	
 	@Prepare
 	@BearerAuth
-	@POST(url = "test2")
-	suspend fun test2(): HttpStatement
+	@POST(url = "test02")
+	suspend fun test02(): HttpStatement
 	
 	@Prepare
-	@CUSTOM(url = "test3")
-	suspend fun test3(): HttpStatement
+	@CUSTOM(url = "test03")
+	suspend fun test03(): HttpStatement
 }
