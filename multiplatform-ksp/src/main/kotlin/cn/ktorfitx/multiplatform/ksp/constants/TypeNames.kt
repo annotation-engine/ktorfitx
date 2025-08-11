@@ -15,9 +15,24 @@ internal object TypeNames {
 	
 	val parameters by lazy {
 		listOf(
-			Body, Part, Field, Fields, Query, Queries,
-			Header, Path, Cookie, Attribute, Attributes,
+			Body, Part, Parts, Field, Fields,
+			Query, Queries, Header, Path,
+			Cookie, Attribute, Attributes,
 			DynamicUrl
+		)
+	}
+	
+	val formPartSupportValueTypes by lazy {
+		setOf(
+			STRING,
+			NUMBER,
+			BOOLEAN,
+			BYTE_ARRAY,
+			ClassName("io.ktor.client.request.forms", "InputProvider"),
+			ClassName("kotlinx.io", "Source"),
+			ITERABLE.parameterizedBy(STRING),
+			ARRAY.parameterizedBy(STRING),
+			ClassName("io.ktor.client.request.forms", "ChannelProvider"),
 		)
 	}
 	
@@ -30,6 +45,8 @@ internal object TypeNames {
 	val ByteArray = BYTE_ARRAY
 	
 	val String = STRING
+	
+	val List = LIST
 	
 	val OptIn = ClassName("kotlin", "OptIn")
 	
@@ -53,20 +70,6 @@ internal object TypeNames {
 	val HttpStatement = ClassName("io.ktor.client.statement", "HttpStatement")
 	
 	val FormPart = ClassName("io.ktor.client.request.forms", "FormPart")
-	
-	val formPartValueTypeNames by lazy {
-		setOf(
-			STRING,
-			NUMBER,
-			BOOLEAN,
-			BYTE_ARRAY,
-			ClassName("io.ktor.client.request.forms", "InputProvider"),
-			ClassName("kotlinx.io", "Source"),
-			ITERABLE.parameterizedBy(STRING),
-			ARRAY.parameterizedBy(STRING),
-			ClassName("io.ktor.client.request.forms", "ChannelProvider"),
-		)
-	}
 	
 	val HttpMethod = ClassName("cn.ktorfitx.multiplatform.annotation", "HttpMethod")
 	
@@ -131,6 +134,8 @@ internal object TypeNames {
 	val Queries = ClassName("cn.ktorfitx.multiplatform.annotation", "Queries")
 	
 	val Part = ClassName("cn.ktorfitx.multiplatform.annotation", "Part")
+	
+	val Parts = ClassName("cn.ktorfitx.multiplatform.annotation", "Parts")
 	
 	val Path = ClassName("cn.ktorfitx.multiplatform.annotation", "Path")
 	

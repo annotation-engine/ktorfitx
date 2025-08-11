@@ -77,7 +77,9 @@ internal class MockClientCodeBlock(
 		}
 	}
 	
-	override fun CodeBlock.Builder.buildTimeoutCodeBlock(timeoutModel: TimeoutModel) {
+	override fun CodeBlock.Builder.buildTimeoutCodeBlock(
+		timeoutModel: TimeoutModel
+	) {
 		beginControlFlow("this.timeout")
 		if (timeoutModel.requestTimeoutMillis != null) {
 			addStatement("this.requestTimeoutMillis = %LL", timeoutModel.requestTimeoutMillis)
@@ -129,7 +131,10 @@ internal class MockClientCodeBlock(
 		endControlFlow()
 	}
 	
-	override fun CodeBlock.Builder.buildParts(partModels: List<PartModel>) {
+	override fun CodeBlock.Builder.buildParts(
+		partModels: List<PartModel>,
+		partsModels: List<PartsModel>
+	) {
 		beginControlFlow("this.parts")
 		partModels.forEach {
 			when {
@@ -159,6 +164,41 @@ internal class MockClientCodeBlock(
 						add("this.append(%T(%S, %N, %L))\n", TypeNames.FormPart, it.name, it.varName, headersCodeBlock)
 					}
 				}
+			}
+		}
+		partsModels.forEach {
+			when (it.partsKind) {
+				PartsKind.MAP if it.valueKind == PartsValueKind.KEY_VALUE -> {
+					beginControlFlow("%N.forEach { (key, value) ->", it.varName)
+					addStatement("this.append(key, value)")
+					endControlFlow()
+				}
+				
+				PartsKind.MAP if it.valueKind == PartsValueKind.FORM_PART -> {
+					beginControlFlow("%N.forEach { (key, value) ->", it.varName)
+					addStatement("this.append(%T(key, value))", TypeNames.FormPart)
+					endControlFlow()
+				}
+				
+				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.KEY_VALUE -> {
+					beginControlFlow("%N.forEach { (first, second) ->", it.varName)
+					addStatement("this.append(first, second)")
+					endControlFlow()
+				}
+				
+				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.FORM_PART -> {
+					beginControlFlow("%N.forEach { (first, second) ->", it.varName)
+					addStatement("this.append(%T(first, second))", TypeNames.FormPart)
+					endControlFlow()
+				}
+				
+				PartsKind.LIST_FORM_PART -> {
+					beginControlFlow("%N.forEach", it.varName)
+					addStatement("this.append(it)")
+					endControlFlow()
+				}
+				
+				else -> {}
 			}
 		}
 		endControlFlow()
@@ -225,7 +265,9 @@ internal class MockClientCodeBlock(
 		endControlFlow()
 	}
 	
-	fun CodeBlock.Builder.buildPaths(pathModels: List<PathModel>) {
+	fun CodeBlock.Builder.buildPaths(
+		pathModels: List<PathModel>
+	) {
 		beginControlFlow("this.paths")
 		pathModels.forEach {
 			addStatement("this.append(%S, %N)", it.name, it.varName)
@@ -233,7 +275,9 @@ internal class MockClientCodeBlock(
 		endControlFlow()
 	}
 	
-	override fun CodeBlock.Builder.buildBody(bodyModel: BodyModel) {
+	override fun CodeBlock.Builder.buildBody(
+		bodyModel: BodyModel
+	) {
 		addStatement("this.body(%N, %T)", bodyModel.varName, bodyModel.formatClassName)
 	}
 }

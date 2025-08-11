@@ -166,7 +166,8 @@ internal class HttpClientCodeBlock(
 	}
 	
 	override fun CodeBlock.Builder.buildParts(
-		partModels: List<PartModel>
+		partModels: List<PartModel>,
+		partsModels: List<PartsModel>
 	) {
 		fileSpecBuilder.addImport(PackageNames.KTOR_HTTP, "contentType", "ContentType")
 		fileSpecBuilder.addImport(PackageNames.KTOR_REQUEST, "setBody")
@@ -203,6 +204,41 @@ internal class HttpClientCodeBlock(
 						add("this.append(%T(%S, %N, %L))\n", TypeNames.FormPart, it.name, it.varName, headersCodeBlock)
 					}
 				}
+			}
+		}
+		partsModels.forEach {
+			when (it.partsKind) {
+				PartsKind.MAP if it.valueKind == PartsValueKind.KEY_VALUE -> {
+					beginControlFlow("%N.forEach { (key, value) ->", it.varName)
+					addStatement("this.append(key, value)")
+					endControlFlow()
+				}
+				
+				PartsKind.MAP if it.valueKind == PartsValueKind.FORM_PART -> {
+					beginControlFlow("%N.forEach { (key, value) ->", it.varName)
+					addStatement("this.append(%T(key, value))", TypeNames.FormPart)
+					endControlFlow()
+				}
+				
+				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.KEY_VALUE -> {
+					beginControlFlow("%N.forEach { (first, second) ->", it.varName)
+					addStatement("this.append(first, second)")
+					endControlFlow()
+				}
+				
+				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.FORM_PART -> {
+					beginControlFlow("%N.forEach { (first, second) ->", it.varName)
+					addStatement("this.append(%T(first, second))", TypeNames.FormPart)
+					endControlFlow()
+				}
+				
+				PartsKind.LIST_FORM_PART -> {
+					beginControlFlow("%N.forEach", it.varName)
+					addStatement("this.append(it)")
+					endControlFlow()
+				}
+				
+				else -> {}
 			}
 		}
 		unindent()

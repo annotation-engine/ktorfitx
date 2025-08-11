@@ -7,6 +7,7 @@ import cn.ktorfitx.multiplatform.ksp.model.*
 import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ksp.toTypeName
@@ -21,11 +22,10 @@ internal fun KSFunctionDeclaration.getRequestBodyModel(): RequestBodyModel? {
 		val useTypeNames = useRequestBodyMap.values.flatten().joinToString { "@${it.simpleName}" }
 		"${simpleName.asString()} 函数使用了不兼容的注解 $useTypeNames"
 	}
-	val type = useRequestBodyMap.entries.first().key
-	return when (type) {
+	return when (useRequestBodyMap.entries.first().key) {
 		RequestBodyKind.BODY -> this.getBodyModel()
-		RequestBodyKind.PART -> this.getPartModels()
-		RequestBodyKind.FIELD -> this.getFieldModels()
+		RequestBodyKind.PART -> this.getPartRequestBodyModel()
+		RequestBodyKind.FIELD -> this.getFieldRequestBodyModel()
 	}
 }
 
@@ -57,11 +57,12 @@ private enum class RequestBodyKind {
 private val requestBodyKindMap = mapOf(
 	TypeNames.Body to RequestBodyKind.BODY,
 	TypeNames.Part to RequestBodyKind.PART,
+	TypeNames.Parts to RequestBodyKind.PART,
 	TypeNames.Field to RequestBodyKind.FIELD,
 	TypeNames.Fields to RequestBodyKind.FIELD
 )
 
-private fun KSFunctionDeclaration.getFieldModels(): FieldModels {
+private fun KSFunctionDeclaration.getFieldRequestBodyModel(): FieldRequestBodyModel {
 	val fieldModels = this.parameters.mapNotNull { parameter ->
 		val annotation = parameter.getKSAnnotationByType(TypeNames.Field) ?: return@mapNotNull null
 		val varName = parameter.name!!.asString()
@@ -76,7 +77,7 @@ private fun KSFunctionDeclaration.getFieldModels(): FieldModels {
 	}
 	val fieldsModels = this.parameters.mapNotNull { parameter ->
 		parameter.getKSAnnotationByType(TypeNames.Fields) ?: return@mapNotNull null
-		val name = parameter.name!!.asString()
+		val varName = parameter.name!!.asString()
 		val type = parameter.type.resolve()
 		val fieldsKind = when {
 			type.isMapOfStringToAny() -> FieldsKind.MAP
@@ -84,19 +85,19 @@ private fun KSFunctionDeclaration.getFieldModels(): FieldModels {
 			else -> null
 		}
 		parameter.compileCheck(fieldsKind != null) {
-			"${simpleName.asString()} 函数的 $name 参数只允许使用 Map<String, *> 或 List<Pair<String, *>> 类型或是它的具体化子类型或派生类型"
+			"${simpleName.asString()} 函数的 $varName 参数只允许使用 Map<String, *> 或 List<Pair<String, *>> 类型或是它的具体化子类型或派生类型"
 		}
 		val typeName = type.toTypeName() as ParameterizedTypeName
 		val valueTypeName = when (fieldsKind) {
 			FieldsKind.LIST -> (typeName.typeArguments.first() as ParameterizedTypeName).typeArguments[1]
 			FieldsKind.MAP -> typeName.typeArguments[1]
 		}
-		FieldsModel(name, fieldsKind, valueTypeName.equals(TypeNames.String, ignoreNullable = true), valueTypeName.isNullable)
+		FieldsModel(varName, fieldsKind, valueTypeName.equals(TypeNames.String, ignoreNullable = true), valueTypeName.isNullable)
 	}
-	return FieldModels(fieldModels, fieldsModels)
+	return FieldRequestBodyModel(fieldModels, fieldsModels)
 }
 
-private fun KSFunctionDeclaration.getPartModels(): PartModels {
+private fun KSFunctionDeclaration.getPartRequestBodyModel(): PartRequestBodyModel {
 	val partModels = this.parameters.mapNotNull { parameter ->
 		val annotation = parameter.getKSAnnotationByType(TypeNames.Part) ?: return@mapNotNull null
 		val varName = parameter.name!!.asString()
@@ -114,7 +115,7 @@ private fun KSFunctionDeclaration.getPartModels(): PartModels {
 		}
 		val typeName = type.toTypeName()
 		val partKind = when {
-			typeName in TypeNames.formPartValueTypeNames || TypeNames.formPartValueTypeNames.any { typeName ->
+			typeName in TypeNames.formPartSupportValueTypes || TypeNames.formPartSupportValueTypes.any { typeName ->
 				val declaration = type.declaration as? KSClassDeclaration ?: return@any false
 				declaration.getAllSuperTypes().any {
 					it.toTypeName() == typeName
@@ -126,5 +127,55 @@ private fun KSFunctionDeclaration.getPartModels(): PartModels {
 		}
 		PartModel(name, varName, headers, partKind)
 	}
-	return PartModels(partModels)
+	val partsModels = this.parameters.mapNotNull { parameter ->
+		if (!parameter.hasAnnotation(TypeNames.Parts)) return@mapNotNull null
+		val type = parameter.type.resolve()
+		val varName = parameter.name!!.asString()
+		parameter.compileCheck(!type.isMarkedNullable) {
+			"${simpleName.asString()} 函数的 $varName 参数不允许使用可空类型"
+		}
+		val partsKind = when {
+			type.isMapOfStringToAny(false) -> PartsKind.MAP
+			type.isListOfStringPair() -> PartsKind.LIST_PAIR
+			type.isListOfFormPart() -> PartsKind.LIST_FORM_PART
+			else -> null
+		}
+		parameter.compileCheck(partsKind != null) {
+			"${simpleName.asString()} 函数的 $varName 参数只允许使用 Map<String, Any> 或 List<Pair<String, Any>> 或 List<FormPart<*>> 类型或是它的具体化子类型或派生类型"
+		}
+		val valueKind = when (partsKind) {
+			PartsKind.MAP -> {
+				fun getValueKind(): PartsValueKind? {
+					val declaration = type.arguments[1].type?.resolve()?.declaration as? KSClassDeclaration ?: return null
+					val isKeyValue = declaration.getAllSuperTypes().any { it.toTypeName() in TypeNames.formPartSupportValueTypes }
+					return if (isKeyValue) PartsValueKind.KEY_VALUE else PartsValueKind.FORM_PART
+				}
+				getValueKind()
+			}
+			
+			PartsKind.LIST_PAIR -> {
+				fun getValueKind(): PartsValueKind? {
+					val pairType = type.arguments.first().type?.resolve() ?: return null
+					val declaration = pairType.arguments[1].type?.resolve()?.declaration as? KSClassDeclaration ?: return null
+					val isKeyValue = declaration.getAllSuperTypes().any { it.toTypeName() in TypeNames.formPartSupportValueTypes }
+					return if (isKeyValue) PartsValueKind.KEY_VALUE else PartsValueKind.FORM_PART
+				}
+				getValueKind()
+			}
+			
+			PartsKind.LIST_FORM_PART -> null
+		}
+		PartsModel(varName, partsKind, valueKind)
+	}
+	return PartRequestBodyModel(partModels, partsModels)
+}
+
+private fun KSType.isListOfFormPart(): Boolean {
+	val declaration = this.declaration as? KSClassDeclaration ?: return false
+	val typeName = (declaration.getAllSuperTypes().find {
+		if (it.declaration !is KSClassDeclaration) return@find false
+		it.declaration.qualifiedName?.asString() == TypeNames.List.canonicalName
+	}?.toTypeName() ?: this.toTypeName()) as? ParameterizedTypeName ?: return false
+	val first = typeName.typeArguments.first()
+	return first is ParameterizedTypeName && first.rawType == TypeNames.FormPart
 }

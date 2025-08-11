@@ -62,7 +62,8 @@ internal sealed interface ClientCodeBlock {
 	 * parts
 	 */
 	fun CodeBlock.Builder.buildParts(
-		partModels: List<PartModel>
+		partModels: List<PartModel>,
+		partsModels: List<PartsModel>
 	)
 	
 	/**
