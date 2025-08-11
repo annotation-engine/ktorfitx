@@ -37,7 +37,7 @@ interface FieldApi {
 	@POST("testMock02")
 	suspend fun testMock02(
 		@Fields fields1: List<Pair<String, *>>,
-		@Fields fields2: Map<String, Int>
+		@Fields fields2: Map<String, Int>?
 	): String
 	
 	@Mock(provider = StringMockProvider::class)

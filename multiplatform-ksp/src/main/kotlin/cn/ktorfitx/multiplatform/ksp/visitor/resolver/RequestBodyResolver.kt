@@ -138,9 +138,6 @@ private fun KSFunctionDeclaration.getPartRequestBodyModel(): PartRequestBodyMode
 		if (!parameter.hasAnnotation(TypeNames.Parts)) return@mapNotNull null
 		val type = parameter.type.resolve()
 		val varName = parameter.name!!.asString()
-		parameter.compileCheck(!type.isMarkedNullable) {
-			"${simpleName.asString()} 函数的 $varName 参数不允许使用可空类型"
-		}
 		val partsKind = when {
 			type.isMapOfStringToAny(false) -> PartsKind.MAP
 			type.isListOfStringPair() -> PartsKind.LIST_PAIR
@@ -172,7 +169,7 @@ private fun KSFunctionDeclaration.getPartRequestBodyModel(): PartRequestBodyMode
 			
 			PartsKind.LIST_FORM_PART -> null
 		}
-		PartsModel(varName, partsKind, valueKind)
+		PartsModel(varName, type.isMarkedNullable, partsKind, valueKind)
 	}
 	return PartRequestBodyModel(partModels, partsModels)
 }

@@ -150,7 +150,7 @@ internal class MockClientCodeBlock(
 				else -> {
 					fileSpecBuilder.addImport(PackageNames.KTOR_UTILS, "buildHeaders")
 					val headersCodeBlock = buildCodeBlock {
-						add("buildHeaders {\n")
+						addStatement("buildHeaders {")
 						indent()
 						it.headers.forEach { (key, value) ->
 							addStatement("this[%S] = %S", key, value)
@@ -168,35 +168,20 @@ internal class MockClientCodeBlock(
 		}
 		partsModels.forEach {
 			when (it.partsKind) {
-				PartsKind.MAP if it.valueKind == PartsValueKind.KEY_VALUE -> {
-					beginControlFlow("%N.forEach { (key, value) ->", it.varName)
-					addStatement("this.append(key, value)")
-					endControlFlow()
-				}
+				PartsKind.MAP if it.valueKind == PartsValueKind.KEY_VALUE ->
+					addStatement("%N.forEach { this.append(it.key, it.value) }", it.varName)
 				
-				PartsKind.MAP if it.valueKind == PartsValueKind.FORM_PART -> {
-					beginControlFlow("%N.forEach { (key, value) ->", it.varName)
-					addStatement("this.append(%T(key, value))", TypeNames.FormPart)
-					endControlFlow()
-				}
+				PartsKind.MAP if it.valueKind == PartsValueKind.FORM_PART ->
+					addStatement("%N.forEach { this.append(%T(it.key, it.value)) }", it.varName, TypeNames.FormPart)
 				
-				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.KEY_VALUE -> {
-					beginControlFlow("%N.forEach { (first, second) ->", it.varName)
-					addStatement("this.append(first, second)")
-					endControlFlow()
-				}
+				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.KEY_VALUE ->
+					addStatement("%N.forEach { this.append(it.first, it.second) }", it.varName)
 				
-				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.FORM_PART -> {
-					beginControlFlow("%N.forEach { (first, second) ->", it.varName)
-					addStatement("this.append(%T(first, second))", TypeNames.FormPart)
-					endControlFlow()
-				}
+				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.FORM_PART ->
+					addStatement("%N.forEach { this.append(%T(it.first, it.second)) }", it.varName, TypeNames.FormPart)
 				
-				PartsKind.LIST_FORM_PART -> {
-					beginControlFlow("%N.forEach", it.varName)
-					addStatement("this.append(it)")
-					endControlFlow()
-				}
+				PartsKind.LIST_FORM_PART ->
+					addStatement("%N.forEach { this.append(it) }", it.varName)
 				
 				else -> {}
 			}
@@ -213,9 +198,10 @@ internal class MockClientCodeBlock(
 			addStatement("this.append(%S, %N)", it.name, it.varName)
 		}
 		fieldsModels.forEach {
-			beginControlFlow("%N.forEach { (key, value) ->", it.varName)
-			addStatement("this.append(key, value)")
-			endControlFlow()
+			when (it.fieldsKind) {
+				FieldsKind.LIST -> addStatement("%N%L.forEach { this.append(it.first, it.second) }", it.varName, if (it.isNullable) "?" else "")
+				FieldsKind.MAP -> addStatement("%N%L.forEach { this.append(it.key, it.value) }", it.varName, if (it.isNullable) "?" else "")
+			}
 		}
 		endControlFlow()
 	}
@@ -242,7 +228,7 @@ internal class MockClientCodeBlock(
 				model.httpOnly?.let { addStatement("httpOnly = %L,", it) }
 				model.extensions?.let { addStatement("extensions = %L,", it.toCodeBlock()) }
 				unindent()
-				add(")\n")
+				addStatement(")")
 			}
 			add(codeBlock)
 		}
@@ -258,9 +244,10 @@ internal class MockClientCodeBlock(
 			addStatement("this.append(%S, %N)", it.name, it.varName)
 		}
 		attributesModels.forEach {
-			beginControlFlow("%N.forEach { (key, value) ->", it.varName)
-			addStatement("this.append(key, value)")
-			endControlFlow()
+			when (it.attributesKind) {
+				AttributesKind.MAP -> addStatement("%N%L.forEach { this.append(it.key, it.value) }", it.varName, if (it.isNullable) "?" else "")
+				AttributesKind.LIST -> addStatement("%N%L.forEach { this.append(it.first, it.second) }", it.varName, if (it.isNullable) "?" else "")
+			}
 		}
 		endControlFlow()
 	}

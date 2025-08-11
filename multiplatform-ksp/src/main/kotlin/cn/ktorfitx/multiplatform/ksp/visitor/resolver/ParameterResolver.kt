@@ -87,10 +87,15 @@ internal fun KSFunctionDeclaration.getAttributesModels(): List<AttributesModel> 
 		if (!parameter.hasAnnotation(TypeNames.Attributes)) return@mapNotNull null
 		val varName = parameter.name!!.asString()
 		val type = parameter.type.resolve()
-		parameter.compileCheck(type.isMapOfStringToAny(false) || type.isListOfStringPair(false)) {
+		val kind = when {
+			type.isMapOfStringToAny(false) -> AttributesKind.MAP
+			type.isListOfStringPair(false) -> AttributesKind.LIST
+			else -> null
+		}
+		parameter.compileCheck(kind != null) {
 			"${simpleName.asString()} 函数的 $varName 参数只允许使用 Map<String, Any> 或 List<Pair<String, Any>> 类型或是它的具体化子类型或派生类型"
 		}
-		AttributesModel(varName)
+		AttributesModel(varName, type.isMarkedNullable, kind)
 	}
 }
 

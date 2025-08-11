@@ -2,6 +2,7 @@ package cn.ktorfitx.multiplatform.ksp.model
 
 internal class PartsModel(
 	val varName: String,
+	val isNullable: Boolean,
 	val partsKind: PartsKind,
 	val valueKind: PartsValueKind?
 )

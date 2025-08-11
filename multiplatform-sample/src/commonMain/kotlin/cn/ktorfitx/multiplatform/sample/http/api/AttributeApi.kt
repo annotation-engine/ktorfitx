@@ -14,7 +14,7 @@ interface AttributeApi {
 	
 	@POST("test01")
 	suspend fun test02(
-		@Attributes attributes1: Map<String, String>,
+		@Attributes attributes1: Map<String, String>?,
 		@Attributes attributes2: List<Pair<String, Int>>
 	): String
 	
@@ -23,7 +23,7 @@ interface AttributeApi {
 		@Attribute name: String,
 		@Attribute("custom") age: Int,
 		@Attributes attributes1: Map<String, String>,
-		@Attributes attributes2: List<Pair<String, Int>>
+		@Attributes attributes2: List<Pair<String, Int>>?
 	): String
 	
 	@Mock(provider = StringMockProvider::class)
@@ -36,7 +36,7 @@ interface AttributeApi {
 	@Mock(provider = StringMockProvider::class)
 	@POST("testMock01")
 	suspend fun testMock02(
-		@Attributes attributes1: Map<String, String>,
+		@Attributes attributes1: Map<String, String>?,
 		@Attributes attributes2: List<Pair<String, Int>>
 	): String
 	
@@ -46,6 +46,6 @@ interface AttributeApi {
 		@Attribute name: String,
 		@Attribute("custom") age: Int,
 		@Attributes attributes1: Map<String, String>,
-		@Attributes attributes2: List<Pair<String, Int>>
+		@Attributes attributes2: List<Pair<String, Int>>?
 	): String
 }

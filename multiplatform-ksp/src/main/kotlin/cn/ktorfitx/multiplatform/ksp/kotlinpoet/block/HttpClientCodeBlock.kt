@@ -173,7 +173,7 @@ internal class HttpClientCodeBlock(
 		fileSpecBuilder.addImport(PackageNames.KTOR_REQUEST, "setBody")
 		fileSpecBuilder.addImport(PackageNames.KTOR_REQUEST_FORMS, "formData", "MultiPartFormDataContent")
 		addStatement("this.contentType(ContentType.MultiPart.FormData)")
-		add("formData {\n")
+		addStatement("formData {")
 		indent()
 		partModels.forEach {
 			when {
@@ -189,7 +189,7 @@ internal class HttpClientCodeBlock(
 				else -> {
 					fileSpecBuilder.addImport(PackageNames.KTOR_UTILS, "buildHeaders")
 					val headersCodeBlock = buildCodeBlock {
-						add("buildHeaders {\n")
+						addStatement("buildHeaders {")
 						indent()
 						val headers = it.headers
 						headers.forEach { (key, value) ->
@@ -336,9 +336,10 @@ internal class HttpClientCodeBlock(
 			addStatement("this[%T(%S)] = %L", TypeNames.AttributeKey, it.name, it.varName)
 		}
 		attributesModels.forEach {
-			beginControlFlow("%N.forEach { (key, value) ->", it.varName)
-			addStatement("this[%T(key)] = value", TypeNames.AttributeKey)
-			endControlFlow()
+			when (it.attributesKind) {
+				AttributesKind.MAP -> addStatement("%N%L.forEach { this[%T(it.key)] = it.value }", it.varName, if (it.isNullable) "?" else "", TypeNames.AttributeKey)
+				AttributesKind.LIST -> addStatement("%N%L.forEach { this[%T(it.first)] = it.second }", it.varName, if (it.isNullable) "?" else "", TypeNames.AttributeKey)
+			}
 		}
 		endControlFlow()
 	}
