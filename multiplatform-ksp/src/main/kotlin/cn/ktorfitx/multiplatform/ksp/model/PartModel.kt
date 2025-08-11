@@ -4,5 +4,11 @@ internal class PartModel(
 	val name: String,
 	val varName: String,
 	val headers: Map<String, String>?,
-	val isFormPart: Boolean
+	val partKind: PartKind
 )
+
+internal enum class PartKind {
+	DIRECT,
+	FORM_PART,
+	KEY_VALUE
+}

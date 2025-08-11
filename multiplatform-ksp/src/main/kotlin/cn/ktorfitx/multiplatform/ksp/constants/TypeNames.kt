@@ -1,7 +1,7 @@
 package cn.ktorfitx.multiplatform.ksp.constants
 
-import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.LambdaTypeName
+import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 
 internal object TypeNames {
 	
@@ -21,17 +21,15 @@ internal object TypeNames {
 		)
 	}
 	
-	val Any = ClassName("kotlin", "Any")
+	val Unit = UNIT
 	
-	val Unit = ClassName("kotlin", "Unit")
-	
-	val Nothing = ClassName("kotlin", "Nothing")
+	val Nothing = NOTHING
 	
 	val Result = ClassName("kotlin", "Result")
 	
-	val ByteArray = ClassName("kotlin", "ByteArray")
+	val ByteArray = BYTE_ARRAY
 	
-	val String = ClassName("kotlin", "String")
+	val String = STRING
 	
 	val OptIn = ClassName("kotlin", "OptIn")
 	
@@ -55,6 +53,20 @@ internal object TypeNames {
 	val HttpStatement = ClassName("io.ktor.client.statement", "HttpStatement")
 	
 	val FormPart = ClassName("io.ktor.client.request.forms", "FormPart")
+	
+	val formPartValueTypeNames by lazy {
+		setOf(
+			STRING,
+			NUMBER,
+			BOOLEAN,
+			BYTE_ARRAY,
+			ClassName("io.ktor.client.request.forms", "InputProvider"),
+			ClassName("kotlinx.io", "Source"),
+			ITERABLE.parameterizedBy(STRING),
+			ARRAY.parameterizedBy(STRING),
+			ClassName("io.ktor.client.request.forms", "ChannelProvider"),
+		)
+	}
 	
 	val HttpMethod = ClassName("cn.ktorfitx.multiplatform.annotation", "HttpMethod")
 	

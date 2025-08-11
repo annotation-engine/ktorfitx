@@ -133,8 +133,15 @@ internal class MockClientCodeBlock(
 		beginControlFlow("this.parts")
 		partModels.forEach {
 			when {
-				it.isFormPart -> addStatement("this += %N", it.varName)
-				it.headers.isNullOrEmpty() -> addStatement("this += %T(%S, %N)", TypeNames.FormPart, it.name, it.varName)
+				it.partKind == PartKind.DIRECT -> addStatement("this.append(%N)", it.varName)
+				it.headers.isNullOrEmpty() -> {
+					if (it.partKind == PartKind.KEY_VALUE) {
+						addStatement("this.append(%S, %N)", it.name, it.varName)
+					} else {
+						addStatement("this.append(%T(%S, %N))", TypeNames.FormPart, it.name, it.varName)
+					}
+				}
+				
 				else -> {
 					fileSpecBuilder.addImport(PackageNames.KTOR_UTILS, "buildHeaders")
 					val headersCodeBlock = buildCodeBlock {
@@ -146,7 +153,11 @@ internal class MockClientCodeBlock(
 						unindent()
 						add("}")
 					}
-					add("this += %T(%S, %N, %L)", TypeNames.FormPart, it.name, it.varName, headersCodeBlock)
+					if (it.partKind == PartKind.KEY_VALUE) {
+						add("this.append(%S, %N, %L)\n", it.name, it.varName, headersCodeBlock)
+					} else {
+						add("this.append(%T(%S, %N, %L))\n", TypeNames.FormPart, it.name, it.varName, headersCodeBlock)
+					}
 				}
 			}
 		}

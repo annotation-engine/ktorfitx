@@ -5,6 +5,7 @@ import cn.ktorfitx.multiplatform.annotation.SerializationFormat
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.util.date.*
+import kotlinx.io.Source
 import kotlinx.serialization.StringFormat
 import kotlinx.serialization.encodeToString
 
@@ -16,7 +17,7 @@ class MockRequestBuilder internal constructor(
 	internal var urlString: String? = null
 		private set
 	
-	internal var timeout: TimeoutConfig? = null
+	internal var timeout: TimeoutBuilder? = null
 		private set
 	
 	private val _headers = mutableMapOf<String, Any>()
@@ -40,14 +41,14 @@ class MockRequestBuilder internal constructor(
 	private val _attributes = mutableMapOf<String, Any>()
 	internal val attributes: Map<String, Any> = _attributes
 	
-	var body: MockBody? = null
+	var body: BodyConfig? = null
 	
 	fun url(urlString: String) {
 		this.urlString = urlString
 	}
 	
-	fun timeout(block: TimeoutConfig.() -> Unit) {
-		this.timeout = TimeoutConfigImpl().apply(block)
+	fun timeout(block: TimeoutBuilder.() -> Unit) {
+		this.timeout = TimeoutBuilder().apply(block)
 	}
 	
 	fun bearerAuth(token: String) {
@@ -62,8 +63,8 @@ class MockRequestBuilder internal constructor(
 		this._queries += mutableMapOf<String, Any?>().apply(block)
 	}
 	
-	fun parts(block: MutableList<FormPart<*>>.() -> Unit) {
-		this._parts += mutableListOf<FormPart<*>>().apply(block)
+	fun parts(block: PartBuilder.() -> Unit) {
+		this._parts += PartBuilder().apply(block).build()
 	}
 	
 	fun fields(block: MutableMap<String, Any?>.() -> Unit) {
@@ -75,7 +76,7 @@ class MockRequestBuilder internal constructor(
 	}
 	
 	fun cookies(block: CookieBuilder.() -> Unit) {
-		this._cookies += CookieBuilderImpl().apply(block).cookies
+		this._cookies += CookieBuilder().apply(block).build()
 	}
 	
 	fun attributes(block: MutableMap<String, Any>.() -> Unit) {
@@ -83,7 +84,7 @@ class MockRequestBuilder internal constructor(
 	}
 	
 	inline fun <reified T : Any> body(body: T, format: SerializationFormat) {
-		this.body = MockBody(stringFormat?.encodeToString(body) ?: body.toString(), format)
+		this.body = BodyConfig(stringFormat?.encodeToString(body) ?: body.toString(), format)
 	}
 	
 	fun <V> MutableMap<String, V>.append(name: String, value: V) {
@@ -92,7 +93,9 @@ class MockRequestBuilder internal constructor(
 }
 
 @MockDsl
-sealed interface CookieBuilder {
+class CookieBuilder internal constructor() {
+	
+	private val cookies = mutableMapOf<String, CookieConfig>()
 	
 	fun append(
 		name: String,
@@ -104,24 +107,6 @@ sealed interface CookieBuilder {
 		secure: Boolean = false,
 		httpOnly: Boolean = false,
 		extensions: Map<String, String?> = emptyMap()
-	)
-}
-
-@MockDsl
-private class CookieBuilderImpl : CookieBuilder {
-	
-	val cookies = mutableMapOf<String, CookieConfig>()
-	
-	override fun append(
-		name: String,
-		value: String,
-		maxAge: Int,
-		expires: GMTDate?,
-		domain: String?,
-		path: String?,
-		secure: Boolean,
-		httpOnly: Boolean,
-		extensions: Map<String, String?>
 	) {
 		this.cookies[name] = CookieConfig(
 			value = value,
@@ -134,6 +119,8 @@ private class CookieBuilderImpl : CookieBuilder {
 			extensions = extensions
 		)
 	}
+	
+	internal fun build(): Map<String, CookieConfig> = cookies
 }
 
 internal class CookieConfig(
@@ -148,20 +135,62 @@ internal class CookieConfig(
 )
 
 @MockDsl
-sealed interface TimeoutConfig {
-	var requestTimeoutMillis: Long?
-	var connectTimeoutMillis: Long?
-	var socketTimeoutMillis: Long?
-}
+class TimeoutBuilder internal constructor(
+	var requestTimeoutMillis: Long? = null,
+	var connectTimeoutMillis: Long? = null,
+	var socketTimeoutMillis: Long? = null
+)
 
-@MockDsl
-private class TimeoutConfigImpl(
-	override var requestTimeoutMillis: Long? = null,
-	override var connectTimeoutMillis: Long? = null,
-	override var socketTimeoutMillis: Long? = null
-) : TimeoutConfig
-
-data class MockBody(
+class BodyConfig(
 	val json: String,
 	val format: SerializationFormat,
 )
+
+@MockDsl
+class PartBuilder internal constructor() {
+	
+	internal val parts = mutableListOf<FormPart<*>>()
+	
+	fun append(key: String, value: String, headers: Headers = Headers.Empty) {
+		this.parts += FormPart(key, value, headers)
+	}
+	
+	fun append(key: String, value: Number, headers: Headers = Headers.Empty) {
+		this.parts += FormPart(key, value, headers)
+	}
+	
+	fun append(key: String, value: ByteArray, headers: Headers = Headers.Empty) {
+		this.parts += FormPart(key, value, headers)
+	}
+	
+	fun append(key: String, value: InputProvider, headers: Headers = Headers.Empty) {
+		this.parts += FormPart(key, value, headers)
+	}
+	
+	fun append(key: String, value: Source, headers: Headers = Headers.Empty) {
+		this.parts += FormPart(key, value, headers)
+	}
+	
+	fun append(key: String, values: Iterable<String>, headers: Headers = Headers.Empty) {
+		require(key.endsWith("[]")) {
+			"Array parameter must be suffixed with square brackets ie `$key[]`"
+		}
+		values.forEach { value ->
+			this.parts += FormPart(key, value, headers)
+		}
+	}
+	
+	fun append(key: String, values: Array<String>, headers: Headers = Headers.Empty) {
+		this.append(key, values.asIterable(), headers)
+	}
+	
+	fun append(key: String, value: ChannelProvider, headers: Headers = Headers.Empty) {
+		this.parts += FormPart(key, value, headers)
+	}
+	
+	fun <T : Any> append(part: FormPart<T>) {
+		this.parts += part
+	}
+	
+	internal fun build(): List<FormPart<*>> = parts
+}

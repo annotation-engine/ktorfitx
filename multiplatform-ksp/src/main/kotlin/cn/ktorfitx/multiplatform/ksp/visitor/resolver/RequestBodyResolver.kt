@@ -4,6 +4,8 @@ import cn.ktorfitx.common.ksp.util.check.compileCheck
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
 import cn.ktorfitx.multiplatform.ksp.model.*
+import com.google.devtools.ksp.getAllSuperTypes
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName
@@ -106,8 +108,23 @@ private fun KSFunctionDeclaration.getPartModels(): PartModels {
 			splits.first().trim() to splits[1].trim()
 		}
 		val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
-		val isFormPart = (parameter.type.toTypeName() as? ParameterizedTypeName)?.rawType == TypeNames.FormPart
-		PartModel(name, varName, headers, isFormPart)
+		val type = parameter.type.resolve()
+		parameter.compileCheck(!type.isMarkedNullable) {
+			"${simpleName.asString()} 函数的 $varName 参数不允许使用可空类型"
+		}
+		val typeName = type.toTypeName()
+		val partKind = when {
+			typeName in TypeNames.formPartValueTypeNames || TypeNames.formPartValueTypeNames.any { typeName ->
+				val declaration = type.declaration as? KSClassDeclaration ?: return@any false
+				declaration.getAllSuperTypes().any {
+					it.toTypeName() == typeName
+				}
+			} -> PartKind.KEY_VALUE
+			
+			(typeName as? ParameterizedTypeName)?.rawType == TypeNames.FormPart -> PartKind.DIRECT
+			else -> PartKind.FORM_PART
+		}
+		PartModel(name, varName, headers, partKind)
 	}
 	return PartModels(partModels)
 }
