@@ -167,21 +167,22 @@ internal class MockClientCodeBlock(
 			}
 		}
 		partsModels.forEach {
+			val nullOperator = if (it.isNullable) "?" else ""
 			when (it.partsKind) {
 				PartsKind.MAP if it.valueKind == PartsValueKind.KEY_VALUE ->
-					addStatement("%N.forEach { this.append(it.key, it.value) }", it.varName)
+					addStatement("%N%L.forEach { this.append(it.key, it.value) }", it.varName, nullOperator)
 				
 				PartsKind.MAP if it.valueKind == PartsValueKind.FORM_PART ->
-					addStatement("%N.forEach { this.append(%T(it.key, it.value)) }", it.varName, TypeNames.FormPart)
+					addStatement("%N%L.forEach { this.append(%T(it.key, it.value)) }", it.varName, nullOperator, TypeNames.FormPart)
 				
 				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.KEY_VALUE ->
-					addStatement("%N.forEach { this.append(it.first, it.second) }", it.varName)
+					addStatement("%N%L.forEach { this.append(it.first, it.second) }", it.varName, nullOperator)
 				
 				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.FORM_PART ->
-					addStatement("%N.forEach { this.append(%T(it.first, it.second)) }", it.varName, TypeNames.FormPart)
+					addStatement("%N%L.forEach { this.append(%T(it.first, it.second)) }", it.varName, nullOperator, TypeNames.FormPart)
 				
 				PartsKind.LIST_FORM_PART ->
-					addStatement("%N.forEach { this.append(it) }", it.varName)
+					addStatement("%N%L.forEach { this.append(it) }", it.varName, nullOperator)
 				
 				else -> {}
 			}
@@ -198,9 +199,10 @@ internal class MockClientCodeBlock(
 			addStatement("this.append(%S, %N)", it.name, it.varName)
 		}
 		fieldsModels.forEach {
+			val nullOperator = if (it.isNullable) "?" else ""
 			when (it.fieldsKind) {
-				FieldsKind.LIST -> addStatement("%N%L.forEach { this.append(it.first, it.second) }", it.varName, if (it.isNullable) "?" else "")
-				FieldsKind.MAP -> addStatement("%N%L.forEach { this.append(it.key, it.value) }", it.varName, if (it.isNullable) "?" else "")
+				FieldsKind.LIST -> addStatement("%N%L.forEach { this.append(it.first, it.second) }", it.varName, nullOperator)
+				FieldsKind.MAP -> addStatement("%N%L.forEach { this.append(it.key, it.value) }", it.varName, nullOperator)
 			}
 		}
 		endControlFlow()
@@ -244,9 +246,10 @@ internal class MockClientCodeBlock(
 			addStatement("this.append(%S, %N)", it.name, it.varName)
 		}
 		attributesModels.forEach {
+			val nullOperator = if (it.isNullable) "?" else ""
 			when (it.attributesKind) {
-				AttributesKind.MAP -> addStatement("%N%L.forEach { this.append(it.key, it.value) }", it.varName, if (it.isNullable) "?" else "")
-				AttributesKind.LIST -> addStatement("%N%L.forEach { this.append(it.first, it.second) }", it.varName, if (it.isNullable) "?" else "")
+				AttributesKind.MAP -> addStatement("%N%L.forEach { this.append(it.key, it.value) }", it.varName, nullOperator)
+				AttributesKind.LIST -> addStatement("%N%L.forEach { this.append(it.first, it.second) }", it.varName, nullOperator)
 			}
 		}
 		endControlFlow()

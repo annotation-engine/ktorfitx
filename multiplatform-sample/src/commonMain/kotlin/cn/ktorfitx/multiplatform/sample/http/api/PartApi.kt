@@ -30,11 +30,11 @@ interface PartApi {
 		@Part part: FormPart<String>,
 		@Part("custom1") part2: Int,
 		@Parts parts3: List<FormPart<*>>,
-		@Parts parts4: List<FormPart<Int>>,
+		@Parts parts4: List<FormPart<Int>>?,
 		@Parts parts5: List<Pair<String, Int>>,
-		@Parts parts6: List<Pair<String, Any>>,
+		@Parts parts6: List<Pair<String, Any>>?,
 		@Parts parts7: Map<String, Int>,
-		@Parts parts8: Map<String, Any>
+		@Parts parts8: Map<String, Any>?
 	): String
 	
 	@Mock(provider = StringMockProvider::class)
@@ -64,10 +64,10 @@ interface PartApi {
 		@Part part: FormPart<String>,
 		@Part("custom1") part2: Int,
 		@Parts parts3: List<FormPart<*>>,
-		@Parts parts4: List<FormPart<Int>>,
+		@Parts parts4: List<FormPart<Int>>?,
 		@Parts parts5: List<Pair<String, Int>>,
-		@Parts parts6: List<Pair<String, Any>>,
+		@Parts parts6: List<Pair<String, Any>>?,
 		@Parts parts7: Map<String, Int>,
-		@Parts parts8: Map<String, Any>
+		@Parts parts8: Map<String, Any>?
 	): String
 }

@@ -207,36 +207,21 @@ internal class HttpClientCodeBlock(
 			}
 		}
 		partsModels.forEach {
+			val nullOperator = if (it.isNullable) "?" else ""
 			when (it.partsKind) {
-				PartsKind.MAP if it.valueKind == PartsValueKind.KEY_VALUE -> {
-					beginControlFlow("%N.forEach { (key, value) ->", it.varName)
-					addStatement("this.append(key, value)")
-					endControlFlow()
-				}
+				PartsKind.MAP if it.valueKind == PartsValueKind.KEY_VALUE ->
+					addStatement("%N%L.forEach { this.append(it.key, it.value) }", it.varName, nullOperator)
 				
-				PartsKind.MAP if it.valueKind == PartsValueKind.FORM_PART -> {
-					beginControlFlow("%N.forEach { (key, value) ->", it.varName)
-					addStatement("this.append(%T(key, value))", TypeNames.FormPart)
-					endControlFlow()
-				}
+				PartsKind.MAP if it.valueKind == PartsValueKind.FORM_PART ->
+					addStatement("%N%L.forEach { this.append(%T(it.key, it.value)) }", it.varName, nullOperator, TypeNames.FormPart)
 				
-				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.KEY_VALUE -> {
-					beginControlFlow("%N.forEach { (first, second) ->", it.varName)
-					addStatement("this.append(first, second)")
-					endControlFlow()
-				}
+				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.KEY_VALUE ->
+					addStatement("%N%L.forEach { this.append(it.first, it.second) }", it.varName, nullOperator)
 				
-				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.FORM_PART -> {
-					beginControlFlow("%N.forEach { (first, second) ->", it.varName)
-					addStatement("this.append(%T(first, second))", TypeNames.FormPart)
-					endControlFlow()
-				}
+				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.FORM_PART ->
+					addStatement("%N%L.forEach { this.append(%T(it.first, it.second)) }", it.varName, nullOperator, TypeNames.FormPart)
 				
-				PartsKind.LIST_FORM_PART -> {
-					beginControlFlow("%N.forEach", it.varName)
-					addStatement("this.append(it)")
-					endControlFlow()
-				}
+				PartsKind.LIST_FORM_PART -> addStatement("%N%L.forEach { this.append(it) }", it.varName, nullOperator)
 				
 				else -> {}
 			}
@@ -262,36 +247,21 @@ internal class HttpClientCodeBlock(
 			}
 		}
 		fieldsModels.forEach {
+			val nullOperator = if (it.isNullable) "?" else ""
 			when (it.fieldsKind) {
-				FieldsKind.LIST if it.isNullable -> {
-					when {
-						it.valueIsString -> addStatement("%N?.let { this += it }", it.varName)
-						it.valueIsNullable -> addStatement("%N?.map { it.first to it.second?.toString() }?.let { this += it }", it.varName)
-						else -> addStatement("%N?.map { it.first to it.second.toString() }?.let { this += it }", it.varName)
-					}
-				}
-				
 				FieldsKind.LIST -> {
 					when {
-						it.valueIsString -> addStatement("this += %N", it.varName)
-						it.valueIsNullable -> addStatement("this += %N.map { it.first to it.second?.toString() }", it.varName)
-						else -> addStatement("this += %N.map { it.first to it.second.toString() }", it.varName)
-					}
-				}
-				
-				FieldsKind.MAP if it.isNullable -> {
-					when {
-						it.valueIsString -> addStatement("%N?.let { this += it.toList() }", it.varName)
-						it.valueIsNullable -> addStatement("%N?.map { it.key to it.value?.toString() }?.let { this += it }", it.varName)
-						else -> addStatement("%N?.map { it.key to it.value.toString() }?.let { this += it }", it.varName)
+						it.valueIsString -> addStatement("%N%L.forEach { this += it }", it.varName, nullOperator)
+						it.valueIsNullable -> addStatement("%N%L.forEach { this += it.first to it.second?.toString() }", it.varName, nullOperator)
+						else -> addStatement("%N%L.forEach { this += it.first to it.second.toString() }", it.varName, nullOperator)
 					}
 				}
 				
 				FieldsKind.MAP -> {
 					when {
-						it.valueIsString -> addStatement("this += %N.toList()", it.varName)
-						it.valueIsNullable -> addStatement("this += %N.map { it.key to it.value?.toString() }", it.varName)
-						else -> addStatement("this += %N.map { it.key to it.value.toString() }", it.varName)
+						it.valueIsString -> addStatement("%N%L.forEach { this += it.key to it.value }", it.varName, nullOperator)
+						it.valueIsNullable -> addStatement("%N%L.forEach { this += it.key to it.value?.toString() }", it.varName, nullOperator)
+						else -> addStatement("%N%L.forEach { this += it.key to it.value.toString() }", it.varName, nullOperator)
 					}
 				}
 			}
@@ -336,9 +306,10 @@ internal class HttpClientCodeBlock(
 			addStatement("this[%T(%S)] = %L", TypeNames.AttributeKey, it.name, it.varName)
 		}
 		attributesModels.forEach {
+			val nullOperator = if (it.isNullable) "?" else ""
 			when (it.attributesKind) {
-				AttributesKind.MAP -> addStatement("%N%L.forEach { this[%T(it.key)] = it.value }", it.varName, if (it.isNullable) "?" else "", TypeNames.AttributeKey)
-				AttributesKind.LIST -> addStatement("%N%L.forEach { this[%T(it.first)] = it.second }", it.varName, if (it.isNullable) "?" else "", TypeNames.AttributeKey)
+				AttributesKind.MAP -> addStatement("%N%L.forEach { this[%T(it.key)] = it.value }", it.varName, nullOperator, TypeNames.AttributeKey)
+				AttributesKind.LIST -> addStatement("%N%L.forEach { this[%T(it.first)] = it.second }", it.varName, nullOperator, TypeNames.AttributeKey)
 			}
 		}
 		endControlFlow()
