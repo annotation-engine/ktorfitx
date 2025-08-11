@@ -96,9 +96,7 @@ internal class MockClientCodeBlock(
 	override fun CodeBlock.Builder.buildBearerAuth(
 		varName: String
 	) {
-		beginControlFlow("if (%N != null)", varName)
-		addStatement("this.bearerAuth(%N)", varName)
-		endControlFlow()
+		addStatement("%N?.let { this.bearerAuth(it) }", varName)
 	}
 	
 	override fun CodeBlock.Builder.buildHeadersCodeBlock(

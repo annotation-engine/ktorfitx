@@ -130,9 +130,7 @@ internal class HttpClientCodeBlock(
 		varName: String
 	) {
 		fileSpecBuilder.addImport(PackageNames.KTOR_REQUEST, "bearerAuth")
-		beginControlFlow("if (%N != null)", varName)
-		addStatement("this.bearerAuth(%N)", varName)
-		endControlFlow()
+		addStatement("%N?.let { this.bearerAuth(it) }", varName)
 	}
 	
 	override fun CodeBlock.Builder.buildHeadersCodeBlock(

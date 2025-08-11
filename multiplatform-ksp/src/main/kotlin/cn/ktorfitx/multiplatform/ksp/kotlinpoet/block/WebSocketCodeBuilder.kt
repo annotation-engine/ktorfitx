@@ -50,12 +50,10 @@ internal class WebSocketCodeBuilder(
 	}
 	
 	private fun CodeBlock.Builder.buildBearerAuth(
-		tokenVarName: String
+		varName: String
 	) {
 		fileSpecBuilder.addImport(PackageNames.KTOR_REQUEST, "bearerAuth")
-		beginControlFlow("if (%N != null)", tokenVarName)
-		addStatement("this.bearerAuth(%N)", tokenVarName)
-		endControlFlow()
+		addStatement("%N?.let { this.bearerAuth(it) }", varName)
 	}
 	
 	private fun CodeBlock.Builder.buildTimeout(
