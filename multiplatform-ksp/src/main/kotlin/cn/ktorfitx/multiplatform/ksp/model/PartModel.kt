@@ -3,7 +3,7 @@ package cn.ktorfitx.multiplatform.ksp.model
 internal class PartModel(
 	val name: String,
 	val varName: String,
-	val headers: Map<String, String>?,
+	val headerMap: Map<String, String>?,
 	val partKind: PartKind
 )
 

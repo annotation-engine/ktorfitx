@@ -1,6 +1,7 @@
 package cn.ktorfitx.multiplatform.ksp.visitor.resolver
 
 import cn.ktorfitx.common.ksp.util.check.compileCheck
+import cn.ktorfitx.common.ksp.util.check.ktorfitxError
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
 import cn.ktorfitx.multiplatform.ksp.model.*
@@ -54,16 +55,9 @@ internal fun KSFunctionDeclaration.getCookieModels(): List<CookieModel> {
 		val httpOnly = annotation.getValueOrNull<Boolean>("httpOnly")
 		val extensions = annotation.getValuesOrNull<String>("extensions")
 			?.associate { entry ->
-				val parts = entry.split(":")
-				parameter.compileCheck(parts.size == 2) {
-					"${simpleName.asString()} 函数的 $varName 参数的 @Cookie 注解上 extensions 参数格式错误，应该为 <key>:<value> 形式"
+				entry.parseHeader() ?: parameter.ktorfitxError {
+					"${simpleName.asString()} 函数的 $varName 参数的 @Cookie 注解上 extensions 参数格式错误，需要以 <key>:<value> 格式"
 				}
-				val key = parts[0].trim()
-				val value = parts[1].takeIf { it.isNotBlank() }
-				parameter.compileCheck(key.isNotBlank()) {
-					"${simpleName.asString()} 函数的 $varName 参数的 @Cookie 注解上 extensions 参数格式错误，key 不能为空"
-				}
-				key to value
 			}?.takeIf { it.isNotEmpty() }
 		CookieModel(varName, name, maxAge, expires, domain, path, secure, httpOnly, extensions)
 	}
@@ -135,16 +129,15 @@ internal fun KSFunctionDeclaration.getHeaderModels(): List<HeaderModel> {
 	}
 }
 
-private val headersRegex = "^([^:=]+)[:=]([^:=]+)$".toRegex()
-
 internal fun KSFunctionDeclaration.getHeadersModel(): HeadersModel? {
 	val annotation = getKSAnnotationByType(TypeNames.Headers) ?: return null
 	val headers = annotation.getValuesOrNull<String>("headers") ?: return null
-	return headers.associate {
-		val (name, value) = headersRegex.matchEntire(it)?.destructured
-			?: error("${qualifiedName!!.asString()} 函数的 @Headers 格式错误")
-		name.trim() to value.trim()
-	}.let { HeadersModel(it) }
+	val headerMap = headers.associate {
+		it.parseHeader() ?: annotation.ktorfitxError {
+			"${simpleName.asString()} 函数的 @Headers 注解上的参数格式有错误，需要以 <key>:<value> 格式"
+		}
+	}
+	return HeadersModel(headerMap)
 }
 
 internal fun KSFunctionDeclaration.getMockModel(isWebSocket: Boolean): MockModel? {

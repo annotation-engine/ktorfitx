@@ -1,8 +1,6 @@
 package cn.ktorfitx.common.ksp.util.expends
 
-private val lowerCamelCaseRegex by lazy {
-	"^[a-z][a-zA-Z0-9]*$".toRegex()
-}
+private val lowerCamelCaseRegex by lazy { "^[a-z][a-zA-Z0-9]*$".toRegex() }
 
 /**
  * 判断是否是小驼峰命名
@@ -29,9 +27,7 @@ fun String.toLowerCamelCase(): String {
 	}
 }
 
-private val httpMethodRegex by lazy {
-	"^[A-Z0-9-]+$".toRegex()
-}
+private val httpMethodRegex by lazy { "^[A-Z0-9-]+$".toRegex() }
 
 fun String.isValidHttpMethod(): Boolean {
 	return httpMethodRegex.matches(this)
@@ -79,9 +75,7 @@ fun String.containsSchemeSeparator(): Boolean {
 	return SCHEME_SEPARATOR in this
 }
 
-private val headerCaseRegex by lazy {
-	"([a-z])([A-Z])".toRegex()
-}
+private val headerCaseRegex by lazy { "([a-z])([A-Z])".toRegex() }
 
 fun String.camelToHeaderCase(): String {
 	return this.replace(headerCaseRegex) {
@@ -104,4 +98,15 @@ fun String.isValidRegex(
 	} catch (_: Exception) {
 		false
 	}
+}
+
+private val headerRegex by lazy { "^\\s*([^:\\s]+)\\s*:\\s*(.*?)\\s*$".toRegex() }
+
+/**
+ * 解析 Header
+ */
+fun String.parseHeader(): Pair<String, String>? {
+	val result = headerRegex.matchEntire(this.trim()) ?: return null
+	val (key, value) = result.destructured
+	return if (key.isNotEmpty()) key to value else null
 }

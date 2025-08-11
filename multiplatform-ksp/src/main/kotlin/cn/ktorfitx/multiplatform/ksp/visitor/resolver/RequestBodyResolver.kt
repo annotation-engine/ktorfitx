@@ -1,6 +1,7 @@
 package cn.ktorfitx.multiplatform.ksp.visitor.resolver
 
 import cn.ktorfitx.common.ksp.util.check.compileCheck
+import cn.ktorfitx.common.ksp.util.check.ktorfitxError
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
 import cn.ktorfitx.multiplatform.ksp.model.*
@@ -108,12 +109,10 @@ private fun KSFunctionDeclaration.getPartRequestBodyModel(): PartRequestBodyMode
 	val partModels = this.parameters.mapNotNull { parameter ->
 		val annotation = parameter.getKSAnnotationByType(TypeNames.Part) ?: return@mapNotNull null
 		val varName = parameter.name!!.asString()
-		val headers = annotation.getValuesOrNull<String>("headers")?.associate {
-			val splits = it.split(":")
-			parameter.compileCheck(splits.size == 2) {
+		val headerMap = annotation.getValuesOrNull<String>("headers")?.associate {
+			it.parseHeader() ?: parameter.ktorfitxError {
 				"${simpleName.asString()} 函数的 $varName 参数的 @Part 注解上的 headers 参数格式有误，需要以 <key>:<value> 格式"
 			}
-			splits.first().trim() to splits[1].trim()
 		}
 		val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
 		val type = parameter.type.resolve()
@@ -132,7 +131,7 @@ private fun KSFunctionDeclaration.getPartRequestBodyModel(): PartRequestBodyMode
 			(typeName as? ParameterizedTypeName)?.rawType == TypeNames.FormPart -> PartKind.DIRECT
 			else -> PartKind.FORM_PART
 		}
-		PartModel(name, varName, headers, partKind)
+		PartModel(name, varName, headerMap, partKind)
 	}
 	val partsModels = this.parameters.mapNotNull { parameter ->
 		if (!parameter.hasAnnotation(TypeNames.Parts)) return@mapNotNull null

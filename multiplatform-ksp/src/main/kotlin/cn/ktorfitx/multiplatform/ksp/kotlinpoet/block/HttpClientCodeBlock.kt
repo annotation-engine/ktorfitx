@@ -176,7 +176,7 @@ internal class HttpClientCodeBlock(
 		partModels.forEach {
 			when {
 				it.partKind == PartKind.DIRECT -> addStatement("this.append(%N)", it.varName)
-				it.headers.isNullOrEmpty() -> {
+				it.headerMap.isNullOrEmpty() -> {
 					if (it.partKind == PartKind.KEY_VALUE) {
 						addStatement("this.append(%S, %N)", it.name, it.varName)
 					} else {
@@ -189,7 +189,7 @@ internal class HttpClientCodeBlock(
 					val headersCodeBlock = buildCodeBlock {
 						addStatement("buildHeaders {")
 						indent()
-						val headers = it.headers
+						val headers = it.headerMap
 						headers.forEach { (key, value) ->
 							addStatement("this[%S] = %S", key, value)
 						}

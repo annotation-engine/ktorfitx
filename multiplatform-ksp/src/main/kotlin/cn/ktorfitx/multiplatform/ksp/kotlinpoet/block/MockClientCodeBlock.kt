@@ -137,7 +137,7 @@ internal class MockClientCodeBlock(
 		partModels.forEach {
 			when {
 				it.partKind == PartKind.DIRECT -> addStatement("this.append(%N)", it.varName)
-				it.headers.isNullOrEmpty() -> {
+				it.headerMap.isNullOrEmpty() -> {
 					if (it.partKind == PartKind.KEY_VALUE) {
 						addStatement("this.append(%S, %N)", it.name, it.varName)
 					} else {
@@ -150,7 +150,7 @@ internal class MockClientCodeBlock(
 					val headersCodeBlock = buildCodeBlock {
 						addStatement("buildHeaders {")
 						indent()
-						it.headers.forEach { (key, value) ->
+						it.headerMap.forEach { (key, value) ->
 							addStatement("this[%S] = %S", key, value)
 						}
 						unindent()
