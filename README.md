@@ -1,4 +1,4 @@
-# KtorfitX 3.2.3-3.0.5
+# KtorfitX 3.2.3-3.1.0-Beta1
 
 [![Maven](https://img.shields.io/badge/Maven-Central-download.svg)](https://central.sonatype.com/search?q=cn.ktorfitx:multiplatform-core)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://vividcodex.github.io/ktorfitx-document/index_md.html)
@@ -6,7 +6,7 @@
 
 ## 更新时间
 
-### 2025-08-04
+### 2025-08-11
 
 ## 项目简介
 
@@ -70,7 +70,7 @@ KSP `2.2.0-2.0.2`
 
 ## 注解介绍
 
-### Kotlin Multiplatform（23个）
+### Kotlin Multiplatform（29个）
 
 #### 注解
 
@@ -95,6 +95,7 @@ KSP `2.2.0-2.0.2`
 - `@Mock` 定义 Mock
 - `@WebSocket` WebSocket
 - `@Timeout` 超时时间
+- `@Prepare` 预创建
 
 #### 参数
 
@@ -106,6 +107,11 @@ KSP `2.2.0-2.0.2`
 - `@Path` path 参数
 - `@Cookie` cookie 参数
 - `@Attribute` attribute 参数
+- `@DynamicUrl` 动态 url 参数
+- `@Queries` 动态请求参数
+- `@Fields` 动态 x-www-form-urlencoded 字段
+- `@Parts` 动态 form-data 字段
+- `@Attributes` 动态 attribute 参数
 
 ### Ktor Server（24个）
 
