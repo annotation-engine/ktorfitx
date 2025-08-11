@@ -10,6 +10,7 @@ import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName
+import com.squareup.kotlinpoet.WildcardTypeName
 import com.squareup.kotlinpoet.ksp.toTypeName
 
 internal fun KSFunctionDeclaration.getRequestBodyModel(): RequestBodyModel? {
@@ -92,7 +93,13 @@ private fun KSFunctionDeclaration.getFieldRequestBodyModel(): FieldRequestBodyMo
 			FieldsKind.LIST -> (typeName.typeArguments.first() as ParameterizedTypeName).typeArguments[1]
 			FieldsKind.MAP -> typeName.typeArguments[1]
 		}
-		FieldsModel(varName, fieldsKind, valueTypeName.equals(TypeNames.String, ignoreNullable = true), valueTypeName.isNullable)
+		FieldsModel(
+			varName,
+			fieldsKind,
+			type.isMarkedNullable,
+			valueTypeName.equals(TypeNames.String, ignoreNullable = true),
+			valueTypeName is WildcardTypeName || valueTypeName.isNullable
+		)
 	}
 	return FieldRequestBodyModel(fieldModels, fieldsModels)
 }

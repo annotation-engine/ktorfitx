@@ -252,29 +252,52 @@ internal class HttpClientCodeBlock(
 		fileSpecBuilder.addImport(PackageNames.KTOR_HTTP, "contentType", "ContentType", "formUrlEncode")
 		fileSpecBuilder.addImport(PackageNames.KTOR_REQUEST, "setBody")
 		addStatement("this.contentType(ContentType.Application.FormUrlEncoded)")
-		
-		val single = fieldModels.size + fieldsModels.size == 1
-		val fieldCode = fieldModels.joinToString {
-			if (it.isStringType) {
-				"\"${it.name}\" to ${it.varName}"
-			} else {
-				"\"${it.name}\" to ${it.varName}${if (it.isNullable) "?" else ""}.toString()"
-			}
-		}.let { if (it.isEmpty()) it else "listOf($it)" }
-		val fieldsCode = fieldsModels.joinToString(separator = " + ") {
-			when (it.fieldsKind) {
-				FieldsKind.MAP if it.valueIsString -> "${it.varName}.toList()"
-				FieldsKind.MAP if it.valueIsNullable -> "${it.varName}.map { it.key to it.value?.toString() }"
-				FieldsKind.MAP -> "${it.varName}.map { it.key to it.value.toString() }"
-				FieldsKind.LIST if it.valueIsString -> it.varName
-				FieldsKind.LIST if it.valueIsNullable -> "${it.varName}.map { it.first to it.second?.toString() }"
-				FieldsKind.LIST -> "${it.varName}.map { it.first to it.second.toString() }"
+		addStatement("buildList<Pair<String, String?>> {")
+		indent()
+		fieldModels.forEach {
+			when {
+				it.isStringType -> addStatement("this += %S to %N", it.name, it.varName)
+				it.isNullable -> addStatement("this += %S to %N?.toString()", it.name, it.varName)
+				else -> addStatement("this += %S to %N.toString()", it.name, it.varName)
 			}
 		}
-		val left = if (single) "" else "("
-		val right = if (single) "" else ")"
-		val separator = if (fieldModels.isEmpty() || fieldsModels.isEmpty()) "" else " + "
-		addStatement("this.setBody(%L$fieldCode%L$fieldsCode%L.formUrlEncode())", left, separator, right)
+		fieldsModels.forEach {
+			when (it.fieldsKind) {
+				FieldsKind.LIST if it.isNullable -> {
+					when {
+						it.valueIsString -> addStatement("%N?.let { this += it }", it.varName)
+						it.valueIsNullable -> addStatement("%N?.map { it.first to it.second?.toString() }?.let { this += it }", it.varName)
+						else -> addStatement("%N?.map { it.first to it.second.toString() }?.let { this += it }", it.varName)
+					}
+				}
+				
+				FieldsKind.LIST -> {
+					when {
+						it.valueIsString -> addStatement("this += %N", it.varName)
+						it.valueIsNullable -> addStatement("this += %N.map { it.first to it.second?.toString() }", it.varName)
+						else -> addStatement("this += %N.map { it.first to it.second.toString() }", it.varName)
+					}
+				}
+				
+				FieldsKind.MAP if it.isNullable -> {
+					when {
+						it.valueIsString -> addStatement("%N?.let { this += it.toList() }", it.varName)
+						it.valueIsNullable -> addStatement("%N?.map { it.key to it.value?.toString() }?.let { this += it }", it.varName)
+						else -> addStatement("%N?.map { it.key to it.value.toString() }?.let { this += it }", it.varName)
+					}
+				}
+				
+				FieldsKind.MAP -> {
+					when {
+						it.valueIsString -> addStatement("this += %N.toList()", it.varName)
+						it.valueIsNullable -> addStatement("this += %N.map { it.key to it.value?.toString() }", it.varName)
+						else -> addStatement("this += %N.map { it.key to it.value.toString() }", it.varName)
+					}
+				}
+			}
+		}
+		unindent()
+		addStatement("}.let { this.setBody(it.formUrlEncode()) }")
 	}
 	
 	override fun CodeBlock.Builder.buildCookies(

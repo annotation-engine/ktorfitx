@@ -14,7 +14,7 @@ interface FieldApi {
 	
 	@POST("test02")
 	suspend fun test02(
-		@Fields fields1: List<Pair<String, *>>,
+		@Fields fields1: List<Pair<String, *>>?,
 		@Fields fields2: Map<String, Int>
 	): String
 	
