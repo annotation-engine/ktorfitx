@@ -1,6 +1,6 @@
 package cn.ktorfitx.server.ksp.constants
 
-import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.*
 
 internal object TypeNames {
 	
@@ -26,13 +26,15 @@ internal object TypeNames {
 		)
 	}
 	
-	val Unit = ClassName("kotlin", "Unit")
+	val Unit = UNIT
 	
-	val Nothing = ClassName("kotlin", "Nothing")
+	val Nothing = NOTHING
 	
-	val String = ClassName("kotlin", "String")
+	val String = STRING
 	
-	val ByteArray = ClassName("kotlin", "ByteArray")
+	val ByteArray = BYTE_ARRAY
+	
+	val Api = ClassName("cn.ktorfitx.server.annotation", "Api")
 	
 	val GET = ClassName("cn.ktorfitx.server.annotation", "GET")
 	

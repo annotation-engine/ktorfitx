@@ -4,6 +4,7 @@ import cn.ktorfitx.common.ksp.util.check.compileCheck
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.server.ksp.constants.TypeNames
 import cn.ktorfitx.server.ksp.model.*
+import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSNode
@@ -98,7 +99,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		val data = dataList.first()
 		val className = data.first
 		val annotation = data.second
-		val path = annotation.getValue<String>("path").removePrefix("/").removeSuffix("/")
+		val path = this.parseFullPath(annotation)
 		val isExtension = this.extensionReceiver != null
 		return when (className) {
 			TypeNames.WebSocket -> {
@@ -126,9 +127,8 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 			
 			else -> {
 				if (isExtension) {
-					val valid = this.isExtension(TypeNames.RoutingContext)
-					this.compileCheck(valid) {
-						"${simpleName.asString()} 是扩展函数，但仅允许扩展 RoutingContext"
+					this.compileCheck(this.isExtension(TypeNames.RoutingContext)) {
+						"${simpleName.asString()} 函数只支持扩展 RoutingContext"
 					}
 				}
 				if (className in TypeNames.httpMethods) {
@@ -139,6 +139,20 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 				}
 			}
 		}
+	}
+	
+	private fun KSFunctionDeclaration.parseFullPath(
+		annotation: KSAnnotation
+	): String {
+		var path = annotation.getValue<String>("path").trim('/')
+		var node = this.parent
+		while (node is KSClassDeclaration) {
+			val annotation = node.getKSAnnotationByType(TypeNames.Api) ?: break
+			val parentPath = annotation.getValue<String>("path").trim('/').takeIf { it.isNotBlank() } ?: break
+			path = "$parentPath/$path"
+			node = node.parent
+		}
+		return path
 	}
 	
 	private fun KSFunctionDeclaration.getRegexModel(

@@ -147,7 +147,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 				"${simpleName.asString()} 函数不支持使用 @Path 参数"
 			}
 		}
-		val rawUrl = getKSAnnotationByType(className)!!.getValueOrNull<String>("url")?.removePrefix("/")?.removeSuffix("/")
+		val rawUrl = getKSAnnotationByType(className)!!.getValueOrNull<String>("url")?.trim('/')
 		val url = if (dynamicUrl != null) {
 			this.compileCheck(rawUrl.isNullOrBlank()) {
 				"${simpleName.asString()} 函数参数中使用了 @DynamicUrl 注解，因此函数上的 @${className.simpleName} 注解不允许设置 url 参数"

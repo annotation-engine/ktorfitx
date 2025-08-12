@@ -19,6 +19,7 @@ fun RoutingContext.test6(): ApiResult<String> {
 	return ApiResult(-1, "", null)
 }
 
+@Api(path = "test7")
 object Test7 {
 	
 	@Authentication
@@ -28,6 +29,7 @@ object Test7 {
 		return -1
 	}
 	
+	@Api(path = "test8")
 	object Test8 {
 		
 		@Authentication(
