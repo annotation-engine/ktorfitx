@@ -1,8 +1,8 @@
 # KtorfitX 3.2.3-3.1.0-Beta1
 
 [![Maven](https://img.shields.io/badge/Maven-Central-download.svg)](https://central.sonatype.com/search?q=cn.ktorfitx:multiplatform-core)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://vividcodex.github.io/ktorfitx-document/index_md.html)
-[![License](https://img.shields.io/badge/Apache-2.0-brightgreen.svg)](https://github.com/vividcodex/ktorfitx/blob/master/LICENSE-2.0)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://annotation-engine.github.io/ktorfitx-document/index_md.html)
+[![License](https://img.shields.io/badge/Apache-2.0-brightgreen.svg)](https://github.com/annotation-engine/ktorfitx/blob/master/LICENSE-2.0)
 
 ## 更新时间
 
@@ -16,7 +16,7 @@ Ktor Server 是为了自动生成路由层代码，自动管理路由代码，�
 
 ## 官方文档
 
-http://vividcodex.github.io/ktorfitx-document/start.html
+http://annotation-engine.github.io/ktorfitx-document/start.html
 
 建设中...
 
