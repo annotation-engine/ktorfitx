@@ -58,8 +58,8 @@ mavenPublishing {
 		}
 		developers {
 			developer {
-				id.set("li-jia-wei")
-				name.set("li-jia-wei")
+				id.set("JarvisLi")
+				name.set("JarvisLi")
 				url.set("https://github.com/annotation-engine/ktorfitx")
 			}
 		}
