@@ -147,7 +147,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		var path = annotation.getValue<String>("path").trim('/')
 		var node = this.parent
 		while (node is KSClassDeclaration) {
-			val annotation = node.getKSAnnotationByType(TypeNames.Api) ?: break
+			val annotation = node.getKSAnnotationByType(TypeNames.Controller) ?: break
 			val parentPath = annotation.getValue<String>("path").trim('/').takeIf { it.isNotBlank() } ?: break
 			path = "$parentPath/$path"
 			node = node.parent

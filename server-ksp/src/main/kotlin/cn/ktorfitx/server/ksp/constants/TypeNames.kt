@@ -34,7 +34,7 @@ internal object TypeNames {
 	
 	val ByteArray = BYTE_ARRAY
 	
-	val Api = ClassName("cn.ktorfitx.server.annotation", "Api")
+	val Controller = ClassName("cn.ktorfitx.server.annotation", "Controller")
 	
 	val GET = ClassName("cn.ktorfitx.server.annotation", "GET")
 	

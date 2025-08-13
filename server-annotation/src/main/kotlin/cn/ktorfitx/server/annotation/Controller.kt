@@ -2,6 +2,6 @@ package cn.ktorfitx.server.annotation
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-annotation class Api(
+annotation class Controller(
 	val path: String
 )
