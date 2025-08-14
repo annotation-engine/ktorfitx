@@ -29,7 +29,6 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 			funName = function.simpleName.asString(),
 			canonicalName = function.getCanonicalName(),
 			isExtension = function.extensionReceiver != null,
-			group = function.getGroupName(),
 			authenticationModel = function.getAuthenticationModel(),
 			routeModel = routeModel,
 			regexModel = function.getRegexModel(routeModel),
@@ -49,11 +48,6 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 			is KSClassDeclaration -> parent.toClassName().canonicalName
 			else -> this.packageName.asString()
 		}
-	}
-	
-	private fun KSFunctionDeclaration.getGroupName(): String? {
-		val annotation = this.getKSAnnotationByType(TypeNames.Group) ?: return null
-		return annotation.getValue("name")
 	}
 	
 	private fun KSFunctionDeclaration.checkReturnType(

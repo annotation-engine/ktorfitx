@@ -1,7 +1,7 @@
 package cn.ktorfitx.multiplatform.ksp.visitor.resolver
 
 import cn.ktorfitx.common.ksp.util.check.compileCheck
-import cn.ktorfitx.common.ksp.util.check.ktorfitxError
+import cn.ktorfitx.common.ksp.util.check.ktorfitxCompilationError
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
 import cn.ktorfitx.multiplatform.ksp.model.*
@@ -55,7 +55,7 @@ internal fun KSFunctionDeclaration.getCookieModels(): List<CookieModel> {
 		val httpOnly = annotation.getValueOrNull<Boolean>("httpOnly")
 		val extensions = annotation.getValuesOrNull<String>("extensions")
 			?.associate { entry ->
-				entry.parseHeader() ?: parameter.ktorfitxError {
+				entry.parseHeader() ?: parameter.ktorfitxCompilationError {
 					"${simpleName.asString()} 函数的 $varName 参数的 @Cookie 注解上 extensions 参数格式错误，需要以 <key>:<value> 格式"
 				}
 			}?.takeIf { it.isNotEmpty() }
@@ -133,7 +133,7 @@ internal fun KSFunctionDeclaration.getHeadersModel(): HeadersModel? {
 	val annotation = getKSAnnotationByType(TypeNames.Headers) ?: return null
 	val headers = annotation.getValuesOrNull<String>("headers") ?: return null
 	val headerMap = headers.associate {
-		it.parseHeader() ?: annotation.ktorfitxError {
+		it.parseHeader() ?: annotation.ktorfitxCompilationError {
 			"${simpleName.asString()} 函数的 @Headers 注解上的参数格式有错误，需要以 <key>:<value> 格式"
 		}
 	}

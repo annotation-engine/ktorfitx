@@ -15,12 +15,18 @@ open class KtorfitxServerExtension @Inject constructor(
 	
 	val auth = objects.newInstance<MockConfig>()
 	
+	val generate = objects.newInstance<GenerateConfig>()
+	
 	fun websockets(action: WebsocketsConfig.() -> Unit) {
 		websockets.action()
 	}
 	
 	fun auth(action: MockConfig.() -> Unit) {
 		auth.action()
+	}
+	
+	fun generate(action: GenerateConfig.() -> Unit) {
+		generate.action()
 	}
 }
 
@@ -35,4 +41,10 @@ open class WebsocketsConfig @Inject constructor(objects: ObjectFactory) {
 
 open class MockConfig @Inject constructor(objects: ObjectFactory) {
 	val enabled = objects.property<Boolean>().convention(false)
+}
+
+open class GenerateConfig @Inject constructor(objects: ObjectFactory) {
+	val packageName = objects.property<String>()
+	val fileName = objects.property<String>().convention("GenerateRoutes")
+	val funName = objects.property<String>().convention("generateRoutes")
 }

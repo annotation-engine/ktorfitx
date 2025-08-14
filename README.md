@@ -115,10 +115,6 @@ KSP `2.2.0-2.0.2`
 
 ### Ktor Server（24个）
 
-#### 文件
-
-- `@RouteGenerator` 路由生成文件定义
-
 #### 注解
 
 - `@HttpMethod` 自定义 HttpMethod

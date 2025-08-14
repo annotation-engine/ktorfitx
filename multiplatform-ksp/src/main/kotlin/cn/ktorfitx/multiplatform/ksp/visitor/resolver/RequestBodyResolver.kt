@@ -1,7 +1,7 @@
 package cn.ktorfitx.multiplatform.ksp.visitor.resolver
 
 import cn.ktorfitx.common.ksp.util.check.compileCheck
-import cn.ktorfitx.common.ksp.util.check.ktorfitxError
+import cn.ktorfitx.common.ksp.util.check.ktorfitxCompilationError
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
 import cn.ktorfitx.multiplatform.ksp.model.*
@@ -110,7 +110,7 @@ private fun KSFunctionDeclaration.getPartRequestBodyModel(): PartRequestBodyMode
 		val annotation = parameter.getKSAnnotationByType(TypeNames.Part) ?: return@mapNotNull null
 		val varName = parameter.name!!.asString()
 		val headerMap = annotation.getValuesOrNull<String>("headers")?.associate {
-			it.parseHeader() ?: parameter.ktorfitxError {
+			it.parseHeader() ?: parameter.ktorfitxCompilationError {
 				"${simpleName.asString()} 函数的 $varName 参数的 @Part 注解上的 headers 参数格式有误，需要以 <key>:<value> 格式"
 			}
 		}

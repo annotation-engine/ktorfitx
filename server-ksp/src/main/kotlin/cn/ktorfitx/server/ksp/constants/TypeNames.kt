@@ -50,8 +50,6 @@ internal object TypeNames {
 	
 	val OPTIONS = ClassName("cn.ktorfitx.server.annotation", "OPTIONS")
 	
-	val Group = ClassName("cn.ktorfitx.server.annotation", "Group")
-	
 	val WebSocket = ClassName("cn.ktorfitx.server.annotation", "WebSocket")
 	
 	val WebSocketRaw = ClassName("cn.ktorfitx.server.annotation", "WebSocketRaw")
@@ -59,8 +57,6 @@ internal object TypeNames {
 	val Authentication = ClassName("cn.ktorfitx.server.annotation", "Authentication")
 	
 	val Regex = ClassName("cn.ktorfitx.server.annotation", "Regex")
-	
-	val RouteGenerator = ClassName("cn.ktorfitx.server.annotation", "RouteGenerator")
 	
 	val Principal = ClassName("cn.ktorfitx.server.annotation", "Principal")
 	

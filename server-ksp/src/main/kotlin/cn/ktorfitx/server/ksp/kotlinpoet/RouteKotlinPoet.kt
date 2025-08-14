@@ -22,13 +22,15 @@ internal class RouteKotlinPoet {
         """.trimIndent()
 	
 	fun getFileSpec(
-		generatorModel: RouteGeneratorModel,
-		funModels: List<FunModel>
-	): FileSpec = buildFileSpec(generatorModel.packageName, generatorModel.fileName) {
+		funModels: List<FunModel>,
+		packageName: String,
+		fileName: String,
+		funName: String
+	): FileSpec = buildFileSpec(packageName, fileName) {
 		fileSpecBuilderLocal.set(this)
 		addFileComment(fileComment, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
 		indent("\t")
-		val funSpec = getFunctionSpec(generatorModel.funName, funModels)
+		val funSpec = getFunctionSpec(funName, funModels)
 		addFunction(funSpec)
 		fileSpecBuilderLocal.remove()
 	}

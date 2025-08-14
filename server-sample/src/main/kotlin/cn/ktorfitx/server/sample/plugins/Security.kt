@@ -12,7 +12,21 @@ fun Application.configureSecurity() {
 			realm = "your jwt realm"
 			verifier(jwtVerifier)
 			validate {
-				UserIdPrincipal("xxx")
+				UserIdPrincipal("default")
+			}
+		}
+		jwt("test1") {
+			realm = "your jwt realm"
+			verifier(jwtVerifier)
+			validate {
+				UserIdPrincipal("test1")
+			}
+		}
+		jwt("test2") {
+			realm = "your jwt realm"
+			verifier(jwtVerifier)
+			validate {
+				UserIdPrincipal("test2")
 			}
 		}
 	}

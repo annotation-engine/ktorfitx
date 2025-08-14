@@ -1,7 +1,7 @@
 package cn.ktorfitx.multiplatform.ksp.visitor
 
 import cn.ktorfitx.common.ksp.util.check.compileCheck
-import cn.ktorfitx.common.ksp.util.check.ktorfitxError
+import cn.ktorfitx.common.ksp.util.check.ktorfitxCompilationError
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
 import cn.ktorfitx.multiplatform.ksp.model.*
@@ -67,7 +67,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 	private fun KSClassDeclaration.getApiScopeModels(): List<ApiScopeModel> {
 		val apiScopeAnnotation = getKSAnnotationByType(TypeNames.ApiScope) ?: return listOf(ApiScopeModel(TypeNames.DefaultApiScope))
 		val apiScopeClassNames = apiScopeAnnotation.getClassNamesOrNull("scopes")?.distinct()?.takeIf { it.isNotEmpty() }
-			?: this.ktorfitxError { "${simpleName.asString()} 接口上的 @ApiScope 注解的参数不允许为空" }
+			?: this.ktorfitxCompilationError { "${simpleName.asString()} 接口上的 @ApiScope 注解的参数不允许为空" }
 		val groupSize = apiScopeClassNames.groupBy { it.simpleNames.joinToString(".") }.size
 		this.compileCheck(apiScopeClassNames.size == groupSize) {
 			"${simpleName.asString()} 函数不允许使用类名相同的 KClass"

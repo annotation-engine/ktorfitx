@@ -6,30 +6,32 @@ import cn.ktorfitx.server.ksp.constants.TypeNames
 import cn.ktorfitx.server.ksp.kotlinpoet.RouteKotlinPoet
 import cn.ktorfitx.server.ksp.model.CustomHttpMethodModel
 import cn.ktorfitx.server.ksp.model.FunModel
-import cn.ktorfitx.server.ksp.model.RouteGeneratorModel
-import cn.ktorfitx.server.ksp.visitor.RouteGeneratorVisitor
 import cn.ktorfitx.server.ksp.visitor.RouteVisitor
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.*
-import com.google.devtools.ksp.validate
 
 internal class KtorfitxServerSymbolProcessor(
-	private val codeGenerator: CodeGenerator
+	private val codeGenerator: CodeGenerator,
+	private val packageName: String,
+	private val fileName: String,
+	private val funName: String
 ) : SymbolProcessor {
 	
+	private var isGenerated = false
+	
 	override fun process(resolver: Resolver): List<KSAnnotated> {
+		if (isGenerated) return emptyList()
 		val customHttpMethodModels = resolver.getCustomHttpMethodModels(
 			httpMethod = TypeNames.HttpMethod,
 			httpMethods = TypeNames.httpMethods,
 			parameterName = "path",
 			transform = ::CustomHttpMethodModel
 		)
-		val routeGeneratorModels = resolver.getRouteGeneratorModels()
 		val funModels = resolver.getFunModels(customHttpMethodModels)
-		generateRouteGenerators(routeGeneratorModels, funModels)
+		generateRouteFile(funModels)
 		return emptyList()
 	}
 	
@@ -50,36 +52,18 @@ internal class KtorfitxServerSymbolProcessor(
 			}
 	}
 	
-	private fun Resolver.getRouteGeneratorModels(): List<RouteGeneratorModel> {
-		return this.getSymbolsWithAnnotation(TypeNames.RouteGenerator.canonicalName)
-			.filterIsInstance<KSFile>()
-			.filter { it.validate() }
-			.mapNotNull {
-				val visitor = RouteGeneratorVisitor()
-				it.accept(visitor, Unit)
-			}
-			.toList()
-	}
-	
-	private fun generateRouteGenerators(
-		routeGeneratorModels: List<RouteGeneratorModel>,
+	private fun generateRouteFile(
 		funModels: List<FunModel>,
 	) {
-		routeGeneratorModels.forEach { model ->
-			val predicate: (FunModel) -> Boolean = when {
-				model.includeGroups.isEmpty() && model.excludeGroups.isEmpty() -> ({ it.group == null })
-				model.includeGroups.isNotEmpty() -> ({ it.group in model.includeGroups })
-				else -> ({ it.group !in model.excludeGroups })
-			}
-			val fileSpec = RouteKotlinPoet()
-				.getFileSpec(model, funModels.filter(predicate))
-			codeGenerator.createNewFile(
-				dependencies = Dependencies.ALL_FILES,
-				packageName = model.packageName,
-				fileName = model.fileName
-			).bufferedWriter().use {
-				fileSpec.writeTo(it)
-			}
+		isGenerated = true
+		val fileSpec = RouteKotlinPoet()
+			.getFileSpec(funModels, packageName, fileName, funName)
+		codeGenerator.createNewFile(
+			dependencies = Dependencies.ALL_FILES,
+			packageName = packageName,
+			fileName = fileName
+		).bufferedWriter().use {
+			fileSpec.writeTo(it)
 		}
 	}
 }
