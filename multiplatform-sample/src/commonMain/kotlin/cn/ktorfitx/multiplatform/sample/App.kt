@@ -110,9 +110,9 @@ fun App() {
 						.padding(16.dp),
 					verticalArrangement = Arrangement.spacedBy(12.dp)
 				) {
-					LibVersionRow("kotlin", "v2.2.0")
+					LibVersionRow("kotlin", "v2.2.10")
 					LibVersionRow("ktor", "v3.2.3")
-					LibVersionRow("ksp", "v2.2.0-2.0.2")
+					LibVersionRow("ksp", "v2.2.10-2.0.2")
 				}
 				
 				Text(

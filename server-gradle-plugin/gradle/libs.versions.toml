@@ -1,5 +1,5 @@
 [versions]
-ksp = "2.2.0-2.0.2"
+ksp = "2.2.10-2.0.2"
 maven-publish = "0.34.0"
 
 [libraries]

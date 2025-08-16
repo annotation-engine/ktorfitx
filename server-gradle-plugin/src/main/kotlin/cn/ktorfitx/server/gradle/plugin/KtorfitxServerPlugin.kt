@@ -33,9 +33,6 @@ class KtorfitxServerPlugin : Plugin<Project> {
 				}
 			}
 		}
-		target.dependencies {
-			add("ksp", project(":server-ksp"))
-		}
 	}
 	
 	private fun DependencyHandlerScope.onReleaseMode(
