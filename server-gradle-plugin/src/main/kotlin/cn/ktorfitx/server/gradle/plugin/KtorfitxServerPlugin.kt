@@ -23,7 +23,7 @@ class KtorfitxServerPlugin : Plugin<Project> {
 		target.afterEvaluate {
 			this.extensions.configure(KspExtension::class) {
 				this.arg("ktorfitx.generate.packageName", extension.generate.packageName.getOrElse("$group.generated"))
-				this.arg("ktorfitx.generate.fileName", extension.generate.fileName.get())
+				this.arg("ktorfitx.generate.fileName", extension.generate.fileName.get().removeSuffix(".kt"))
 				this.arg("ktorfitx.generate.funName", extension.generate.funName.get())
 			}
 			dependencies {
