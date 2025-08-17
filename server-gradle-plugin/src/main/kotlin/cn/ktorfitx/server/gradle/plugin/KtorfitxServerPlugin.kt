@@ -18,49 +18,52 @@ class KtorfitxServerPlugin : Plugin<Project> {
 	}
 	
 	override fun apply(target: Project) {
-		val extension = target.extensions.create("ktorfitx", KtorfitxServerExtension::class.java)
 		target.pluginManager.apply("com.google.devtools.ksp")
+		val extension = target.extensions.create("ktorfitx", KtorfitxServerExtension::class.java)
+		target.dependencies {
+			addServerKspProvider(extension)
+		}
 		target.afterEvaluate {
 			this.extensions.configure(KspExtension::class) {
 				this.arg("ktorfitx.generate.packageName", extension.generate.packageName.getOrElse("$group.generated"))
 				this.arg("ktorfitx.generate.fileName", extension.generate.fileName.get().removeSuffix(".kt"))
 				this.arg("ktorfitx.generate.funName", extension.generate.funName.get())
 			}
-			dependencies {
-				when (extension.mode.get()) {
-					KtorfitxServerMode.RELEASE -> onReleaseMode(extension)
-					KtorfitxServerMode.DEVELOPMENT -> onDevelopmentMode(extension)
-				}
+			when (extension.mode.get()) {
+				KtorfitxServerMode.RELEASE -> onReleaseMode(extension)
+				KtorfitxServerMode.DEVELOPMENT -> onDevelopmentMode(extension)
 			}
 		}
 	}
 	
-	private fun DependencyHandlerScope.onReleaseMode(
+	private fun Project.onReleaseMode(
 		extension: KtorfitxServerExtension,
 	) {
-		implementation("cn.ktorfitx", "server-core")
-		implementation("cn.ktorfitx", "server-annotation")
-		if (extension.auth.enabled.get()) {
-			implementation("cn.ktorfitx", "server-auth")
+		dependencies {
+			implementation("cn.ktorfitx", "server-core")
+			implementation("cn.ktorfitx", "server-annotation")
+			if (extension.auth.enabled.get()) {
+				implementation("cn.ktorfitx", "server-auth")
+			}
+			if (extension.websockets.enabled.get()) {
+				implementation("cn.ktorfitx", "server-websockets")
+			}
 		}
-		if (extension.websockets.enabled.get()) {
-			implementation("cn.ktorfitx", "server-websockets")
-		}
-		ksp("cn.ktorfitx", "server-ksp")
 	}
 	
-	private fun DependencyHandlerScope.onDevelopmentMode(
+	private fun Project.onDevelopmentMode(
 		extension: KtorfitxServerExtension,
 	) {
-		implementation(project(":server-core"))
-		implementation(project(":server-annotation"))
-		if (extension.auth.enabled.get()) {
-			implementation(project(":server-auth"))
+		dependencies {
+			implementation(project(":server-core"))
+			implementation(project(":server-annotation"))
+			if (extension.auth.enabled.get()) {
+				implementation(project(":server-auth"))
+			}
+			if (extension.websockets.enabled.get()) {
+				implementation(project(":server-websockets"))
+			}
 		}
-		if (extension.websockets.enabled.get()) {
-			implementation(project(":server-websockets"))
-		}
-		ksp(project(":server-ksp"))
 	}
 	
 	private fun DependencyHandlerScope.implementation(group: String, name: String): Dependency? =
@@ -69,9 +72,12 @@ class KtorfitxServerPlugin : Plugin<Project> {
 	private fun DependencyHandlerScope.implementation(project: ProjectDependency): Dependency? =
 		add("implementation", project)
 	
-	private fun DependencyHandlerScope.ksp(group: String, name: String): Dependency? =
-		add("ksp", "$group:$name:$VERSION")
-	
-	private fun DependencyHandlerScope.ksp(project: ProjectDependency): Dependency? =
-		add("ksp", project)
+	private fun DependencyHandlerScope.addServerKspProvider(extension: KtorfitxServerExtension) {
+		addProvider("ksp", extension.mode.map {
+			when (it) {
+				KtorfitxServerMode.DEVELOPMENT -> project(":server-ksp")
+				KtorfitxServerMode.RELEASE -> "cn.ktorfitx:server-ksp:$VERSION"
+			}
+		})
+	}
 }
