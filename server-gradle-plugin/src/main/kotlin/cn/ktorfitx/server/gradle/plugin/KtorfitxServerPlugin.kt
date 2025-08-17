@@ -10,7 +10,7 @@ import org.gradle.kotlin.dsl.dependencies
 class KtorfitxServerPlugin : Plugin<Project> {
 	
 	private companion object {
-		private const val VERSION = "3.2.3-3.0.5"
+		private const val VERSION = "3.2.3-3.0.6"
 	}
 	
 	override fun apply(target: Project) {
