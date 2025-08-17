@@ -17,7 +17,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 class KtorfitxMultiplatformPlugin : Plugin<Project> {
 	
 	private companion object {
-		private const val VERSION = "3.2.3-3.1.0-Beta2"
+		private const val VERSION = "3.2.3-3.1.0-Beta3"
 	}
 	
 	override fun apply(target: Project) {
