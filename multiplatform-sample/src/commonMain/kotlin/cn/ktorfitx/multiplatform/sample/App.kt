@@ -81,7 +81,7 @@ fun App() {
 						)
 						Spacer(Modifier.width(12.dp))
 						Text(
-							text = "v3.1.0-Beta2",
+							text = "v3.1.0-Beta4",
 							fontSize = 14.sp,
 							fontWeight = FontWeight.Normal,
 							color = Color(0xFFB0BFD9),
