@@ -1,12 +1,8 @@
-# KtorfitX 3.2.3-3.1.0-Beta1
+# KtorfitX 3.2.3-3.1.0-Beta2
 
 [![Maven](https://img.shields.io/badge/Maven-Central-download.svg)](https://central.sonatype.com/search?q=cn.ktorfitx:multiplatform-core)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://annotation-engine.github.io/ktorfitx-document/index_md.html)
 [![License](https://img.shields.io/badge/Apache-2.0-brightgreen.svg)](https://github.com/annotation-engine/ktorfitx/blob/master/LICENSE-2.0)
-
-## 更新时间
-
-### 2025-08-11
 
 ## 项目简介
 
@@ -22,11 +18,11 @@ http://annotation-engine.github.io/ktorfitx-document/start.html
 
 ## 版本说明
 
-Kotlin `2.2.0`
+Kotlin `2.2.10`
 
 Ktor `3.2.3`
 
-KSP `2.2.0-2.0.2`
+KSP `2.2.10-2.0.2`
 
 ## 支持平台
 
@@ -38,8 +34,7 @@ KSP `2.2.0-2.0.2`
 - tvos: x64, arm64, simulatorArm64
 - linux: x64, arm64
 - window: mingwX64
-- js
-- wasmJs
+- web: js, wasmJs
 
 ### Ktor Server
 
@@ -113,7 +108,7 @@ KSP `2.2.0-2.0.2`
 - `@Parts` 动态 form-data 字段
 - `@Attributes` 动态 attribute 参数
 
-### Ktor Server（24个）
+### Ktor Server（22个）
 
 #### 注解
 
@@ -130,7 +125,6 @@ KSP `2.2.0-2.0.2`
 - `@HEAD` HEAD 请求
 - `@Authentication` 路由授权
 - `@WebSocket` WebSocket
-- `@Group` 定义路由生成组
 - `@Regex` 正则匹配 path
 
 #### 参数
@@ -170,7 +164,7 @@ KSP `2.2.0-2.0.2`
 ```kotlin
 plugins {
 	// 省略其他...
-	// 在这里使用 
+	// 在这里使用 Gradle 插件
 	id("cn.ktorfitx.multiplatform") version "<latest>"
 }
 
@@ -194,6 +188,7 @@ ktorfitx {
 ```kotlin
 plugins {
 	// 省略其他...
+	// 在这里使用 Gradle 插件
 	id("cn.ktorfitx.server") version "<latest>"
 }
 
@@ -204,6 +199,12 @@ ktorfitx {
 	
 	auth {
 		enabled = true  // 启用授权功能，默认关闭
+	}
+	
+	generate {
+		this.packageName = "<package name>" // 生成文件目录，默认：当前模块包 + .generated
+		this.funName = "<function name>"    // 生成方法名，默认：generateRoutes
+		this.fileName = "<filename>"        // 生成文件名，默认：GenerateRoutes，可以不加 .kt 后缀
 	}
 }
 ```
