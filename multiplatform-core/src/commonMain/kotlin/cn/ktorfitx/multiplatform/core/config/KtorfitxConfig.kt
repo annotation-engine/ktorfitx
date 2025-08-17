@@ -37,7 +37,7 @@ class KtorfitxConfig internal constructor() {
 		val block: HttpClientConfig<*>.() -> Unit = {
 			defaultRequest {
 				if (baseUrl != null) {
-					url(baseUrl)
+					url(urlString = baseUrl!!)
 				}
 			}
 			httpClientBlock?.block?.invoke(this)
