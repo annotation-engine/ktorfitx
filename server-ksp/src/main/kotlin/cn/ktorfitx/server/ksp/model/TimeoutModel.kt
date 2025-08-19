@@ -1,5 +1,6 @@
 package cn.ktorfitx.server.ksp.model
 
 internal class TimeoutModel(
-	val millis: Long
+	val value: Long,
+	val unit: String
 )

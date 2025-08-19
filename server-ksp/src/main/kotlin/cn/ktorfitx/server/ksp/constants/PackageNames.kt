@@ -2,6 +2,8 @@ package cn.ktorfitx.server.ksp.constants
 
 internal object PackageNames {
 	
+	const val KOTLINX_COROUTINES = "kotlinx.coroutines"
+	
 	const val KTOR_UTIL = "io.ktor.util"
 	
 	const val KTOR_SERVER_AUTH = "io.ktor.server.auth"

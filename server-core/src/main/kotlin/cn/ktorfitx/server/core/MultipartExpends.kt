@@ -4,21 +4,21 @@ import io.ktor.http.content.*
 import io.ktor.utils.io.*
 import kotlinx.io.readByteArray
 
-suspend fun MultiPartData.resolve(): MultiPartParameters {
-	val partDatas = mutableMapOf<String, PartData>()
+suspend fun MultiPartData.getMultipartParameters(): MultipartParameters {
+	val partDataMap = mutableMapOf<String, PartData>()
 	this.forEachPart { partData ->
 		val name = partData.name ?: return@forEachPart
-		partDatas[name] = partData
+		partDataMap[name] = partData
 	}
-	return MultiPartParameters(partDatas)
+	return MultipartParameters(partDataMap)
 }
 
-class MultiPartParameters(
-	private val partDatas: Map<String, PartData>
+class MultipartParameters(
+	private val partDataMap: Map<String, PartData>
 ) {
 	
 	fun getForm(name: String): PartData.FormItem {
-		return partDatas[name] as? PartData.FormItem ?: error("Not Found PartItem: $name")
+		return partDataMap[name] as? PartData.FormItem ?: error("Not Found PartItem: $name")
 	}
 	
 	fun getFormValue(name: String): String {
@@ -27,7 +27,7 @@ class MultiPartParameters(
 	}
 	
 	fun getFormOrNull(name: String): PartData.FormItem? {
-		return partDatas[name] as? PartData.FormItem
+		return partDataMap[name] as? PartData.FormItem
 	}
 	
 	fun getFormValueOrNull(name: String): String? {
@@ -36,7 +36,7 @@ class MultiPartParameters(
 	}
 	
 	fun getFile(name: String): PartData.FileItem {
-		return partDatas[name] as? PartData.FileItem ?: error("Not Found FileItem: $name")
+		return partDataMap[name] as? PartData.FileItem ?: error("Not Found FileItem: $name")
 	}
 	
 	suspend fun getFileByteArray(name: String): ByteArray {
@@ -45,7 +45,7 @@ class MultiPartParameters(
 	}
 	
 	fun getFileOrNull(name: String): PartData.FileItem? {
-		return partDatas[name] as? PartData.FileItem
+		return partDataMap[name] as? PartData.FileItem
 	}
 	
 	suspend fun getFileByteArrayOrNull(name: String): ByteArray? {
@@ -54,7 +54,7 @@ class MultiPartParameters(
 	}
 	
 	fun getBinary(name: String): PartData.BinaryItem {
-		return partDatas[name] as? PartData.BinaryItem ?: error("Not Found BinaryItem: $name")
+		return partDataMap[name] as? PartData.BinaryItem ?: error("Not Found BinaryItem: $name")
 	}
 	
 	fun getBinaryByteArray(name: String): ByteArray {
@@ -63,7 +63,7 @@ class MultiPartParameters(
 	}
 	
 	fun getBinaryOrNull(name: String): PartData.BinaryItem? {
-		return partDatas[name] as? PartData.BinaryItem
+		return partDataMap[name] as? PartData.BinaryItem
 	}
 	
 	fun getBinaryByteArrayOrNull(name: String): ByteArray? {
@@ -72,14 +72,14 @@ class MultiPartParameters(
 	}
 	
 	fun getBinaryChannel(name: String): PartData.BinaryChannelItem {
-		return partDatas[name] as? PartData.BinaryChannelItem ?: error("Not Found BinaryChannelItem: $name")
+		return partDataMap[name] as? PartData.BinaryChannelItem ?: error("Not Found BinaryChannelItem: $name")
 	}
 	
 	fun getBinaryChannelOrNull(name: String): PartData.BinaryChannelItem? {
-		return partDatas[name] as? PartData.BinaryChannelItem
+		return partDataMap[name] as? PartData.BinaryChannelItem
 	}
 	
 	fun disposeAll() {
-		partDatas.values.forEach { it.dispose() }
+		partDataMap.values.forEach { it.dispose() }
 	}
 }

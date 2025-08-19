@@ -9,7 +9,7 @@ import io.ktor.server.routing.*
 @Authentication
 @GET(path = "principal/test1")
 fun RoutingContext.testPrincipal1(
-	@Principal principal: UserIdPrincipal
+	@Principal result: UserIdPrincipal
 ): String = ""
 
 @Authentication

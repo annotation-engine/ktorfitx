@@ -32,7 +32,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 			authenticationModel = function.getAuthenticationModel(),
 			routeModel = routeModel,
 			regexModel = function.getRegexModel(routeModel),
-			timeoutModel = function.getTimeoutModel(),
+			timeoutModel = function.getTimeoutModel(routeModel),
 			varNames = function.getVarNames(),
 			principalModels = function.getPrincipalModels(),
 			queryModels = function.getQueryModels(),
@@ -154,22 +154,31 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		routeModel: RouteModel
 	): RegexModel? {
 		val annotation = this.getKSAnnotationByType(TypeNames.Regex) ?: return null
+		val routeAnnotation = routeModel.annotation
+		annotation.compileCheck(routeModel is HttpRequestModel) {
+			"${simpleName.asString()} 函数不支持 @Regex 功能注解，因为已经标记了 $routeAnnotation 了"
+		}
 		val classNames = annotation.getClassNamesOrNull("options")?.toSet() ?: emptySet()
 		val options = classNames.map { RegexOption.valueOf(it.simpleName) }.toSet()
-		val routeAnnotation = routeModel.annotation
 		routeAnnotation.compileCheck(routeModel.path.isValidRegex(options)) {
 			"${simpleName.asString()} 函数上的 $routeAnnotation 注解的 path 参数不是一个合法的正则表达式"
 		}
 		return RegexModel(classNames)
 	}
 	
-	private fun KSFunctionDeclaration.getTimeoutModel(): TimeoutModel? {
+	private fun KSFunctionDeclaration.getTimeoutModel(
+		routeModel: RouteModel
+	): TimeoutModel? {
 		val annotation = this.getKSAnnotationByType(TypeNames.Timeout) ?: return null
-		val millis = annotation.getValue<Long>("millis")
-		annotation.compileCheck(millis > 0L) {
-			"${simpleName.asString()} 函数上的 $annotation 注解的 millis 参数必须大于 0"
+		annotation.compileCheck(routeModel is HttpRequestModel) {
+			"${simpleName.asString()} 函数不支持 @Timeout 功能注解，因为已经标记了 ${routeModel.annotation} 了"
 		}
-		return TimeoutModel(millis)
+		val value = annotation.getValue<Long>("value")
+		val unit = annotation.getClassNameOrNull("unit")?.simpleName?.lowercase() ?: "milliseconds"
+		annotation.compileCheck(value > 0L) {
+			"${simpleName.asString()} 函数上的 $annotation 注解的 value 参数必须大于 0"
+		}
+		return TimeoutModel(value, unit)
 	}
 	
 	override fun defaultHandler(node: KSNode, data: List<CustomHttpMethodModel>): FunModel = error("Not Implemented")

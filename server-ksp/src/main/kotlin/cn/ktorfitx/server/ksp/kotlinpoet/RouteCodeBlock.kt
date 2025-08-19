@@ -22,7 +22,7 @@ internal class RouteCodeBlock(
 		addCookiesCodeBlock()
 		addAttributesCodeBlock()
 		addRequestBodyCodeBlock()
-		addFunCodeBlock(funName)
+		addFunCodeBlock(funName, funModel.timeoutModel)
 	}
 	
 	private fun CodeBlock.Builder.addPrincipalsCodeBlock() {
@@ -159,10 +159,10 @@ internal class RouteCodeBlock(
 	private fun CodeBlock.Builder.addPartsCodeBlock(
 		partModels: List<PartModel>
 	) {
-		fileSpecBuilder.addImport(PackageNames.KTORFITX_SERVER_CORE, "resolve")
+		fileSpecBuilder.addImport(PackageNames.KTORFITX_SERVER_CORE, "getMultipartParameters")
 		fileSpecBuilder.addImport(PackageNames.KTOR_SERVER_REQUEST, "receiveMultipart")
-		partVarName = getVarName("multipartParameters")
-		addStatement("val %N = this.call.receiveMultipart().resolve()", partVarName)
+		partVarName = getVarName("parameters")
+		addStatement("val %N = this.call.receiveMultipart().getMultipartParameters()", partVarName)
 		partModels.forEach {
 			if (beforePartDispose) {
 				beforePartDispose = !it.isPartData
@@ -180,24 +180,78 @@ internal class RouteCodeBlock(
 	}
 	
 	private fun CodeBlock.Builder.addFunCodeBlock(
-		funName: String
+		funName: String,
+		timeoutModel: TimeoutModel?
 	) {
 		val parameters = funModel.varNames.joinToString()
 		if (funModel.routeModel is HttpRequestModel) {
-			if (partVarName != null && beforePartDispose) {
-				addStatement("%N.disposeAll()", partVarName)
-			}
-			
 			fileSpecBuilder.addImport(PackageNames.KTOR_SERVER_RESPONSE, "respond")
 			val varName = getVarName("result")
-			addStatement("val %N = %N(%L)", varName, funName, parameters)
-			if (partVarName != null && !beforePartDispose) {
-				addStatement("%N.disposeAll()", partVarName)
+			buildTryCatch(timeoutModel != null) {
+				buildTimeout(timeoutModel, varName) {
+					if (partVarName != null && beforePartDispose) {
+						addStatement("%N.disposeAll()", partVarName)
+					}
+					if (timeoutModel == null || (partVarName != null && !beforePartDispose)) {
+						addStatement("val %N = %N(%L)", varName, funName, parameters)
+					} else {
+						addStatement("%N(%L)", funName, parameters)
+					}
+					if (partVarName != null && !beforePartDispose) {
+						addStatement("%N.disposeAll()", partVarName)
+					}
+					if (timeoutModel != null && partVarName != null && !beforePartDispose) {
+						addStatement("%N", varName)
+					}
+				}
+				fileSpecBuilder.addImport(PackageNames.KTOR_HTTP, "HttpStatusCode")
+				addStatement("this.call.respond(HttpStatusCode.OK, %N)", varName)
 			}
-			fileSpecBuilder.addImport(PackageNames.KTOR_HTTP, "HttpStatusCode")
-			addStatement("this.call.respond(HttpStatusCode.OK, %N)", varName)
+			
+			// try {
+			//                val result = withTimeout(5_000) { // 最长 5 秒
+			//                    // 模拟耗时任务
+			//                    kotlinx.coroutines.delay(10_000)
+			//                    "任务完成"
+			//                }
+			//                call.respond(result)
+			//            } catch (e: TimeoutCancellationException) {
+			//                call.respondText("请求超时", status = io.ktor.http.HttpStatusCode.RequestTimeout)
+			//            }
 		} else {
 			addStatement("%N(%L)", funName, parameters)
+		}
+	}
+	
+	private fun CodeBlock.Builder.buildTryCatch(
+		isTryCatch: Boolean,
+		block: CodeBlock.Builder.() -> Unit
+	) {
+		if (isTryCatch) {
+			fileSpecBuilder.addImport(PackageNames.KTOR_SERVER_RESPONSE, "respondNullable")
+			beginControlFlow("try")
+			block()
+			nextControlFlow("catch (_: %T)", TypeNames.TimeoutCancellationException)
+			addStatement("this.call.respondNullable(HttpStatusCode.RequestTimeout, null)")
+			endControlFlow()
+		} else {
+			block()
+		}
+	}
+	
+	private fun CodeBlock.Builder.buildTimeout(
+		timeoutModel: TimeoutModel?,
+		varName: String,
+		block: CodeBlock.Builder.() -> Unit
+	) {
+		if (timeoutModel != null) {
+			fileSpecBuilder.addImport(PackageNames.KOTLINX_COROUTINES, "withTimeout")
+			fileSpecBuilder.addImport("kotlin.time.Duration.Companion", timeoutModel.unit)
+			beginControlFlow("val %N = withTimeout(%L.%N)", varName, timeoutModel.value, timeoutModel.unit)
+			block()
+			endControlFlow()
+		} else {
+			block()
 		}
 	}
 	
