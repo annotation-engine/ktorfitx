@@ -32,6 +32,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 			authenticationModel = function.getAuthenticationModel(),
 			routeModel = routeModel,
 			regexModel = function.getRegexModel(routeModel),
+			timeoutModel = function.getTimeoutModel(),
 			varNames = function.getVarNames(),
 			principalModels = function.getPrincipalModels(),
 			queryModels = function.getQueryModels(),
@@ -155,10 +156,20 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		val annotation = this.getKSAnnotationByType(TypeNames.Regex) ?: return null
 		val classNames = annotation.getClassNamesOrNull("options")?.toSet() ?: emptySet()
 		val options = classNames.map { RegexOption.valueOf(it.simpleName) }.toSet()
-		routeModel.annotation.compileCheck(routeModel.path.isValidRegex(options)) {
-			"${simpleName.asString()} 函数上的 @${routeModel.annotation.shortName.asString()} 注解的 path 参数不是一个合法的正则表达式"
+		val routeAnnotation = routeModel.annotation
+		routeAnnotation.compileCheck(routeModel.path.isValidRegex(options)) {
+			"${simpleName.asString()} 函数上的 $routeAnnotation 注解的 path 参数不是一个合法的正则表达式"
 		}
 		return RegexModel(classNames)
+	}
+	
+	private fun KSFunctionDeclaration.getTimeoutModel(): TimeoutModel? {
+		val annotation = this.getKSAnnotationByType(TypeNames.Timeout) ?: return null
+		val millis = annotation.getValue<Long>("millis")
+		annotation.compileCheck(millis > 0L) {
+			"${simpleName.asString()} 函数上的 $annotation 注解的 millis 参数必须大于 0"
+		}
+		return TimeoutModel(millis)
 	}
 	
 	override fun defaultHandler(node: KSNode, data: List<CustomHttpMethodModel>): FunModel = error("Not Implemented")

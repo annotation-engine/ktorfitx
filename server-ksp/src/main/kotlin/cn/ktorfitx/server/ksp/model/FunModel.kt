@@ -7,6 +7,7 @@ internal class FunModel(
 	val authenticationModel: AuthenticationModel?,
 	val routeModel: RouteModel,
 	val regexModel: RegexModel?,
+	val timeoutModel: TimeoutModel?,
 	val varNames: List<String>,
 	val principalModels: List<PrincipalModel>,
 	val queryModels: List<QueryModel>,

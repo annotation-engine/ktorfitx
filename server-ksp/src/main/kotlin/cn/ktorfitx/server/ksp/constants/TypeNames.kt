@@ -58,6 +58,8 @@ internal object TypeNames {
 	
 	val Regex = ClassName("cn.ktorfitx.server.annotation", "Regex")
 	
+	val Timeout = ClassName("cn.ktorfitx.server.annotation", "Timeout")
+	
 	val Principal = ClassName("cn.ktorfitx.server.annotation", "Principal")
 	
 	val Body = ClassName("cn.ktorfitx.server.annotation", "Body")
