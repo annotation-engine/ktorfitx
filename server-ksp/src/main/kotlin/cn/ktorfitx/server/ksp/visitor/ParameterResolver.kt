@@ -105,7 +105,7 @@ internal fun KSFunctionDeclaration.getRequestBody(): RequestBodyModel? {
 			when (val value = entity.value) {
 				is ClassName -> parameter.hasAnnotation(value)
 				is Array<*> -> value.any { parameter.hasAnnotation(it as ClassName) }
-				else -> error("不支持的类型")
+				else -> error("Unsupported type.")
 			}
 		}
 		if (exists) entity.key else null
@@ -114,11 +114,11 @@ internal fun KSFunctionDeclaration.getRequestBody(): RequestBodyModel? {
 	this.compileCheck(modelKClasses.size == 1) {
 		"${simpleName.asString()} 函数参数不允许同时使用 @Body, @Field 或 @PartForm, @PartFile, @PartBinary, @PartBinaryChannel 注解"
 	}
-	return when (val modelKClass = modelKClasses.single()) {
+	val modelKClass = modelKClasses.single()
+	return when (modelKClass) {
 		BodyModel::class -> this.getBodyModel()
 		FieldModels::class -> this.getFieldModels()
-		PartModels::class -> this.getPartModels()
-		else -> error("不支持的类型 ${modelKClass.simpleName}")
+		else -> this.getPartModels()
 	}
 }
 
@@ -153,6 +153,7 @@ private fun KSFunctionDeclaration.getFieldModels(): FieldModels {
 }
 
 private fun KSFunctionDeclaration.getPartModels(): PartModels {
+	// TODO
 	val configs = listOf(
 		PartModelConfig(
 			annotation = TypeNames.PartForm,
@@ -241,8 +242,7 @@ internal fun KSFunctionDeclaration.getCookieModels(): List<CookieModel> {
 				TypeNames.CookieEncodingRaw.simpleName -> TypeNames.CookieEncodingRaw
 				TypeNames.CookieEncodingDQuotes.simpleName -> TypeNames.CookieEncodingDQuotes
 				TypeNames.CookieEncodingURIEncoding.simpleName -> TypeNames.CookieEncodingURIEncoding
-				TypeNames.CookieEncodingBase64Encoding.simpleName -> TypeNames.CookieEncodingBase64Encoding
-				else -> error("不支持的类型")
+				else -> TypeNames.CookieEncodingBase64Encoding
 			}
 		} ?: TypeNames.CookieEncodingURIEncoding
 		CookieModel(name, varName, type.isMarkedNullable, encoding)

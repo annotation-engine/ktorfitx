@@ -14,7 +14,7 @@ val TypeName.rawType: ClassName
 		}
 		
 		is ClassName -> this
-		else -> error("不允许使用 rawType 属性")
+		else -> error("Only supports ParameterizedTypeName and ClassName types.")
 	}
 
 fun TypeName.asNotNullable(): TypeName {

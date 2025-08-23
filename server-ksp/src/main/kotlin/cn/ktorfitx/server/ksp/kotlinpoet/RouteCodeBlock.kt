@@ -172,8 +172,7 @@ internal class RouteCodeBlock(
 				TypeNames.PartForm -> "getForm${if (it.isPartData) "" else "Value"}$orNull"
 				TypeNames.PartFile -> "getFile${if (it.isPartData) "" else "ByteArray"}$orNull"
 				TypeNames.PartBinary -> "getBinary${if (it.isPartData) "" else "ByteArray"}$orNull"
-				TypeNames.PartBinaryChannel -> "getBinaryChannel$orNull"
-				else -> error("不支持的类型 ${it.annotation}")
+				else -> "getBinaryChannel$orNull"
 			}
 			addStatement("val %N = %N.%N(%S)", it.varName, partVarName, funName, it.name)
 		}

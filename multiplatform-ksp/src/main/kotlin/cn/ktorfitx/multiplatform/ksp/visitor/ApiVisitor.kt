@@ -218,5 +218,5 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		return ReturnModel(typeName, returnKind)
 	}
 	
-	override fun defaultHandler(node: KSNode, data: List<CustomHttpMethodModel>): ClassModel = error("Not Implemented")
+	override fun defaultHandler(node: KSNode, data: List<CustomHttpMethodModel>): ClassModel = error("Not Implemented.")
 }

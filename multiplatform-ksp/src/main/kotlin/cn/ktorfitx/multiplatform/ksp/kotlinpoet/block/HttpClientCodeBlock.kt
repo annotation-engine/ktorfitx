@@ -322,8 +322,7 @@ internal class HttpClientCodeBlock(
 			TypeNames.SerializationFormatJson -> "Json"
 			TypeNames.SerializationFormatXml -> "Xml"
 			TypeNames.SerializationFormatCbor -> "Cbor"
-			TypeNames.SerializationFormatProtoBuf -> "ProtoBuf"
-			else -> error("不支持的类型 ${bodyModel.formatClassName.simpleName}")
+			else -> "ProtoBuf"
 		}
 		addStatement("this.contentType(ContentType.Application.%N)", format)
 		addStatement("this.setBody(%N)", bodyModel.varName)

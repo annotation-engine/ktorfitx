@@ -171,10 +171,10 @@ internal fun KSFunctionDeclaration.getMockModel(isWebSocket: Boolean): MockModel
 		"${className.simpleName} 类必须实现 MockProvider<T> 接口"
 	}
 	val returnType = this.returnType!!.toTypeName().let {
-		when (it.rawType) {
-			TypeNames.Result -> (it as ParameterizedTypeName).typeArguments.first()
-			else -> it
-		}
+		if (it.rawType == TypeNames.Result) {
+			it as ParameterizedTypeName
+			it.typeArguments.first()
+		} else it
 	}
 	this.compileCheck(returnType == mockReturnType) {
 		"${simpleName.asString()} 函数的 provider 类型与返回值不一致，应该为 $returnType, 实际为 $mockReturnType"

@@ -44,18 +44,14 @@ fun KSAnnotation.getArgumentKSClassDeclaration(propertyName: String): KSClassDec
 @Suppress("UNCHECKED_CAST")
 fun <V : Any> KSAnnotation.getValueOrNull(propertyName: String): V? {
 	val value = this.arguments.find { it.name?.asString() == propertyName }?.value
-	check(value !is KSType && value !is ArrayList<*>) {
-		"不支持的类型"
-	}
+	check(value !is KSType && value !is ArrayList<*>)
 	return value as? V
 }
 
 @Suppress("UNCHECKED_CAST")
 fun <V : Any> KSAnnotation.getValue(propertyName: String): V {
 	val value = this.arguments.first { it.name?.asString() == propertyName }.value
-	check(value !is KSType && value !is ArrayList<*>) {
-		"不支持的类型"
-	}
+	check(value !is KSType && value !is ArrayList<*>)
 	return value as V
 }
 
@@ -79,7 +75,7 @@ fun KSAnnotation.getClassName(propertyName: String): ClassName {
 	return when (value) {
 		is KSClassDeclaration -> value.toClassName()
 		is KSType -> (value.declaration as KSClassDeclaration).toClassName()
-		else -> error("$value is not a KSClassDeclaration or KSType")
+		else -> error("$value is not a KSClassDeclaration or KSType.")
 	}
 }
 
@@ -90,19 +86,6 @@ fun KSAnnotation.getClassNameOrNull(propertyName: String): ClassName? {
 		is KSType -> (value.declaration as? KSClassDeclaration)?.toClassName()
 		else -> null
 	}
-}
-
-fun KSAnnotation.getClassNames(propertyName: String): Array<ClassName> {
-	val values = this.arguments.first { it.name!!.asString() == propertyName }.value
-	return if (values is ArrayList<*>) {
-		values.mapNotNull {
-			when (it) {
-				is KSClassDeclaration -> it.toClassName()
-				is KSType -> (it.declaration as KSClassDeclaration).toClassName()
-				else -> null
-			}
-		}.toTypedArray()
-	} else error("类型错误")
 }
 
 fun KSAnnotation.getClassNamesOrNull(propertyName: String): Array<ClassName>? {

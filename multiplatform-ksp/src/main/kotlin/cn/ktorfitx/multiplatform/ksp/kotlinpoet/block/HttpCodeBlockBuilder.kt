@@ -50,12 +50,11 @@ internal class HttpCodeBlockBuilder(
 							buildPaths(pathModels)
 						}
 					}
-					val requestBodyModel = funModel.requestBodyModel
-					when (funModel.requestBodyModel) {
+					val requestBodyModel = funModel.requestBodyModel ?: return@buildClientCodeBlock
+					when (requestBodyModel) {
 						is BodyModel -> buildBody(requestBodyModel)
 						is FieldRequestBodyModel -> buildFields(requestBodyModel.fieldModels, requestBodyModel.fieldsModels)
 						is PartRequestBodyModel -> buildParts(requestBodyModel.partModels, requestBodyModel.partsModels)
-						else -> {}
 					}
 				}
 			}

@@ -18,7 +18,7 @@ class MultipartParameters(
 ) {
 	
 	fun getForm(name: String): PartData.FormItem {
-		return partDataMap[name] as? PartData.FormItem ?: error("Not Found PartItem: $name")
+		return partDataMap[name] as? PartData.FormItem ?: error("Not Found PartItem: $name.")
 	}
 	
 	fun getFormValue(name: String): String {
@@ -36,7 +36,7 @@ class MultipartParameters(
 	}
 	
 	fun getFile(name: String): PartData.FileItem {
-		return partDataMap[name] as? PartData.FileItem ?: error("Not Found FileItem: $name")
+		return partDataMap[name] as? PartData.FileItem ?: error("Not Found FileItem: $name.")
 	}
 	
 	suspend fun getFileByteArray(name: String): ByteArray {
@@ -54,7 +54,7 @@ class MultipartParameters(
 	}
 	
 	fun getBinary(name: String): PartData.BinaryItem {
-		return partDataMap[name] as? PartData.BinaryItem ?: error("Not Found BinaryItem: $name")
+		return partDataMap[name] as? PartData.BinaryItem ?: error("Not Found BinaryItem: $name.")
 	}
 	
 	fun getBinaryByteArray(name: String): ByteArray {
@@ -72,7 +72,7 @@ class MultipartParameters(
 	}
 	
 	fun getBinaryChannel(name: String): PartData.BinaryChannelItem {
-		return partDataMap[name] as? PartData.BinaryChannelItem ?: error("Not Found BinaryChannelItem: $name")
+		return partDataMap[name] as? PartData.BinaryChannelItem ?: error("Not Found BinaryChannelItem: $name.")
 	}
 	
 	fun getBinaryChannelOrNull(name: String): PartData.BinaryChannelItem? {

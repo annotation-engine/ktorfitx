@@ -156,7 +156,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		val annotation = this.getKSAnnotationByType(TypeNames.Regex) ?: return null
 		val routeAnnotation = routeModel.annotation
 		annotation.compileCheck(routeModel is HttpRequestModel) {
-			"${simpleName.asString()} 函数不支持 @Regex 功能注解，因为已经标记了 $routeAnnotation 了"
+			"${simpleName.asString()} 函数上的 @Regex 注解无法在使用 $routeAnnotation 注解的情况下使用"
 		}
 		val classNames = annotation.getClassNamesOrNull("options")?.toSet() ?: emptySet()
 		val options = classNames.map { RegexOption.valueOf(it.simpleName) }.toSet()
@@ -171,7 +171,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 	): TimeoutModel? {
 		val annotation = this.getKSAnnotationByType(TypeNames.Timeout) ?: return null
 		annotation.compileCheck(routeModel is HttpRequestModel) {
-			"${simpleName.asString()} 函数不支持 @Timeout 功能注解，因为已经标记了 ${routeModel.annotation} 了"
+			"${simpleName.asString()} 函数上的 @Timeout 注解无法在使用 ${routeModel.annotation} 注解的情况下使用"
 		}
 		val value = annotation.getValue<Long>("value")
 		val unit = annotation.getClassNameOrNull("unit")?.simpleName?.lowercase() ?: "milliseconds"
@@ -181,5 +181,5 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		return TimeoutModel(value, unit)
 	}
 	
-	override fun defaultHandler(node: KSNode, data: List<CustomHttpMethodModel>): FunModel = error("Not Implemented")
+	override fun defaultHandler(node: KSNode, data: List<CustomHttpMethodModel>): FunModel = error("Not Implemented.")
 }
