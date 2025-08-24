@@ -188,6 +188,7 @@ private val partModelConfigs by lazy {
 }
 
 private fun KSFunctionDeclaration.getPartModels(): PartModels {
+	val names = mutableSetOf<String>()
 	return partModelConfigs.flatMap { config ->
 		val partForms = this.parameters.filter { it.hasAnnotation(config.annotation) }
 		partForms.map { parameter ->
@@ -196,6 +197,10 @@ private fun KSFunctionDeclaration.getPartModels(): PartModels {
 			val typeName = type.toTypeName().asNotNullable()
 			val annotation = parameter.getKSAnnotationByType(config.annotation)!!
 			val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
+			parameter.compileCheck(name !in names) {
+				"${simpleName.asString()} 函数的 ${parameter.name!!.asString()} 参数重复获取了 $name 参数"
+			}
+			names += name
 			config.supportTypeNames.forEach { className ->
 				if (typeName == className) {
 					val isPartData = className in TypeNames.partDatas

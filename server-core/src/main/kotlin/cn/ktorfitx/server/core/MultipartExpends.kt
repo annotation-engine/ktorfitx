@@ -6,33 +6,38 @@ import kotlinx.io.readByteArray
 
 suspend fun MultiPartData.getMultipartParameters(): MultipartParameters {
 	val partDataMap = mutableMapOf<String, PartData>()
-	this.forEachPart { partData ->
-		val name = partData.name ?: return@forEachPart
-		partDataMap[name] = partData
+	this.forEachPart {
+		if (it.name == null) {
+			it.dispose()
+			return@forEachPart
+		}
+		partDataMap[it.name!!] = it
 	}
 	return MultipartParameters(partDataMap)
 }
 
-class MultipartParameters(
+class MultipartParameters internal constructor(
 	private val partDataMap: Map<String, PartData>
 ) {
+	
+	private val nonDisposeNames = mutableSetOf(*partDataMap.keys.toTypedArray())
 	
 	fun getForm(name: String): PartData.FormItem {
 		return partDataMap[name] as? PartData.FormItem ?: error("Not Found PartItem: $name.")
 	}
 	
-	fun getFormValue(name: String): String {
+	suspend fun getFormValue(name: String): String {
 		val formItem = getForm(name)
-		return formItem.value
+		return formItem.use { it.value }
 	}
 	
 	fun getFormOrNull(name: String): PartData.FormItem? {
 		return partDataMap[name] as? PartData.FormItem
 	}
 	
-	fun getFormValueOrNull(name: String): String? {
+	suspend fun getFormValueOrNull(name: String): String? {
 		val formItem = getFormOrNull(name) ?: return null
-		return formItem.value
+		return formItem.use { it.value }
 	}
 	
 	fun getFile(name: String): PartData.FileItem {
@@ -41,7 +46,7 @@ class MultipartParameters(
 	
 	suspend fun getFileByteArray(name: String): ByteArray {
 		val fileItem = getFile(name)
-		return fileItem.provider().readBuffer().readByteArray()
+		return fileItem.use { it.provider().readBuffer().readByteArray() }
 	}
 	
 	fun getFileOrNull(name: String): PartData.FileItem? {
@@ -50,25 +55,25 @@ class MultipartParameters(
 	
 	suspend fun getFileByteArrayOrNull(name: String): ByteArray? {
 		val fileItem = getFileOrNull(name) ?: return null
-		return fileItem.provider().readBuffer().readByteArray()
+		return fileItem.use { it.provider().readBuffer().readByteArray() }
 	}
 	
 	fun getBinary(name: String): PartData.BinaryItem {
 		return partDataMap[name] as? PartData.BinaryItem ?: error("Not Found BinaryItem: $name.")
 	}
 	
-	fun getBinaryByteArray(name: String): ByteArray {
+	suspend fun getBinaryByteArray(name: String): ByteArray {
 		val binaryItem = getBinary(name)
-		return binaryItem.provider().readByteArray()
+		return binaryItem.use { it.provider().readByteArray() }
 	}
 	
 	fun getBinaryOrNull(name: String): PartData.BinaryItem? {
 		return partDataMap[name] as? PartData.BinaryItem
 	}
 	
-	fun getBinaryByteArrayOrNull(name: String): ByteArray? {
+	suspend fun getBinaryByteArrayOrNull(name: String): ByteArray? {
 		val binaryItem = getBinaryOrNull(name) ?: return null
-		return binaryItem.provider().readByteArray()
+		return binaryItem.use { it.provider().readByteArray() }
 	}
 	
 	fun getBinaryChannel(name: String): PartData.BinaryChannelItem {
@@ -80,6 +85,16 @@ class MultipartParameters(
 	}
 	
 	fun disposeAll() {
-		partDataMap.values.forEach { it.dispose() }
+		nonDisposeNames.forEach {
+			partDataMap[it]!!.dispose()
+		}
+		nonDisposeNames.clear()
+	}
+	
+	private suspend fun <T : PartData, R> T.use(block: suspend (T) -> R): R {
+		return block(this).also {
+			this.dispose()
+			nonDisposeNames -= this.name!!
+		}
 	}
 }

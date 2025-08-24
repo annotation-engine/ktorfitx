@@ -11,8 +11,8 @@ internal class RouteCodeBlock(
 ) {
 	
 	private val varNames = funModel.varNames.toMutableSet()
-	private var partVarName: String? = null
-	private var beforePartDispose = true
+	private var multipartParametersVarName: String? = null
+	private var isNeedExecutePartDisposeAll = false
 	
 	fun CodeBlock.Builder.addCodeBlock(funName: String) {
 		addPrincipalsCodeBlock()
@@ -161,11 +161,11 @@ internal class RouteCodeBlock(
 	) {
 		fileSpecBuilder.addImport(PackageNames.KTORFITX_SERVER_CORE, "getMultipartParameters")
 		fileSpecBuilder.addImport(PackageNames.KTOR_SERVER_REQUEST, "receiveMultipart")
-		partVarName = getVarName("parameters")
-		addStatement("val %N = this.call.receiveMultipart().getMultipartParameters()", partVarName)
+		multipartParametersVarName = getVarName("parameters")
+		addStatement("val %N = this.call.receiveMultipart().getMultipartParameters()", multipartParametersVarName)
 		partModels.forEach {
-			if (beforePartDispose) {
-				beforePartDispose = !it.isPartData
+			if (!isNeedExecutePartDisposeAll) {
+				isNeedExecutePartDisposeAll = it.isPartData
 			}
 			val orNull = if (it.isNullable) "OrNull" else ""
 			val funName = when (it.annotation) {
@@ -174,7 +174,7 @@ internal class RouteCodeBlock(
 				TypeNames.PartBinary -> "getBinary${if (it.isPartData) "" else "ByteArray"}$orNull"
 				else -> "getBinaryChannel$orNull"
 			}
-			addStatement("val %N = %N.%N(%S)", it.varName, partVarName, funName, it.name)
+			addStatement("val %N = %N.%N(%S)", it.varName, multipartParametersVarName, funName, it.name)
 		}
 	}
 	
@@ -186,43 +186,30 @@ internal class RouteCodeBlock(
 		if (funModel.routeModel is HttpRequestModel) {
 			fileSpecBuilder.addImport(PackageNames.KTOR_SERVER_RESPONSE, "respond")
 			val varName = getVarName("result")
-			buildTryCatch(timeoutModel != null) {
-				buildTimeout(timeoutModel, varName) {
-					if (partVarName != null && beforePartDispose) {
-						addStatement("%N.disposeAll()", partVarName)
-					}
-					if (timeoutModel == null || (partVarName != null && !beforePartDispose)) {
-						addStatement("val %N = %N(%L)", varName, funName, parameters)
-					} else {
+			buildTryCatchIfNeed(timeoutModel != null) {
+				buildTimeoutIfNeed(timeoutModel, varName) {
+					if (timeoutModel != null && !isNeedExecutePartDisposeAll) {
 						addStatement("%N(%L)", funName, parameters)
+						return@buildTimeoutIfNeed
 					}
-					if (partVarName != null && !beforePartDispose) {
-						addStatement("%N.disposeAll()", partVarName)
+					addStatement("val %N = %N(%L)", varName, funName, parameters)
+					if (!isNeedExecutePartDisposeAll) {
+						return@buildTimeoutIfNeed
 					}
-					if (timeoutModel != null && partVarName != null && !beforePartDispose) {
+					addStatement("%N.disposeAll()", multipartParametersVarName)
+					if (timeoutModel != null) {
 						addStatement("%N", varName)
 					}
 				}
 				fileSpecBuilder.addImport(PackageNames.KTOR_HTTP, "HttpStatusCode")
 				addStatement("this.call.respond(HttpStatusCode.OK, %N)", varName)
 			}
-			
-			// try {
-			//                val result = withTimeout(5_000) { // 最长 5 秒
-			//                    // 模拟耗时任务
-			//                    kotlinx.coroutines.delay(10_000)
-			//                    "任务完成"
-			//                }
-			//                call.respond(result)
-			//            } catch (e: TimeoutCancellationException) {
-			//                call.respondText("请求超时", status = io.ktor.http.HttpStatusCode.RequestTimeout)
-			//            }
 		} else {
 			addStatement("%N(%L)", funName, parameters)
 		}
 	}
 	
-	private fun CodeBlock.Builder.buildTryCatch(
+	private fun CodeBlock.Builder.buildTryCatchIfNeed(
 		isTryCatch: Boolean,
 		block: CodeBlock.Builder.() -> Unit
 	) {
@@ -238,7 +225,7 @@ internal class RouteCodeBlock(
 		}
 	}
 	
-	private fun CodeBlock.Builder.buildTimeout(
+	private fun CodeBlock.Builder.buildTimeoutIfNeed(
 		timeoutModel: TimeoutModel?,
 		varName: String,
 		block: CodeBlock.Builder.() -> Unit
