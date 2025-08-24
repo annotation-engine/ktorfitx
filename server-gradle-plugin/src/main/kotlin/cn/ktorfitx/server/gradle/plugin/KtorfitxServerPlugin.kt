@@ -28,6 +28,7 @@ class KtorfitxServerPlugin : Plugin<Project> {
 				this.arg("ktorfitx.generate.packageName", extension.generate.packageName.getOrElse("$group.generated"))
 				this.arg("ktorfitx.generate.fileName", extension.generate.fileName.get().removeSuffix(".kt"))
 				this.arg("ktorfitx.generate.funName", extension.generate.funName.get())
+				this.arg("ktorfitx.language", extension.language.get().name)
 			}
 			when (extension.mode.get()) {
 				KtorfitxServerMode.RELEASE -> onReleaseMode(extension)

@@ -3,6 +3,7 @@ package cn.ktorfitx.server.ksp
 import cn.ktorfitx.common.ksp.util.check.compileCheck
 import cn.ktorfitx.common.ksp.util.expends.getCustomHttpMethodModels
 import cn.ktorfitx.server.ksp.constants.TypeNames
+import cn.ktorfitx.server.ksp.hint.ServerErrorHint
 import cn.ktorfitx.server.ksp.kotlinpoet.RouteKotlinPoet
 import cn.ktorfitx.server.ksp.model.CustomHttpMethodModel
 import cn.ktorfitx.server.ksp.model.FunModel
@@ -44,8 +45,7 @@ internal class KtorfitxServerSymbolProcessor(
 			.map {
 				val parent = it.parent
 				it.compileCheck(parent != null && (parent is KSFile || (parent is KSClassDeclaration && parent.classKind == ClassKind.OBJECT))) {
-					val functionName = it.simpleName.asString()
-					"$functionName 函数只允许声明在 文件顶层 或 object 类中"
+					ServerErrorHint.TOP_LEVEL_OR_OBJECT_ONLY.format(it.simpleName)
 				}
 				val visitor = RouteVisitor()
 				it.accept(visitor, customHttpMethodModels)
@@ -65,5 +65,10 @@ internal class KtorfitxServerSymbolProcessor(
 		).bufferedWriter().use {
 			fileSpec.writeTo(it)
 		}
+	}
+	
+	override fun finish() {
+		super.finish()
+		ServerErrorHint.release()
 	}
 }

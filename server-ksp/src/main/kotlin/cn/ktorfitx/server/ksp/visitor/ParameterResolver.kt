@@ -4,6 +4,7 @@ import cn.ktorfitx.common.ksp.util.check.compileCheck
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCompilationError
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.server.ksp.constants.TypeNames
+import cn.ktorfitx.server.ksp.hint.ServerErrorHint
 import cn.ktorfitx.server.ksp.model.*
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.squareup.kotlinpoet.ClassName
@@ -14,11 +15,11 @@ internal fun KSFunctionDeclaration.getVarNames(): List<String> {
 		val count = TypeNames.parameterAnnotations.count { parameter.hasAnnotation(it) }
 		parameter.compileCheck(count > 0) {
 			val annotations = TypeNames.parameterAnnotations.joinToString { "@${it.simpleName}" }
-			"${simpleName.asString()} 函数的 ${parameter.name!!.asString()} 参数必须使用 $annotations 注解中的一个"
+			ServerErrorHint.MUST_USE_ONE_OF_ANNOTATIONS.format(simpleName, parameter.name!!, annotations)
 		}
 		parameter.compileCheck(count == 1) {
 			val annotations = TypeNames.parameterAnnotations.joinToString { "@${it.simpleName}" }
-			"${simpleName.asString()} 函数的 ${parameter.name!!.asString()} 参数只允许使用 $annotations 注解中的一个"
+			ServerErrorHint.ONLY_USE_ONE_OF_ANNOTATIONS.format(simpleName, parameter.name!!, annotations)
 		}
 		parameter.name!!.asString()
 	}

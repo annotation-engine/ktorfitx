@@ -15,6 +15,8 @@ open class KtorfitxServerExtension @Inject constructor(
 	
 	val auth = objects.newInstance<MockConfig>()
 	
+	val language = objects.property<KtorfitxLanguage>().convention(KtorfitxLanguage.ENGLISH)
+	
 	val generate = objects.newInstance<GenerateConfig>()
 	
 	fun websockets(action: WebsocketsConfig.() -> Unit) {
@@ -33,6 +35,11 @@ open class KtorfitxServerExtension @Inject constructor(
 enum class KtorfitxServerMode {
 	DEVELOPMENT,
 	RELEASE
+}
+
+enum class KtorfitxLanguage {
+	CHINESE,
+	ENGLISH
 }
 
 open class WebsocketsConfig @Inject constructor(objects: ObjectFactory) {

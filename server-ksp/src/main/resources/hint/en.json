@@ -1,0 +1,5 @@
+{
+	"TOP_LEVEL_OR_OBJECT_ONLY": "The {1} function can only be declared at the top level of a file or within an object class.",
+	"MUST_USE_ONE_OF_ANNOTATIONS": "The {2} parameter of the {1} function must use one of the annotations in {3}.",
+	"ONLY_USE_ONE_OF_ANNOTATIONS": "The {2} parameter of the {1} function is restricted to use only one of the annotations in {3}."
+}

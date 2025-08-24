@@ -1,0 +1,5 @@
+{
+	"TOP_LEVEL_OR_OBJECT_ONLY": "{1} 函数只允许声明在 文件顶层 或 object 类中",
+	"MUST_USE_ONE_OF_ANNOTATIONS": "{1} 函数的 {2} 参数必须使用 {3} 注解中的一个",
+	"ONLY_USE_ONE_OF_ANNOTATIONS": "{1} 函数的 {2} 参数只允许使用 {3} 注解中的一个"
+}
