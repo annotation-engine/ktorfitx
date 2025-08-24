@@ -6,7 +6,6 @@ import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.server.ksp.constants.TypeNames
 import cn.ktorfitx.server.ksp.model.*
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import com.google.devtools.ksp.symbol.KSValueParameter
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 
@@ -152,66 +151,69 @@ private fun KSFunctionDeclaration.getFieldModels(): FieldModels {
 	return FieldModels(fieldModels)
 }
 
-private fun KSFunctionDeclaration.getPartModels(): PartModels {
-	// TODO
-	val configs = listOf(
+private val partModelConfigs by lazy {
+	listOf(
 		PartModelConfig(
 			annotation = TypeNames.PartForm,
-			classNames = listOf(
+			supportTypeNames = listOf(
 				TypeNames.FormItem,
 				TypeNames.String
 			),
-			errorMessage = { "${simpleName.asString()} 函数的 ${it.name!!.asString()} 参数只允许使用 String 和 PartData.FormItem 类型" }
+			errorMessage = "%s 函数的 %s 参数只允许使用 String 和 PartData.FormItem 类型"
 		),
 		PartModelConfig(
 			annotation = TypeNames.PartFile,
-			classNames = listOf(
+			supportTypeNames = listOf(
 				TypeNames.FileItem,
 				TypeNames.ByteArray
 			),
-			errorMessage = { "${simpleName.asString()} 函数的 ${it.name!!.asString()} 参数只允许使用 ByteArray 和 PartData.FileItem 类型" }
+			errorMessage = "%s 函数的 %s 参数只允许使用 ByteArray 和 PartData.FileItem 类型"
 		),
 		PartModelConfig(
 			annotation = TypeNames.PartBinary,
-			classNames = listOf(
+			supportTypeNames = listOf(
 				TypeNames.BinaryItem,
 				TypeNames.ByteArray
 			),
-			errorMessage = { "${simpleName.asString()} 函数的 ${it.name!!.asString()} 参数只允许使用 ByteArray 和 PartData.BinaryItem 类型" }
+			errorMessage = "%s 函数的 %s 参数只允许使用 ByteArray 和 PartData.BinaryItem 类型"
 		),
 		PartModelConfig(
 			annotation = TypeNames.PartBinaryChannel,
-			classNames = listOf(
+			supportTypeNames = listOf(
 				TypeNames.BinaryChannelItem
 			),
-			errorMessage = { "${simpleName.asString()} 函数的 ${it.name!!.asString()} 参数只允许使用 PartData.BinaryChannelItem 类型" }
+			errorMessage = "%s 函数的 %s 参数只允许使用 PartData.BinaryChannelItem 类型"
 		),
 	)
-	val allPartModels = configs.flatMap { getPartModels(it) }
-	return PartModels(allPartModels)
 }
 
-private fun KSFunctionDeclaration.getPartModels(
-	config: PartModelConfig
-): List<PartModel> {
-	val partForms = this.parameters.filter { it.hasAnnotation(config.annotation) }
-	return partForms.map { parameter ->
-		val varName = parameter.name!!.asString()
-		val type = parameter.type.resolve()
-		val typeName = type.toTypeName().asNotNullable()
-		val annotation = parameter.getKSAnnotationByType(config.annotation)!!
-		val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
-		config.classNames.forEach { className ->
-			if (typeName == className) {
-				val isPartData = className in TypeNames.partDatas
-				return@map PartModel(name, varName, config.annotation, type.isMarkedNullable, isPartData)
+private fun KSFunctionDeclaration.getPartModels(): PartModels {
+	return partModelConfigs.flatMap { config ->
+		val partForms = this.parameters.filter { it.hasAnnotation(config.annotation) }
+		partForms.map { parameter ->
+			val varName = parameter.name!!.asString()
+			val type = parameter.type.resolve()
+			val typeName = type.toTypeName().asNotNullable()
+			val annotation = parameter.getKSAnnotationByType(config.annotation)!!
+			val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
+			config.supportTypeNames.forEach { className ->
+				if (typeName == className) {
+					val isPartData = className in TypeNames.partDatas
+					return@map PartModel(name, varName, config.annotation, type.isMarkedNullable, isPartData)
+				}
+			}
+			parameter.ktorfitxCompilationError {
+				config.errorMessage.format(simpleName.asString(), parameter.name!!.asString())
 			}
 		}
-		parameter.ktorfitxCompilationError {
-			config.errorMessage(parameter)
-		}
-	}
+	}.let(::PartModels)
 }
+
+private data class PartModelConfig(
+	val annotation: ClassName,
+	val supportTypeNames: List<ClassName>,
+	val errorMessage: String
+)
 
 internal fun KSFunctionDeclaration.getHeaderModels(): List<HeaderModel> {
 	return this.parameters.mapNotNull { parameter ->
@@ -259,9 +261,3 @@ internal fun KSFunctionDeclaration.getAttributeModels(): List<AttributeModel> {
 		AttributeModel(name, varName, typeName, type.isMarkedNullable)
 	}
 }
-
-private data class PartModelConfig(
-	val annotation: ClassName,
-	val classNames: List<ClassName>,
-	val errorMessage: (KSValueParameter) -> String
-)
