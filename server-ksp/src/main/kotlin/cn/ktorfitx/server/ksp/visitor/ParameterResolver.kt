@@ -144,7 +144,7 @@ private fun KSFunctionDeclaration.getFieldModels(): FieldModels {
 		val typeName = type.toTypeName().asNotNullable()
 		if (type.isMarkedNullable) {
 			parameter.compileCheck(typeName == TypeNames.String) {
-				"${simpleName.asString()} 函数的 $varName 参数可空类型只允许 String?"
+				ServerMessage.PARAMETER_NULLABLE_ONLY_STRING.format(simpleName, varName)
 			}
 		}
 		FieldModel(name, varName, typeName, type.isMarkedNullable)
@@ -160,7 +160,7 @@ private val partModelConfigs by lazy {
 				TypeNames.FormItem,
 				TypeNames.String
 			),
-			errorMessage = "%s 函数的 %s 参数只允许使用 String 和 PartData.FormItem 类型"
+			errorMessage = ServerMessage.PARAMETER_ONLY_USE_STRING_OR_FORM_ITEM
 		),
 		PartModelConfig(
 			annotation = TypeNames.PartFile,
@@ -168,7 +168,7 @@ private val partModelConfigs by lazy {
 				TypeNames.FileItem,
 				TypeNames.ByteArray
 			),
-			errorMessage = "%s 函数的 %s 参数只允许使用 ByteArray 和 PartData.FileItem 类型"
+			errorMessage = ServerMessage.PARAMETER_ONLY_USE_BYTE_ARRAY_OR_FILE_ITEM
 		),
 		PartModelConfig(
 			annotation = TypeNames.PartBinary,
@@ -176,14 +176,14 @@ private val partModelConfigs by lazy {
 				TypeNames.BinaryItem,
 				TypeNames.ByteArray
 			),
-			errorMessage = "%s 函数的 %s 参数只允许使用 ByteArray 和 PartData.BinaryItem 类型"
+			errorMessage = ServerMessage.PARAMETER_ONLY_USE_BYTE_ARRAY_OR_BINARY_ITEM
 		),
 		PartModelConfig(
 			annotation = TypeNames.PartBinaryChannel,
 			supportTypeNames = listOf(
 				TypeNames.BinaryChannelItem
 			),
-			errorMessage = "%s 函数的 %s 参数只允许使用 PartData.BinaryChannelItem 类型"
+			errorMessage = ServerMessage.PARAMETER_ONLY_USE_BINARY_CHANNEL_ITEM
 		),
 	)
 }
@@ -199,7 +199,7 @@ private fun KSFunctionDeclaration.getPartModels(): PartModels {
 			val annotation = parameter.getKSAnnotationByType(config.annotation)!!
 			val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
 			parameter.compileCheck(name !in names) {
-				"${simpleName.asString()} 函数的 ${parameter.name!!.asString()} 参数重复获取了 $name 参数"
+				ServerMessage.PARAMETER_RETRIEVED_TWICE_WITH_PART_PARAMETER.format(simpleName, parameter.name!!, name)
 			}
 			names += name
 			config.supportTypeNames.forEach { className ->
@@ -209,7 +209,7 @@ private fun KSFunctionDeclaration.getPartModels(): PartModels {
 				}
 			}
 			parameter.ktorfitxCompilationError {
-				config.errorMessage.format(simpleName.asString(), parameter.name!!.asString())
+				config.errorMessage.format(simpleName, parameter.name!!)
 			}
 		}
 	}.let(::PartModels)
@@ -218,7 +218,7 @@ private fun KSFunctionDeclaration.getPartModels(): PartModels {
 private data class PartModelConfig(
 	val annotation: ClassName,
 	val supportTypeNames: List<ClassName>,
-	val errorMessage: String
+	val errorMessage: ServerMessage
 )
 
 internal fun KSFunctionDeclaration.getHeaderModels(): List<HeaderModel> {
@@ -229,7 +229,7 @@ internal fun KSFunctionDeclaration.getHeaderModels(): List<HeaderModel> {
 		val type = parameter.type.resolve()
 		val typeName = type.toTypeName()
 		parameter.compileCheck(typeName.equals(TypeNames.String, ignoreNullable = true)) {
-			"${simpleName.asString()} 函数的 $varName 参数只允许使用 String 类型"
+			ServerMessage.PARAMETER_ONLY_USE_STRING.format(simpleName, varName)
 		}
 		HeaderModel(name, varName, type.isMarkedNullable)
 	}
@@ -242,7 +242,7 @@ internal fun KSFunctionDeclaration.getCookieModels(): List<CookieModel> {
 		val typeName = type.toTypeName()
 		val varName = parameter.name!!.asString()
 		parameter.compileCheck(typeName.equals(TypeNames.String, ignoreNullable = true)) {
-			"${simpleName.asString()} 函数的 $varName 参数只允许使用 String 类型"
+			ServerMessage.PARAMETER_ONLY_USE_STRING.format(simpleName, varName)
 		}
 		val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
 		val encoding = annotation.getClassNameOrNull("encoding")?.simpleName?.let { simpleName ->

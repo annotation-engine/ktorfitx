@@ -26,7 +26,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 			ServerMessage.FUNCTION_NOT_ALLOWED_TO_CONTAIN_GENERICS.format(function.simpleName)
 		}
 		val routeModel = function.getRouteModel(data)
-		function.checkReturnType(routeModel is HttpRequestModel)
+		function.checkReturnType(routeModel)
 		return FunModel(
 			funName = function.simpleName.asString(),
 			canonicalName = function.getCanonicalName(),
@@ -54,25 +54,24 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 	}
 	
 	private fun KSFunctionDeclaration.checkReturnType(
-		isHttpRequest: Boolean
+		routeModel: RouteModel
 	) {
 		val returnType = this.returnType!!.resolve()
-		
 		this.compileCheck(!returnType.isMarkedNullable) {
 			ServerMessage.FUNCTION_NOT_ALLOWED_NULLABLE_RETURN_TYPE.format(simpleName)
 		}
 		val typeName = returnType.toTypeName()
-		if (isHttpRequest) {
+		if (routeModel is HttpRequestModel) {
 			val validType = typeName is ClassName || typeName is ParameterizedTypeName
 			this.compileCheck(validType) {
 				ServerMessage.FUNCTION_RETURN_TYPE_MUST_BE_DEFINITE_CLASS.format(simpleName)
 			}
 			this.compileCheck(typeName != TypeNames.Unit && typeName != TypeNames.Nothing) {
-				"${simpleName.asString()} 函数不允许使用 Unit 和 Nothing 返回类型"
+				ServerMessage.FUNCTION_NOT_ALLOW_USE_UNIT_AND_NOTHING.format(simpleName)
 			}
 		} else {
 			this.compileCheck(typeName == TypeNames.Unit) {
-				"${simpleName.asString()} 函数是 WebSocket 类型，返回类型必须是 Unit"
+				ServerMessage.FUNCTION_IS_WEBSOCKET_TYPE_NOT_ALLOW_USE_UNIT.format(simpleName, routeModel.annotation)
 			}
 		}
 	}
@@ -91,7 +90,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		val dataList = (TypeNames.routes + customHttpMethodClassNames)
 			.mapNotNull { this.getKSAnnotationByType(it)?.let(it::to) }
 		this.compileCheck(dataList.size == 1) {
-			"${simpleName.asString()} 函数不允许同时添加多个请求类型"
+			ServerMessage.FUNCTION_NOT_ALLOW_ADDING_MULTIPLE_REQUEST_TYPES_SIMULTANEOUSLY.format(simpleName)
 		}
 		val data = dataList.first()
 		val className = data.first

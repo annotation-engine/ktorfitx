@@ -34,6 +34,18 @@ internal enum class ServerMessage(
 		chinese = { "{1} 函数参数不允许同时使用多个 @Body 注解" },
 		english = { "The {1} function parameter does not allow the use of multiple @Body." },
 	),
+	FUNCTION_NOT_ALLOW_USE_UNIT_AND_NOTHING(
+		chinese = { "{1} 函数不允许使用 Unit 和 Nothing 返回类型" },
+		english = { "The {1} function does not allow the use of Unit and Nothing as return types." }
+	),
+	FUNCTION_IS_WEBSOCKET_TYPE_NOT_ALLOW_USE_UNIT(
+		chinese = { "{1} 函数标注了 {2} 注解，因此返回类型只允许是 Unit 类型" },
+		english = { "The {1} function is annotated with the {2} annotation, so the return type can only be of the Unit type." }
+	),
+	FUNCTION_NOT_ALLOW_ADDING_MULTIPLE_REQUEST_TYPES_SIMULTANEOUSLY(
+		chinese = { "{1} 函数不允许同时添加多个请求类型" },
+		english = { "The {1} function does not allow adding multiple request types at the same time." },
+	),
 	PARAMETER_WAS_NOT_FOUND_IN_THE_URL(
 		chinese = { "{1} 函数的 {2} 参数未在 url 中找到" },
 		english = { "The {2} parameter of the {1} function was not found in the url." }
@@ -57,6 +69,30 @@ internal enum class ServerMessage(
 	PARAMETER_NULLABLE_ONLY_STRING(
 		chinese = { "{1} 函数的 {2} 参数只允许 String 为可空类型" },
 		english = { "The {2} parameter of the {1} function is restricted to be of a nullable String type." }
+	),
+	PARAMETER_RETRIEVED_TWICE_WITH_PART_PARAMETER(
+		chinese = { "{1} 函数的 {2} 参数重复获取了 {3} 参数" },
+		english = { "The {2} parameter of the {1} function is  twice with the parameter {3}." }
+	),
+	PARAMETER_ONLY_USE_STRING(
+		chinese = { "{1} 函数的 {2} 参数只允许使用 String 类型" },
+		english = { "The {2} parameter of the {1} function is restricted to accepting only String type values." }
+	),
+	PARAMETER_ONLY_USE_STRING_OR_FORM_ITEM(
+		chinese = { "{1} 函数的 {2} 参数只允许使用 String 和 PartData.FormItem 类型" },
+		english = { "The {2} parameter of the {1} function can only accept values of type String or PartData.FormItem." }
+	),
+	PARAMETER_ONLY_USE_BYTE_ARRAY_OR_FILE_ITEM(
+		chinese = { "{1} 函数的 {2} 参数只允许使用 ByteArray 和 PartData.FileItem 类型" },
+		english = { "The {2} parameter of the {1} function can only accept types of ByteArray and PartData.FileItem." }
+	),
+	PARAMETER_ONLY_USE_BYTE_ARRAY_OR_BINARY_ITEM(
+		chinese = { "{1} 函数的 {2} 参数只允许使用 ByteArray 和 PartData.BinaryItem 类型" },
+		english = { "The {2} parameter of the {1} function can only be of the types ByteArray and PartData.BinaryItem." }
+	),
+	PARAMETER_ONLY_USE_BINARY_CHANNEL_ITEM(
+		chinese = { "{1} 函数的 {2} 参数只允许使用 PartData.BinaryChannelItem 类型" },
+		english = { "The {2} parameter of the {1} function can only be of the PartData.BinaryChannelItem type." }
 	),
 	ANNOTATION_NOT_ALLOW_USE_SAME_PATH_PARAMETER(
 		chinese = { "{1} 函数的 {2} 注解中不允许使用相同的 Path 参数 {3}" },
