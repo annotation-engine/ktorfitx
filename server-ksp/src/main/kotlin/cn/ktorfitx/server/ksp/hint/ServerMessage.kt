@@ -27,8 +27,8 @@ internal enum class ServerMessage(
 		english = { "{1} x function failed to parse the following {2} Path parameter." }
 	),
 	FUNCTION_NOT_ALLOW_USE_BODY_FIELD_PART_ANNOTATION(
-		chinese = { "{1} 函数不允许同时使用 application/json 的 @Body 注解、application/x-www-form-urlencoded 的 @Field 以及 multipart/form-data 的 @PartForm、@PartFile、@PartBinary、@PartBinaryChannel 注解" },
-		english = { "The {1} function does not allow the simultaneous use of the @Body annotation of application/json, the @Field annotation of application/x-www-form-urlencoded, and the @PartForm, @PartFile, @PartBinary, and @PartBinaryChannel annotations of multipart/form-data." }
+		chinese = { "{1} 函数不允许同时使用 @Body 注解、@Field 注解 以及 @PartForm、@PartFile、@PartBinary、@PartBinaryChannel 注解" },
+		english = { "The {1} function does not allow the simultaneous use of the @Body annotation, the @Field annotation, and the @PartForm, @PartFile, @PartBinary, and @PartBinaryChannel annotations." }
 	),
 	FUNCTION_PARAMETER_NOT_ALLOW_USE_MULTIPLE_BODY(
 		chinese = { "{1} 函数参数不允许同时使用多个 @Body 注解" },
@@ -45,6 +45,18 @@ internal enum class ServerMessage(
 	FUNCTION_NOT_ALLOW_ADDING_MULTIPLE_REQUEST_TYPES_SIMULTANEOUSLY(
 		chinese = { "{1} 函数不允许同时添加多个请求类型" },
 		english = { "The {1} function does not allow adding multiple request types at the same time." },
+	),
+	FUNCTION_ONLY_ALLOW_CREATION_OF_EXTENSION_METHODS_FOR_DEFAULT_WEB_SOCKET_SERVER_SESSION(
+		chinese = { "{1} 函数仅允许为 DefaultWebSocketServerSession 类型创建扩展方法" },
+		english = { "The {1} function only allows the creation of extension methods for the DefaultWebSocketServerSession type." }
+	),
+	FUNCTION_ONLY_ALLOW_CREATION_OF_EXTENSION_METHODS_FOR_WEB_SOCKET_SERVER_SESSION(
+		chinese = { "{1} 函数仅允许为 WebSocketServerSession 类型创建扩展方法" },
+		english = { "The {1} function only allows the creation of extension methods for the WebSocketServerSession type." }
+	),
+	FUNCTION_ONLY_ALLOW_CREATION_OF_EXTENSION_METHODS_FOR_ROUTING_CONTEXT(
+		chinese = { "{1} 函数仅允许为 RoutingContext 类型创建扩展方法" },
+		english = { "The {1} function only allows the creation of extension methods for the RoutingContext type." }
 	),
 	PARAMETER_WAS_NOT_FOUND_IN_THE_URL(
 		chinese = { "{1} 函数的 {2} 参数未在 url 中找到" },
@@ -97,5 +109,21 @@ internal enum class ServerMessage(
 	ANNOTATION_NOT_ALLOW_USE_SAME_PATH_PARAMETER(
 		chinese = { "{1} 函数的 {2} 注解中不允许使用相同的 Path 参数 {3}" },
 		english = { "The {2} annotation of the {1} function does not allow the use of the same {3} parameter for the Path." }
+	),
+	ANNOTATION_NOT_ALLOW_USE_REGEX_WHEN_WEBSOCKET_HAS_BEEN_MARKED(
+		chinese = { "{1} 函数不允许在标记了 {2} 注解的情况下使用 @Regex 注解" },
+		english = { "The {1} function does not allow the use of the @Regex annotation when the {2} annotation has been marked." }
+	),
+	ANNOTATION_NOT_ALLOW_USE_TIMEOUT_WHEN_WEBSOCKET_HAS_BEEN_MARKED(
+		chinese = { "{1} 函数不允许在标记了 {2} 注解的情况下使用 @Timeout 注解" },
+		english = { "The {1} function does not allow the use of the @Timeout annotation when the {2} annotation has been marked." }
+	),
+	ANNOTATION_VALUE_PARAMETER_MUST_BE_GREATER_THAN_ZERO(
+		chinese = { "{1} 函数上的 {2} 注解的 value 参数必须大于 0" },
+		english = { "The value parameter of the {2} annotation on the {1} function must be greater than 0." }
+	),
+	ANNOTATION_PATH_PARAMETER_NOT_VALID_REGULAR_EXPRESSION(
+		chinese = { "{1} 函数上的 {2} 注解的 path 参数不是一个合法的正则表达式" },
+		english = { "The path parameter of the {2} annotation on the {1} function is not a valid regular expression." }
 	)
 }

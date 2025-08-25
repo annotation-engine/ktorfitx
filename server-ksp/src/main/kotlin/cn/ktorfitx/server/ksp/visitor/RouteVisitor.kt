@@ -103,7 +103,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 				if (isExtension) {
 					val valid = this.isExtension(TypeNames.DefaultWebSocketServerSession)
 					this.compileCheck(valid) {
-						"${simpleName.asString()} 是扩展函数，但仅允许扩展 DefaultWebSocketServerSession"
+						ServerMessage.FUNCTION_ONLY_ALLOW_CREATION_OF_EXTENSION_METHODS_FOR_DEFAULT_WEB_SOCKET_SERVER_SESSION.format(simpleName)
 					}
 				}
 				WebSocketModel(path, protocol, annotation)
@@ -115,7 +115,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 				if (isExtension) {
 					val valid = this.isExtension(TypeNames.WebSocketServerSession)
 					this.compileCheck(valid) {
-						"${simpleName.asString()} 是扩展函数，但仅允许扩展 WebSocketServerSession"
+						ServerMessage.FUNCTION_ONLY_ALLOW_CREATION_OF_EXTENSION_METHODS_FOR_WEB_SOCKET_SERVER_SESSION.format(simpleName)
 					}
 				}
 				WebSocketRawModel(path, protocol, negotiateExtensions, annotation)
@@ -124,7 +124,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 			else -> {
 				if (isExtension) {
 					this.compileCheck(this.isExtension(TypeNames.RoutingContext)) {
-						"${simpleName.asString()} 函数只支持扩展 RoutingContext"
+						ServerMessage.FUNCTION_ONLY_ALLOW_CREATION_OF_EXTENSION_METHODS_FOR_ROUTING_CONTEXT.format(simpleName)
 					}
 				}
 				if (className in TypeNames.httpMethods) {
@@ -157,12 +157,12 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		val annotation = this.getKSAnnotationByType(TypeNames.Regex) ?: return null
 		val routeAnnotation = routeModel.annotation
 		annotation.compileCheck(routeModel is HttpRequestModel) {
-			"${simpleName.asString()} 函数上的 @Regex 注解无法在使用 $routeAnnotation 注解的情况下使用"
+			ServerMessage.ANNOTATION_NOT_ALLOW_USE_REGEX_WHEN_WEBSOCKET_HAS_BEEN_MARKED.format(simpleName, routeAnnotation)
 		}
 		val classNames = annotation.getClassNamesOrNull("options")?.toSet() ?: emptySet()
 		val options = classNames.map { RegexOption.valueOf(it.simpleName) }.toSet()
 		routeAnnotation.compileCheck(routeModel.path.isValidRegex(options)) {
-			"${simpleName.asString()} 函数上的 $routeAnnotation 注解的 path 参数不是一个合法的正则表达式"
+			ServerMessage.ANNOTATION_PATH_PARAMETER_NOT_VALID_REGULAR_EXPRESSION.format(simpleName, routeAnnotation)
 		}
 		return RegexModel(classNames)
 	}
@@ -172,12 +172,12 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 	): TimeoutModel? {
 		val annotation = this.getKSAnnotationByType(TypeNames.Timeout) ?: return null
 		annotation.compileCheck(routeModel is HttpRequestModel) {
-			"${simpleName.asString()} 函数上的 @Timeout 注解无法在使用 ${routeModel.annotation} 注解的情况下使用"
+			ServerMessage.ANNOTATION_NOT_ALLOW_USE_TIMEOUT_WHEN_WEBSOCKET_HAS_BEEN_MARKED.format(simpleName, routeModel.annotation)
 		}
 		val value = annotation.getValue<Long>("value")
 		val unit = annotation.getClassNameOrNull("unit")?.simpleName?.lowercase() ?: "milliseconds"
 		annotation.compileCheck(value > 0L) {
-			"${simpleName.asString()} 函数上的 $annotation 注解的 value 参数必须大于 0"
+			ServerMessage.ANNOTATION_VALUE_PARAMETER_MUST_BE_GREATER_THAN_ZERO.format(simpleName, annotation)
 		}
 		return TimeoutModel(value, unit)
 	}
