@@ -1,24 +1,23 @@
-package cn.ktorfitx.common.ksp.util.hint
+package cn.ktorfitx.common.ksp.util.message
 
 import com.google.devtools.ksp.symbol.KSName
 
-interface ErrorHint {
+interface Message {
 	
 	val english: () -> String
 	
 	val chinese: () -> String
 	
-	companion object {
+	companion object Companion {
 		
 		val language = ThreadLocal<String>()
 	}
 }
 
-fun ErrorHint.format(vararg args: Any?): String {
-	val hint = when (ErrorHint.language.get()) {
+fun Message.format(vararg args: Any?): String {
+	val hint = when (Message.language.get()) {
 		"CHINESE" -> this.chinese()
-		"ENGLISH" -> this.english()
-		else -> return ""
+		else -> this.english()
 	}
 	return args.foldIndexed(hint) { index, acc, arg ->
 		val value = when (arg) {

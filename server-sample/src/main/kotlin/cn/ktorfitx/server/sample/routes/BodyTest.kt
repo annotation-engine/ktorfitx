@@ -11,7 +11,7 @@ fun bodyTest1(
 
 @POST("body/test2")
 fun bodyTest2(
-	body: BodyTest1?
+	@Body body: BodyTest1?
 ): String = ""
 
 @Serializable

@@ -1,9 +1,9 @@
-package cn.ktorfitx.common.ksp.util.hint
+package cn.ktorfitx.common.ksp.util.message
 
-internal enum class CommonErrorHint(
+internal enum class CommonMessage(
 	override val chinese: () -> String,
 	override val english: () -> String
-) : ErrorHint {
+) : Message {
 	UNKNOWN(
 		chinese = { "未知" },
 		english = { "Unknown." }

@@ -2,7 +2,9 @@ package cn.ktorfitx.server.ksp.visitor
 
 import cn.ktorfitx.common.ksp.util.check.compileCheck
 import cn.ktorfitx.common.ksp.util.expends.*
+import cn.ktorfitx.common.ksp.util.message.format
 import cn.ktorfitx.server.ksp.constants.TypeNames
+import cn.ktorfitx.server.ksp.hint.ServerMessage
 import cn.ktorfitx.server.ksp.model.*
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
@@ -21,7 +23,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		data: List<CustomHttpMethodModel>
 	): FunModel {
 		function.compileCheck(!(function.isGeneric())) {
-			"${function.simpleName.asString()} 函数不允许包含泛型"
+			ServerMessage.FUNCTION_NOT_ALLOWED_TO_CONTAIN_GENERICS.format(function.simpleName)
 		}
 		val routeModel = function.getRouteModel(data)
 		function.checkReturnType(routeModel is HttpRequestModel)
@@ -57,13 +59,13 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		val returnType = this.returnType!!.resolve()
 		
 		this.compileCheck(!returnType.isMarkedNullable) {
-			"${simpleName.asString()} 函数返回类型不允许为可空类型"
+			ServerMessage.FUNCTION_NOT_ALLOWED_NULLABLE_RETURN_TYPE.format(simpleName)
 		}
 		val typeName = returnType.toTypeName()
 		if (isHttpRequest) {
 			val validType = typeName is ClassName || typeName is ParameterizedTypeName
 			this.compileCheck(validType) {
-				"${simpleName.asString()} 函数返回类型必须是明确的类"
+				ServerMessage.FUNCTION_RETURN_TYPE_MUST_BE_DEFINITE_CLASS.format(simpleName)
 			}
 			this.compileCheck(typeName != TypeNames.Unit && typeName != TypeNames.Nothing) {
 				"${simpleName.asString()} 函数不允许使用 Unit 和 Nothing 返回类型"

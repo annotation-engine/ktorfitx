@@ -3,9 +3,9 @@ package cn.ktorfitx.server.ksp.visitor
 import cn.ktorfitx.common.ksp.util.check.compileCheck
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCompilationError
 import cn.ktorfitx.common.ksp.util.expends.*
-import cn.ktorfitx.common.ksp.util.hint.format
+import cn.ktorfitx.common.ksp.util.message.format
 import cn.ktorfitx.server.ksp.constants.TypeNames
-import cn.ktorfitx.server.ksp.hint.ServerErrorHint
+import cn.ktorfitx.server.ksp.hint.ServerMessage
 import cn.ktorfitx.server.ksp.model.*
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.squareup.kotlinpoet.ClassName
@@ -16,11 +16,11 @@ internal fun KSFunctionDeclaration.getVarNames(): List<String> {
 		val count = TypeNames.parameterAnnotations.count { parameter.hasAnnotation(it) }
 		parameter.compileCheck(count > 0) {
 			val annotations = TypeNames.parameterAnnotations.joinToString { "@${it.simpleName}" }
-			ServerErrorHint.MUST_USE_ONE_OF_ANNOTATIONS.format(simpleName, parameter.name!!, annotations)
+			ServerMessage.PARAMETER_MUST_USE_ONE_OF_ANNOTATIONS.format(simpleName, parameter.name!!, annotations)
 		}
 		parameter.compileCheck(count == 1) {
 			val annotations = TypeNames.parameterAnnotations.joinToString { "@${it.simpleName}" }
-			ServerErrorHint.ONLY_USE_ONE_OF_ANNOTATIONS.format(simpleName, parameter.name!!, annotations)
+			ServerMessage.PARAMETER_ONLY_USE_ONE_OF_ANNOTATIONS.format(simpleName, parameter.name!!, annotations)
 		}
 		parameter.name!!.asString()
 	}
@@ -46,7 +46,7 @@ internal fun KSFunctionDeclaration.getQueryModels(): List<QueryModel> {
 		val typeName = type.toTypeName().asNotNullable()
 		if (type.isMarkedNullable) {
 			parameter.compileCheck(typeName == TypeNames.String) {
-				"${simpleName.asString()} 函数的 ${parameter.name!!.asString()} 参数可空类型只允许 String?"
+				ServerMessage.PARAMETER_NULLABLE_ONLY_STRING.format(simpleName, parameter.name!!)
 			}
 		}
 		QueryModel(name, varName, typeName, type.isMarkedNullable)
@@ -61,21 +61,21 @@ internal fun KSFunctionDeclaration.getPathModels(routeModel: RouteModel): List<P
 		val varName = parameter.name!!.asString()
 		val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
 		parameter.compileCheck(name in pathParameters) {
-			"${simpleName.asString()} 函数的 ${parameter.name!!.asString()} 参数未在 url 中找到"
+			ServerMessage.PARAMETER_WAS_NOT_FOUND_IN_THE_URL.format(simpleName, parameter.name!!)
 		}
 		parameter.compileCheck(name in residuePathParameters) {
-			"${simpleName.asString()} 函数的 ${parameter.name!!.asString()} 参数重复解析 path 参数"
+			ServerMessage.PARAMETER_REDUNDANTLY_PARSED_AS_THE_PATH_PARAMETER.format(simpleName, parameter.name!!)
 		}
 		residuePathParameters -= name
 		
 		val typeName = parameter.type.toTypeName()
 		parameter.compileCheck(!typeName.isNullable) {
-			"${simpleName.asString()} 函数的 ${parameter.name!!.asString()} 参数不允许可空"
+			ServerMessage.PARAMETER_NOT_ALLOWED_NULLABLE.format(simpleName, parameter.name!!)
 		}
 		PathModel(name, varName, typeName)
 	}
 	this.compileCheck(residuePathParameters.isEmpty()) {
-		"${simpleName.asString()} 函数未解析以下 ${residuePathParameters.size} 个 path 参数：${residuePathParameters.joinToString { it }}"
+		ServerMessage.FUNCTION_FAILED_PARSE_FOLLOWING_PATH_PARAMETER.format(simpleName, residuePathParameters.joinToString())
 	}
 	return pathModels
 }
@@ -84,36 +84,35 @@ private val pathRegex = "\\{([^}]+)}".toRegex()
 
 private fun KSFunctionDeclaration.extractPathParameters(routeModel: RouteModel): Set<String> {
 	val matches = pathRegex.findAll(routeModel.path)
-	val params = mutableSetOf<String>()
+	val names = mutableSetOf<String>()
 	for (match in matches) {
-		val param = match.groupValues[1]
-		routeModel.annotation.compileCheck(param !in params) {
-			"${simpleName.asString()} 函数的 ${routeModel.annotation} 注解的 path 参数中不允许使用相同的 path 参数名称"
+		val name = match.groupValues[1]
+		routeModel.annotation.compileCheck(name !in names) {
+			ServerMessage.ANNOTATION_NOT_ALLOW_USE_SAME_PATH_PARAMETER.format(simpleName, routeModel.annotation, name)
 		}
-		params += param
+		names += name
 	}
-	return params
+	return names
+}
+
+private val requestBodyClassNameMap by lazy {
+	mapOf(
+		BodyModel::class to listOf(TypeNames.Body),
+		FieldModels::class to listOf(TypeNames.Field),
+		PartModels::class to listOf(TypeNames.PartForm, TypeNames.PartFile, TypeNames.PartBinary, TypeNames.PartBinaryChannel)
+	)
 }
 
 internal fun KSFunctionDeclaration.getRequestBody(): RequestBodyModel? {
-	val classNames = mapOf(
-		BodyModel::class to TypeNames.Body,
-		FieldModels::class to TypeNames.Field,
-		PartModels::class to arrayOf(TypeNames.PartForm, TypeNames.PartFile, TypeNames.PartBinary, TypeNames.PartBinaryChannel)
-	)
-	val modelKClasses = classNames.mapNotNull { entity ->
+	val modelKClasses = requestBodyClassNameMap.mapNotNull { entity ->
 		val exists = this.parameters.any { parameter ->
-			when (val value = entity.value) {
-				is ClassName -> parameter.hasAnnotation(value)
-				is Array<*> -> value.any { parameter.hasAnnotation(it as ClassName) }
-				else -> error("Unsupported type.")
-			}
+			entity.value.any { parameter.hasAnnotation(it) }
 		}
 		if (exists) entity.key else null
 	}
 	if (modelKClasses.isEmpty()) return null
 	this.compileCheck(modelKClasses.size == 1) {
-		"${simpleName.asString()} 函数参数不允许同时使用 @Body, @Field 或 @PartForm, @PartFile, @PartBinary, @PartBinaryChannel 注解"
+		ServerMessage.FUNCTION_NOT_ALLOW_USE_BODY_FIELD_PART_ANNOTATION.format(simpleName)
 	}
 	val modelKClass = modelKClasses.single()
 	return when (modelKClass) {
@@ -126,7 +125,7 @@ internal fun KSFunctionDeclaration.getRequestBody(): RequestBodyModel? {
 private fun KSFunctionDeclaration.getBodyModel(): BodyModel {
 	val filters = this.parameters.filter { it.hasAnnotation(TypeNames.Body) }
 	this.compileCheck(filters.size == 1) {
-		"${simpleName.asString()} 函数参数中不允许使用多个 @Body"
+		ServerMessage.FUNCTION_PARAMETER_NOT_ALLOW_USE_MULTIPLE_BODY.format(simpleName)
 	}
 	val body = filters.single()
 	val varName = body.name!!.asString()

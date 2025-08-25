@@ -2,9 +2,9 @@ package cn.ktorfitx.server.ksp
 
 import cn.ktorfitx.common.ksp.util.check.compileCheck
 import cn.ktorfitx.common.ksp.util.expends.getCustomHttpMethodModels
-import cn.ktorfitx.common.ksp.util.hint.format
+import cn.ktorfitx.common.ksp.util.message.format
 import cn.ktorfitx.server.ksp.constants.TypeNames
-import cn.ktorfitx.server.ksp.hint.ServerErrorHint
+import cn.ktorfitx.server.ksp.hint.ServerMessage
 import cn.ktorfitx.server.ksp.kotlinpoet.RouteKotlinPoet
 import cn.ktorfitx.server.ksp.model.CustomHttpMethodModel
 import cn.ktorfitx.server.ksp.model.FunModel
@@ -46,7 +46,7 @@ internal class KtorfitxServerSymbolProcessor(
 			.map {
 				val parent = it.parent
 				it.compileCheck(parent != null && (parent is KSFile || (parent is KSClassDeclaration && parent.classKind == ClassKind.OBJECT))) {
-					ServerErrorHint.TOP_LEVEL_OR_OBJECT_ONLY.format(it.simpleName)
+					ServerMessage.FUNCTION_TOP_LEVEL_OR_OBJECT_ONLY.format(it.simpleName)
 				}
 				val visitor = RouteVisitor()
 				it.accept(visitor, customHttpMethodModels)
