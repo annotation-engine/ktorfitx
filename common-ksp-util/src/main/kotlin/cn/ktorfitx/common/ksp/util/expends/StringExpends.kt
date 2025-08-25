@@ -1,7 +1,5 @@
 package cn.ktorfitx.common.ksp.util.expends
 
-import com.google.devtools.ksp.symbol.KSName
-
 private val lowerCamelCaseRegex by lazy { "^[a-z][a-zA-Z0-9]*$".toRegex() }
 
 /**
@@ -111,18 +109,4 @@ fun String.parseHeader(): Pair<String, String>? {
 	val result = headerRegex.matchEntire(this.trim()) ?: return null
 	val (key, value) = result.destructured
 	return if (key.isNotEmpty()) key to value else null
-}
-
-/**
- * 格式化 Hint
- */
-fun String.formatHint(vararg args: Any?): String {
-	return args.foldIndexed(this) { index, acc, arg ->
-		val value = when (arg) {
-			is String -> arg
-			is KSName -> arg.asString()
-			else -> arg.toString()
-		}
-		acc.replace("{${index + 1}}", value)
-	}
 }

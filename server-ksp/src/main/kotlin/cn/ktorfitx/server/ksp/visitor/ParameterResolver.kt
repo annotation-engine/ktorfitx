@@ -3,6 +3,7 @@ package cn.ktorfitx.server.ksp.visitor
 import cn.ktorfitx.common.ksp.util.check.compileCheck
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCompilationError
 import cn.ktorfitx.common.ksp.util.expends.*
+import cn.ktorfitx.common.ksp.util.hint.format
 import cn.ktorfitx.server.ksp.constants.TypeNames
 import cn.ktorfitx.server.ksp.hint.ServerErrorHint
 import cn.ktorfitx.server.ksp.model.*

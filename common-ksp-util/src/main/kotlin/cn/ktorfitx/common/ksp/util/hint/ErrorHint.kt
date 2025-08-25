@@ -1,38 +1,31 @@
 package cn.ktorfitx.common.ksp.util.hint
 
-import cn.ktorfitx.common.ksp.util.expends.formatHint
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
-import java.io.File
+import com.google.devtools.ksp.symbol.KSName
 
 interface ErrorHint {
 	
-	val jsonElement: JsonElement?
+	val english: () -> String
 	
-	fun format(vararg args: Any?): String {
-		val hint = jsonElement?.jsonObject[this.toString()]
-			?.jsonPrimitive?.content ?: return ""
-		return hint.formatHint(*args)
+	val chinese: () -> String
+	
+	companion object {
+		
+		val language = ThreadLocal<String>()
 	}
 }
 
-abstract class ErrorHintCompanion {
-	
-	private val jsonElement = ThreadLocal<JsonElement>()
-	
-	abstract val languagePathMap: Map<String, String>
-	
-	fun load(language: String) {
-		val path = languagePathMap[language] ?: return
-		val json = File(path).readText()
-		jsonElement.set(Json.parseToJsonElement(json))
+fun ErrorHint.format(vararg args: Any?): String {
+	val hint = when (ErrorHint.language.get()) {
+		"CHINESE" -> this.chinese()
+		"ENGLISH" -> this.english()
+		else -> return ""
 	}
-	
-	fun getJsonElement(): JsonElement? = jsonElement.get()
-	
-	fun release() {
-		jsonElement.set(null)
+	return args.foldIndexed(hint) { index, acc, arg ->
+		val value = when (arg) {
+			is String -> arg
+			is KSName -> arg.asString()
+			else -> arg.toString()
+		}
+		acc.replace("{${index + 1}}", value)
 	}
 }

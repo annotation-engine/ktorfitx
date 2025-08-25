@@ -1,9 +1,8 @@
 package cn.ktorfitx.server.ksp
 
 import cn.ktorfitx.common.ksp.util.check.ktorfitxConfigError
-import cn.ktorfitx.common.ksp.util.hint.CommonErrorHint
+import cn.ktorfitx.common.ksp.util.hint.ErrorHint
 import cn.ktorfitx.common.ksp.util.log.kspLoggerLocal
-import cn.ktorfitx.server.ksp.hint.ServerErrorHint
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
@@ -16,8 +15,7 @@ internal class KtorfitxServerSymbolProcessorProvider : SymbolProcessorProvider {
 		val fileName = environment.options["ktorfitx.generate.fileName"] ?: ktorfitxConfigError("ktorfitx.generate.fileName 为空或未设置")
 		val funName = environment.options["ktorfitx.generate.funName"] ?: ktorfitxConfigError("ktorfitx.generate.funName 为空或未设置")
 		val language = environment.options["ktorfitx.language"] ?: ktorfitxConfigError("ktorfitx.language 为空或未设置")
-		CommonErrorHint.load(language)
-		ServerErrorHint.load(language)
+		ErrorHint.language.set(language)
 		return KtorfitxServerSymbolProcessor(environment.codeGenerator, packageName, fileName, funName)
 	}
 }

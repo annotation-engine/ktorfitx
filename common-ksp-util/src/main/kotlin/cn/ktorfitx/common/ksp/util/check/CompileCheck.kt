@@ -3,6 +3,7 @@ package cn.ktorfitx.common.ksp.util.check
 import cn.ktorfitx.common.ksp.util.exception.KtorfitxCompilationException
 import cn.ktorfitx.common.ksp.util.exception.KtorfitxConfigException
 import cn.ktorfitx.common.ksp.util.hint.CommonErrorHint
+import cn.ktorfitx.common.ksp.util.hint.format
 import com.google.devtools.ksp.symbol.FileLocation
 import com.google.devtools.ksp.symbol.KSNode
 import kotlin.contracts.ExperimentalContracts

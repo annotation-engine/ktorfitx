@@ -2,6 +2,7 @@ package cn.ktorfitx.server.ksp
 
 import cn.ktorfitx.common.ksp.util.check.compileCheck
 import cn.ktorfitx.common.ksp.util.expends.getCustomHttpMethodModels
+import cn.ktorfitx.common.ksp.util.hint.format
 import cn.ktorfitx.server.ksp.constants.TypeNames
 import cn.ktorfitx.server.ksp.hint.ServerErrorHint
 import cn.ktorfitx.server.ksp.kotlinpoet.RouteKotlinPoet
@@ -65,10 +66,5 @@ internal class KtorfitxServerSymbolProcessor(
 		).bufferedWriter().use {
 			fileSpec.writeTo(it)
 		}
-	}
-	
-	override fun finish() {
-		super.finish()
-		ServerErrorHint.release()
 	}
 }
