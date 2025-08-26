@@ -13,6 +13,7 @@ open class KtorfitxMultiplatformExtension @Inject constructor(
 	val websockets = objects.newInstance<WebsocketsConfig>()
 	val mock = objects.newInstance<MockConfig>()
 	val ksp = objects.newInstance<KSPConfig>()
+	val language = objects.property<KtorfitxLanguage>().convention(KtorfitxLanguage.ENGLISH)
 	
 	fun websockets(action: WebsocketsConfig.() -> Unit) {
 		websockets.action()
@@ -44,4 +45,9 @@ open class KSPConfig @Inject constructor(objects: ObjectFactory) {
 	val kspCommonMainGeneratedDir = objects.property<String>().convention(
 		"build/generated/ksp/metadata/commonMain/kotlin"
 	)
+}
+
+enum class KtorfitxLanguage {
+	CHINESE,
+	ENGLISH
 }

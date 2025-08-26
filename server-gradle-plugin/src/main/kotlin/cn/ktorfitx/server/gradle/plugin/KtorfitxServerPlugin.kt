@@ -29,6 +29,7 @@ class KtorfitxServerPlugin : Plugin<Project> {
 				this.arg("ktorfitx.generate.fileName", extension.generate.fileName.get().removeSuffix(".kt"))
 				this.arg("ktorfitx.generate.funName", extension.generate.funName.get())
 				this.arg("ktorfitx.language", extension.language.get().name)
+				this.arg("ktorfitx.server.gradle.plugin.enabled", "true")
 			}
 			when (extension.mode.get()) {
 				KtorfitxServerMode.RELEASE -> onReleaseMode(extension)

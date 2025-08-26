@@ -5,7 +5,7 @@ import cn.ktorfitx.common.ksp.util.check.ktorfitxCompilationError
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.common.ksp.util.message.format
 import cn.ktorfitx.server.ksp.constants.TypeNames
-import cn.ktorfitx.server.ksp.hint.ServerMessage
+import cn.ktorfitx.server.ksp.message.ServerMessage
 import cn.ktorfitx.server.ksp.model.*
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.squareup.kotlinpoet.ClassName

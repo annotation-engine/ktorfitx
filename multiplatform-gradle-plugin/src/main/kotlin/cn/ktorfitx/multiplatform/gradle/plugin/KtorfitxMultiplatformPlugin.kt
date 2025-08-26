@@ -2,10 +2,12 @@ package cn.ktorfitx.multiplatform.gradle.plugin
 
 import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxMultiplatformMode.DEVELOPMENT
 import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxMultiplatformMode.RELEASE
+import com.google.devtools.ksp.gradle.KspExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
+import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
@@ -25,8 +27,11 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 		target.pluginManager.apply("org.jetbrains.kotlin.multiplatform")
 		target.pluginManager.apply("com.google.devtools.ksp")
 		target.afterEvaluate {
-			val mode = extension.mode.get()
-			when (mode) {
+			this.extensions.configure(KspExtension::class) {
+				this.arg("ktorfitx.language", extension.language.get().name)
+				this.arg("ktorfitx.multiplatform.gradle.plugin.enabled", "true")
+			}
+			when (extension.mode.get()) {
 				DEVELOPMENT -> onDevelopmentMode(extension)
 				RELEASE -> onReleaseMode(extension)
 			}

@@ -1,4 +1,4 @@
-package cn.ktorfitx.server.ksp.hint
+package cn.ktorfitx.server.ksp.message
 
 import cn.ktorfitx.common.ksp.util.message.Message
 

@@ -1,9 +1,10 @@
 package cn.ktorfitx.multiplatform.ksp.visitor
 
 import cn.ktorfitx.common.ksp.util.check.compileCheck
-import cn.ktorfitx.common.ksp.util.check.ktorfitxCompilationError
 import cn.ktorfitx.common.ksp.util.expends.*
+import cn.ktorfitx.common.ksp.util.message.format
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
+import cn.ktorfitx.multiplatform.ksp.message.MultiplatformMessage
 import cn.ktorfitx.multiplatform.ksp.model.*
 import cn.ktorfitx.multiplatform.ksp.visitor.resolver.*
 import com.google.devtools.ksp.getDeclaredFunctions
@@ -37,7 +38,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 	
 	private fun KSClassDeclaration.getClassModel(): ClassModel {
 		this.compileCheck(!(this.isGeneric())) {
-			"${simpleName.asString()} 接口不允许包含泛型"
+			MultiplatformMessage.INTERFACE_NOT_ALLOW_GENERICS.format(simpleName)
 		}
 		val className = ClassName("${packageName.asString()}.impls", "${simpleName.asString()}Impl")
 		val superinterface = this.toClassName()
@@ -53,24 +54,26 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 	
 	private fun KSClassDeclaration.getApiUrl(): String? {
 		val annotation = getKSAnnotationByType(TypeNames.Api)!!
-		val url = annotation.getValueOrNull<String>("url")?.trim('/') ?: return null
-		if (url.isBlank()) return null
-		annotation.compileCheck(!url.isHttpOrHttps() && !url.isWSOrWSS()) {
-			"${simpleName.asString()} 接口上的 @Api 注解的 url 参数不允许开头是 http:// 或 https:// 或 ws:// 或 wss://"
+		var url = annotation.getValueOrNull<String>("url")?.takeIf { it.isNotBlank() } ?: return null
+		annotation.compileCheck(!url.containsSchemeSeparator()) {
+			MultiplatformMessage.ANNOTATION_NOT_ALLOW_USE_PROTOCOL_FROM_STRINGS.format(simpleName)
 		}
+		url = url.trim().trim('/')
 		annotation.compileCheck(apiUrlRegex.matches(url)) {
-			"${simpleName.asString()} 接口上的 @Api 注解的 url 参数格式错误"
+			MultiplatformMessage.ANNOTATION_URL_PARAMETER_FORMAT_INCORRECT.format(simpleName)
 		}
 		return url
 	}
 	
 	private fun KSClassDeclaration.getApiScopeModels(): List<ApiScopeModel> {
 		val apiScopeAnnotation = getKSAnnotationByType(TypeNames.ApiScope) ?: return listOf(ApiScopeModel(TypeNames.DefaultApiScope))
-		val apiScopeClassNames = apiScopeAnnotation.getClassNamesOrNull("scopes")?.distinct()?.takeIf { it.isNotEmpty() }
-			?: this.ktorfitxCompilationError { "${simpleName.asString()} 接口上的 @ApiScope 注解的参数不允许为空" }
+		val apiScopeClassNames = apiScopeAnnotation.getClassNamesOrNull("scopes")?.takeIf { it.isNotEmpty() }
+		apiScopeAnnotation.compileCheck(apiScopeClassNames != null) {
+			MultiplatformMessage.ANNOTATION_SCOPES_PARAMETER_NOT_ALLOW_NULLABLE.format(simpleName)
+		}
 		val groupSize = apiScopeClassNames.groupBy { it.simpleNames.joinToString(".") }.size
 		this.compileCheck(apiScopeClassNames.size == groupSize) {
-			"${simpleName.asString()} 函数不允许使用类名相同的 KClass"
+			MultiplatformMessage.ANNOTATION_SCOPES_NOT_ALLOWED_USE_SAME_CLASS_NAME_K_CLASS.format(simpleName)
 		}
 		return apiScopeClassNames.map { ApiScopeModel(it) }
 	}
@@ -81,7 +84,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 	private fun KSClassDeclaration.getVisibilityKModifier(): KModifier {
 		val visibility = this.getVisibility()
 		this.compileCheck(visibility == PUBLIC || visibility == INTERNAL) {
-			"${simpleName.asString()} 接口标记了 @Api，所以必须是 public 或 internal 访问权限的"
+			MultiplatformMessage.INTERFACE_MUST_BE_DECLARED_PUBLIC_OR_INTERNAL_ACCESS_PERMISSION.format(simpleName)
 		}
 		return KModifier.entries.first { it.name == visibility.name }
 	}
@@ -89,31 +92,31 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 	private fun KSClassDeclaration.getFunModel(): List<FunModel> {
 		return this.getDeclaredFunctions().toList()
 			.filter { it.isAbstract }
-			.map {
-				it.compileCheck(Modifier.SUSPEND in it.modifiers) {
-					"${it.simpleName.asString()} 函数缺少 suspend 修饰符"
+			.map { function ->
+				function.compileCheck(Modifier.SUSPEND in function.modifiers) {
+					MultiplatformMessage.FUNCTION_LACKS_SUSPEND_MODIFIER.format(function.simpleName)
 				}
-				val routeModel = it.getRouteModel()
+				val routeModel = function.getRouteModel()
 				val isWebSocket = routeModel is WebSocketModel
-				val mockModel = it.getMockModel(isWebSocket)
+				val mockModel = function.getMockModel(isWebSocket)
 				FunModel(
-					funName = it.simpleName.asString(),
-					returnModel = it.getReturnModel(isWebSocket),
-					parameterModels = it.getParameterModels(isWebSocket),
+					funName = function.simpleName.asString(),
+					returnModel = function.getReturnModel(isWebSocket),
+					parameterModels = function.getParameterModels(isWebSocket),
 					routeModel = routeModel,
 					mockModel = mockModel,
-					hasBearerAuth = it.hasBearerAuth(),
-					isPrepareType = it.isPrepareType(isWebSocket, mockModel != null),
-					timeoutModel = it.getTimeoutModel(),
-					queryModels = it.getQueryModels(),
-					pathModels = it.getPathModels(routeModel.url, isWebSocket),
-					cookieModels = it.getCookieModels(),
-					attributeModels = it.getAttributeModels(),
-					headerModels = it.getHeaderModels(),
-					headersModel = it.getHeadersModel(),
-					requestBodyModel = it.getRequestBodyModel(),
-					queriesModels = it.getQueriesModels(),
-					attributesModels = it.getAttributesModels(),
+					hasBearerAuth = function.hasBearerAuth(),
+					isPrepareType = function.isPrepareType(isWebSocket, mockModel != null),
+					timeoutModel = function.getTimeoutModel(),
+					queryModels = function.getQueryModels(),
+					pathModels = function.getPathModels(routeModel.url, isWebSocket),
+					cookieModels = function.getCookieModels(),
+					attributeModels = function.getAttributeModels(),
+					headerModels = function.getHeaderModels(),
+					headersModel = function.getHeadersModel(),
+					requestBodyModel = function.getRequestBodyModel(),
+					queriesModels = function.getQueriesModels(),
+					attributesModels = function.getAttributesModels(),
 				)
 			}
 	}

@@ -4,8 +4,8 @@ import cn.ktorfitx.common.ksp.util.check.compileCheck
 import cn.ktorfitx.common.ksp.util.expends.getCustomHttpMethodModels
 import cn.ktorfitx.common.ksp.util.message.format
 import cn.ktorfitx.server.ksp.constants.TypeNames
-import cn.ktorfitx.server.ksp.hint.ServerMessage
 import cn.ktorfitx.server.ksp.kotlinpoet.RouteKotlinPoet
+import cn.ktorfitx.server.ksp.message.ServerMessage
 import cn.ktorfitx.server.ksp.model.CustomHttpMethodModel
 import cn.ktorfitx.server.ksp.model.FunModel
 import cn.ktorfitx.server.ksp.visitor.RouteVisitor

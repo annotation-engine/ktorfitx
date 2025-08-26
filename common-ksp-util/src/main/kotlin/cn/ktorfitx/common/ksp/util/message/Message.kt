@@ -7,17 +7,28 @@ interface Message {
 	val english: () -> String
 	
 	val chinese: () -> String
-	
-	companion object Companion {
-		
-		val language = ThreadLocal<String>()
-	}
+}
+
+private val languageLocal = ThreadLocal<Language>()
+
+fun setLanguage(language: String) {
+	languageLocal.set(
+		when (language) {
+			"CHINESE" -> Language.CHINESE
+			else -> Language.ENGLISH
+		}
+	)
+}
+
+private enum class Language {
+	CHINESE,
+	ENGLISH
 }
 
 fun Message.format(vararg args: Any?): String {
-	val hint = when (Message.language.get()) {
-		"CHINESE" -> this.chinese()
-		else -> this.english()
+	val hint = when (languageLocal.get()) {
+		Language.CHINESE -> this.chinese()
+		Language.ENGLISH -> this.english()
 	}
 	return args.foldIndexed(hint) { index, acc, arg ->
 		val value = when (arg) {
