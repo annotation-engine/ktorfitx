@@ -42,6 +42,26 @@ internal enum class MultiplatformMessage(
 		chinese = { "{1} 接口上的 @ApiScope 注解的 scopes 参数不允许使用相同类名的 KClass<*>" },
 		english = { "The scopes parameter of the @ApiScope annotation on the {1} interface is not allowed to use the KClass<*> of the same class name." }
 	),
+	ANNOTATION_NOT_SET_URL_OR_ADDED_DYNAMIC_URL(
+		chinese = { "{1} 函数上的 @{2} 注解未设置 url 参数，或在参数上添加 @DynamicUrl 注解" },
+		english = { "The @{2} annotation on the {1} function is not set with a URL parameter, or the @DynamicUrl annotation is not added to the parameters." }
+	),
+	ANNOTATION_URL_ONLY_SUPPORTED_WS_AND_WSS_PROTOCOLS(
+		chinese = { "{1} 函数上的 @{2} 注解中的 url 参数仅支持 \"ws://\" 和 \"wss://\" 协议" },
+		english = { "The url parameter in the @{2} annotation on the {1} function is only supported for the \"ws://\" and \"wss://\" protocols." }
+	),
+	ANNOTATION_URL_ONLY_SUPPORTED_HTTP_AND_HTTPS_PROTOCOLS(
+		chinese = { "{1} 函数上的 @{2} 注解中的 url 参数仅支持 \"http://\" 和 \"https://\" 协议" },
+		english = { "The url parameter in the @{2} annotation on the {1} function is only supported for the \"http://\" and \"https://\" protocols." }
+	),
+	FUNCTION_NOW_ALLOW_SETTING_URL_WHEN_MARKED_DYNAMIC_URL(
+		chinese = { "{1} 函数上的 {2} 注解不允许设置 url 参数，因为函数已经标记了 @DynamicUrl 注解" },
+		english = { "The {2} annotation on the {1} function does not allow setting URL parameter because the function has already been marked with the @DynamicUrl annotation." }
+	),
+	ANNOTATION_URL_FORMAT_INCORRECT(
+		chinese = { "{1} 函数上的 @{2} 注解上的 url 参数格式错误" },
+		english = { "The format of the url parameter on the @{2} annotation of the {1} function is incorrect." }
+	),
 	FUNCTION_LACKS_SUSPEND_MODIFIER(
 		chinese = { "{1} 函数缺少 \"suspend\" 修饰符" },
 		english = { "The {1} function lacks the \"suspend\" modifier." }
@@ -59,8 +79,8 @@ internal enum class MultiplatformMessage(
 		english = { "The {1} function does not allow the use of the Unit? return type." }
 	),
 	FUNCTION_NOT_ALLOW_USE_RETURN_TYPE_NOTHING(
-		chinese = { "{1} 函数不允许使用 {2} 返回类型" },
-		english = { "The {1} function does not allow the use of the {2} return type." }
+		chinese = { "{1} 函数不允许使用 Nothing{2} 返回类型" },
+		english = { "The {1} function does not allow the use of the Nothing{2} return type." }
 	),
 	FUNCTION_ONLY_ALLOW_USE_ONE_REQUEST_TYPE_ANNOTATION(
 		chinese = { "{1} 函数只允许使用一种请求类型注解，而您同时使用了 {2} 注解" },

@@ -147,24 +147,24 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		val rawUrl = getKSAnnotationByType(className)!!.getValueOrNull<String>("url")?.trim('/')
 		val url = if (dynamicUrl != null) {
 			this.compileCheck(rawUrl.isNullOrBlank()) {
-				"${simpleName.asString()} 函数参数中使用了 @DynamicUrl 注解，因此函数上的 @${className.simpleName} 注解不允许设置 url 参数"
+				MultiplatformMessage.FUNCTION_NOW_ALLOW_SETTING_URL_WHEN_MARKED_DYNAMIC_URL.format(simpleName, className.simpleName)
 			}
 			dynamicUrl
 		} else {
 			this.compileCheck(!rawUrl.isNullOrBlank()) {
-				"${simpleName.asString()} 函数的参数上需要设置 @DynamicUrl 注解 或为 @${className.simpleName} 注解设置 url"
+				MultiplatformMessage.ANNOTATION_NOT_SET_URL_OR_ADDED_DYNAMIC_URL.format(simpleName, className.simpleName)
 			}
 			if (isWebSocket) {
 				this.compileCheck(!rawUrl.containsSchemeSeparator() || rawUrl.isWSOrWSS()) {
-					"${simpleName.asString()} 函数上的 @${className.simpleName} 注解中的 url 参数仅支持 ws:// 和 wss:// 协议"
+					MultiplatformMessage.ANNOTATION_URL_ONLY_SUPPORTED_WS_AND_WSS_PROTOCOLS.format(simpleName, className.simpleName)
 				}
 			} else {
 				this.compileCheck(!rawUrl.containsSchemeSeparator() || rawUrl.isHttpOrHttps()) {
-					"${simpleName.asString()} 函数上的 @${className.simpleName} 注解中的 url 参数仅支持 http:// 和 https:// 协议"
+					MultiplatformMessage.ANNOTATION_URL_ONLY_SUPPORTED_HTTP_AND_HTTPS_PROTOCOLS.format(simpleName, className.simpleName)
 				}
 			}
 			this.compileCheck(urlRegex.matches(rawUrl)) {
-				"${simpleName.asString()} 函数上的 @${className.simpleName} 注解上的 url 参数格式错误"
+				MultiplatformMessage.ANNOTATION_URL_FORMAT_INCORRECT.format(simpleName, className.simpleName)
 			}
 			StaticUrl(rawUrl)
 		}
@@ -207,8 +207,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 			
 			else -> {
 				returnType.compileCheck(!typeName.equals(TypeNames.Nothing, ignoreNullable = true)) {
-					val name = if (typeName.isNullable) "Nothing?" else "Nothing"
-					MultiplatformMessage.FUNCTION_NOT_ALLOW_USE_RETURN_TYPE_NOTHING.format(simpleName, name)
+					MultiplatformMessage.FUNCTION_NOT_ALLOW_USE_RETURN_TYPE_NOTHING.format(simpleName, if (typeName.isNullable) "?" else "")
 				}
 				ReturnKind.Any
 			}
