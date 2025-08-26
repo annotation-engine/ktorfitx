@@ -14,6 +14,18 @@ internal enum class MultiplatformMessage(
 		chinese = { "{1} 接口必须声明为 public 或 internal 访问权限" },
 		english = { "The {1} interface must be declared with public or internal access permission." }
 	),
+	INTERFACE_MUST_BE_INTERFACE_BECAUSE_MARKED_API(
+		chinese = { "{1} 必须是 interface，因为您标记了 @Api 注解" },
+		english = { "xx must be an interface because you have marked the @Api annotation." }
+	),
+	INTERFACE_NOT_SUPPORT_SEALED_MODIFIER(
+		chinese = { "{1} 接口不支持 \"sealed\" 修饰符" },
+		english = { "The {1} interface does not support the \"sealed\" modifier." }
+	),
+	INTERFACE_MUST_BE_PLACED_FILE_TOP_LEVEL(
+		chinese = { "{1} 接口必须在文件顶层" },
+		english = { "The {1} interface must be placed at the top level of the file." }
+	),
 	ANNOTATION_NOT_ALLOW_USE_PROTOCOL_FROM_STRINGS(
 		chinese = { "{1} 接口上的 @Api 注解中不允许出现包含 \"://\" 的协议形式字符串，例如：\"http://\" 或 \"https://\"" },
 		english = { "The @Api annotation on the {1} interface does not allow the use of protocol-form strings containing \"://\", such as \"http://\" or \"https://\"." }

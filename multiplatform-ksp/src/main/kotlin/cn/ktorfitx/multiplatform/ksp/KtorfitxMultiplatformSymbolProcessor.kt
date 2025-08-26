@@ -1,10 +1,11 @@
 package cn.ktorfitx.multiplatform.ksp
 
 import cn.ktorfitx.common.ksp.util.check.compileCheck
-import cn.ktorfitx.common.ksp.util.expends.code
 import cn.ktorfitx.common.ksp.util.expends.getCustomHttpMethodModels
+import cn.ktorfitx.common.ksp.util.message.format
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
 import cn.ktorfitx.multiplatform.ksp.kotlinpoet.ApiKotlinPoet
+import cn.ktorfitx.multiplatform.ksp.message.MultiplatformMessage
 import cn.ktorfitx.multiplatform.ksp.model.CustomHttpMethodModel
 import cn.ktorfitx.multiplatform.ksp.visitor.ApiVisitor
 import com.google.devtools.ksp.processing.CodeGenerator
@@ -39,15 +40,14 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 			.filterIsInstance<KSClassDeclaration>()
 			.filter { it.validate() }
 			.forEach {
-				val classKind = it.classKind
-				it.compileCheck(classKind == ClassKind.INTERFACE) {
-					"@Api 只允许标注在 interface 上，而您的是 ${classKind.code}"
+				it.compileCheck(it.classKind == ClassKind.INTERFACE) {
+					MultiplatformMessage.INTERFACE_MUST_BE_INTERFACE_BECAUSE_MARKED_API.format(it.simpleName)
 				}
 				it.compileCheck(Modifier.SEALED !in it.modifiers) {
-					"${it.simpleName.asString()} 接口不支持 sealed 修饰符"
+					MultiplatformMessage.INTERFACE_NOT_SUPPORT_SEALED_MODIFIER.format(it.simpleName)
 				}
-				it.compileCheck(it.parentDeclaration !is KSClassDeclaration) {
-					"${it.simpleName.asString()} 接口必须是顶层接口"
+				it.compileCheck(it.parentDeclaration == null) {
+					MultiplatformMessage.INTERFACE_MUST_BE_PLACED_FILE_TOP_LEVEL.format(it.simpleName)
 				}
 				val classModel = it.accept(ApiVisitor, customHttpMethodModels)
 				val fileSpec = ApiKotlinPoet.getFileSpec(classModel)

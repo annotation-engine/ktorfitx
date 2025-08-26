@@ -130,6 +130,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		this.compileCheck(classNames.size <= 1) {
 			val useAnnotations = classNames.joinToString { "@${it.simpleName}" }
 			val useSize = classNames.size
+			"{1} 函数只允许使用一种请求类型注解，而您同时使用了 {2} 这些注解"
 			"${simpleName.asString()} 函数只允许使用一种类型注解，而您使用了 $useAnnotations $useSize 个"
 		}
 		this.compileCheck(classNames.size == 1) {
