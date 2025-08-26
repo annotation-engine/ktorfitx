@@ -129,18 +129,11 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		val classNames = availableRoutes.filter { hasAnnotation(it) }
 		this.compileCheck(classNames.size <= 1) {
 			val useAnnotations = classNames.joinToString { "@${it.simpleName}" }
-			val useSize = classNames.size
-			"{1} 函数只允许使用一种请求类型注解，而您同时使用了 {2} 这些注解"
-			"${simpleName.asString()} 函数只允许使用一种类型注解，而您使用了 $useAnnotations $useSize 个"
+			MultiplatformMessage.FUNCTION_ONLY_ALLOW_USE_ONE_REQUEST_TYPE_ANNOTATION
+				.format(simpleName, useAnnotations, if (classNames.size > 1) "s" else "")
 		}
 		this.compileCheck(classNames.size == 1) {
-			val routes = TypeNames.routes.joinToString { "@${it.simpleName}" }
-			if (customClassNames.isEmpty()) {
-				"函数 ${simpleName.asString()} 未添加路由注解，请选择：\n内置注解：$routes\n自定义注解：无"
-			} else {
-				val availableRoutes = customClassNames.joinToString { "@${it.simpleName}" }
-				"函数 ${simpleName.asString()} 未添加路由注解，请选择：\n内置注解：$routes\n自定义注解：$availableRoutes"
-			}
+			MultiplatformMessage.FUNCTION_NOT_USE_ROUTE_ANNOTATION.format(simpleName)
 		}
 		val className = classNames.first()
 		val isWebSocket = className == TypeNames.WebSocket
@@ -148,7 +141,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		
 		if (isWebSocket) {
 			this.compileCheck(dynamicUrl == null) {
-				"${simpleName.asString()} 函数不支持使用 @Path 参数"
+				MultiplatformMessage.FUNCTION_NOT_ALLOW_USE_PATH_PARAMETER.format(simpleName)
 			}
 		}
 		val rawUrl = getKSAnnotationByType(className)!!.getValueOrNull<String>("url")?.trim('/')
@@ -193,28 +186,29 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		val returnKind = when {
 			isWebSocket -> {
 				returnType.compileCheck(!typeName.isNullable && typeName == TypeNames.Unit) {
-					"${simpleName.asString()} 函数必须使用 ${TypeNames.Unit.canonicalName} 作为返回类型，因为您标注了 @WebSocket 注解"
+					MultiplatformMessage.FUNCTION_HAS_BEEN_WEBSOCKET_SO_RETURN_TYPE_MUST_BE_UNIT.format(simpleName)
 				}
 				ReturnKind.Unit
 			}
 			
 			typeName.rawType == TypeNames.Result -> {
 				returnType.compileCheck(!typeName.isNullable && typeName is ParameterizedTypeName) {
-					"${simpleName.asString()} 函数不允许为 Result 返回类型设置为可空"
+					MultiplatformMessage.FUNCTION_NOT_ALLOW_RETURN_TYPE_RESULT_SET_NULLABLE.format(simpleName)
 				}
 				ReturnKind.Result
 			}
 			
 			typeName == TypeNames.Unit -> {
 				returnType.compileCheck(!typeName.isNullable) {
-					"${simpleName.asString()} 函数不允许使用 Unit? 返回类型"
+					MultiplatformMessage.FUNCTION_NOT_ALLOW_RETURN_TYPE_UNIT_USE_NULLABLE.format(simpleName)
 				}
 				ReturnKind.Unit
 			}
 			
 			else -> {
-				returnType.compileCheck(typeName != TypeNames.Nothing) {
-					"${simpleName.asString()} 函数不允许使用 Nothing 返回类型"
+				returnType.compileCheck(!typeName.equals(TypeNames.Nothing, ignoreNullable = true)) {
+					val name = if (typeName.isNullable) "Nothing?" else "Nothing"
+					MultiplatformMessage.FUNCTION_NOT_ALLOW_USE_RETURN_TYPE_NOTHING.format(simpleName, name)
 				}
 				ReturnKind.Any
 			}
