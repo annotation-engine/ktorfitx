@@ -69,7 +69,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		val apiScopeAnnotation = getKSAnnotationByType(TypeNames.ApiScope) ?: return listOf(ApiScopeModel(TypeNames.DefaultApiScope))
 		val apiScopeClassNames = apiScopeAnnotation.getClassNamesOrNull("scopes")?.takeIf { it.isNotEmpty() }
 		apiScopeAnnotation.compileCheck(apiScopeClassNames != null) {
-			MultiplatformMessage.ANNOTATION_SCOPES_PARAMETER_NOT_ALLOW_NULLABLE.format(simpleName)
+			MultiplatformMessage.ANNOTATION_SCOPES_PARAMETER_NOT_ALLOW_NULLABLE_TYPE.format(simpleName)
 		}
 		val groupSize = apiScopeClassNames.groupBy { it.simpleNames.joinToString(".") }.size
 		this.compileCheck(apiScopeClassNames.size == groupSize) {
@@ -193,14 +193,14 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 			
 			typeName.rawType == TypeNames.Result -> {
 				returnType.compileCheck(!typeName.isNullable && typeName is ParameterizedTypeName) {
-					MultiplatformMessage.FUNCTION_NOT_ALLOW_RETURN_TYPE_RESULT_SET_NULLABLE.format(simpleName)
+					MultiplatformMessage.FUNCTION_NOT_ALLOW_RETURN_TYPE_RESULT_SET_NULLABLE_TYPE.format(simpleName)
 				}
 				ReturnKind.Result
 			}
 			
 			typeName == TypeNames.Unit -> {
 				returnType.compileCheck(!typeName.isNullable) {
-					MultiplatformMessage.FUNCTION_NOT_ALLOW_RETURN_TYPE_UNIT_USE_NULLABLE.format(simpleName)
+					MultiplatformMessage.FUNCTION_NOT_ALLOW_RETURN_TYPE_UNIT_USE_NULLABLE_TYPE.format(simpleName)
 				}
 				ReturnKind.Unit
 			}

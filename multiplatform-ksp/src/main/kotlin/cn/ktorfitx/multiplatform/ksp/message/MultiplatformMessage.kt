@@ -34,7 +34,7 @@ internal enum class MultiplatformMessage(
 		chinese = { "{1} 接口上的 @Api 注解的 url 参数格式错误" },
 		english = { "The format of the url parameter in the @Api annotation on the {1} interface is incorrect." }
 	),
-	ANNOTATION_SCOPES_PARAMETER_NOT_ALLOW_NULLABLE(
+	ANNOTATION_SCOPES_PARAMETER_NOT_ALLOW_NULLABLE_TYPE(
 		chinese = { "{1} 接口上的 @ApiScope 注解的 scopes 参数不允许为空" },
 		english = { "The scopes parameter of the @ApiScope annotation on the {1} interface is not allowed to be empty." }
 	),
@@ -70,11 +70,11 @@ internal enum class MultiplatformMessage(
 		chinese = { "{1} 函数已标注 @WebSocket 注解，因此返回类型必须为 Unit" },
 		english = { "The {1} function has been annotated with the @WebSocket annotation, so the return type must be Unit." }
 	),
-	FUNCTION_NOT_ALLOW_RETURN_TYPE_RESULT_SET_NULLABLE(
+	FUNCTION_NOT_ALLOW_RETURN_TYPE_RESULT_SET_NULLABLE_TYPE(
 		chinese = { "{1} 函数不允许为 Result 返回类型设置为可空" },
 		english = { "The {1} function does not allow the return type of Result to be set as nullable." }
 	),
-	FUNCTION_NOT_ALLOW_RETURN_TYPE_UNIT_USE_NULLABLE(
+	FUNCTION_NOT_ALLOW_RETURN_TYPE_UNIT_USE_NULLABLE_TYPE(
 		chinese = { "{1} 函数不允许使用 Unit? 返回类型" },
 		english = { "The {1} function does not allow the use of the Unit? return type." }
 	),
@@ -93,5 +93,33 @@ internal enum class MultiplatformMessage(
 	FUNCTION_NOT_ALLOW_USE_PATH_PARAMETER(
 		chinese = { "{1} 函数不支持使用 @Path 参数" },
 		english = { "The {1} function does not support the use of @Path parameters." }
+	),
+	FUNCTION_USE_INCOMPATIBLE_ANNOTATIONS(
+		chinese = { "{1} 函数使用了不兼容的注解 {2}" },
+		english = { "The {1} function uses incompatible annotations {2}." }
+	),
+	FUNCTION_NOT_ALLOW_USE_MULTIPLE_BODY_ANNOTATIONS(
+		chinese = { "{1} 函数不允许使用多个 @Body 注解" },
+		english = { "The {1} function does not allow the use of multiple @Body annotations." }
+	),
+	PARAMETER_MUST_BE_DECLARED_SPECIFIC_TYPE_BECAUSE_MARKED_BODY(
+		chinese = { "{1} 函数的 {2} 参数必须声明为具体类型，因为您标记了 @Body 注解" },
+		english = { "The {2} parameter of the {1} function must be declared as a specific type because you have marked the @Body annotation." }
+	),
+	PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_FIELD(
+		chinese = { "{1} 函数的 {2} 参数只允许使用 Map<String, *> 或 List<Pair<String, *>> 类型或是它们的具体化子类型或是派生类型" },
+		english = { "The {2} parameter of the {1} function can only be of the type Map<String, *> or List<Pair<String, *>> or their specificized subtypes or derived types." }
+	),
+	PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_PART(
+		chinese = { "{1} 函数的 {2} 参数只允许使用 Map<String, Any> 或 List<Pair<String, Any>> 或 List<FormPart<*>> 类型或是它的具体化子类型或派生类型" },
+		english = { "The {2} parameter of the {1} function can only be of the types Map<String, Any>, List<Pair<String, Any>> or List<FormPart<*>>, or its specificized subtypes or derived types." }
+	),
+	PARAMETER_HEADERS_FORMAT_INCORRECT(
+		chinese = { "xx 函数的 xx 参数的 @Part 注解上的 headers 参数格式有误，需要以 <key>:<value> 格式" },
+		english = { "The format of the headers parameter on the @Part annotation of the {1} function's {2} parameter is incorrect. It needs to be in the format of <key>:<value>." }
+	),
+	PARAMETER_NOT_ALLOW_USE_NULLABLE_TYPE(
+		chinese = { "{1} 函数的 {2} 参数不允许使用可空类型" },
+		english = { "The {2} parameter of the {1} function is not allowed to use nullable types." }
 	)
 }

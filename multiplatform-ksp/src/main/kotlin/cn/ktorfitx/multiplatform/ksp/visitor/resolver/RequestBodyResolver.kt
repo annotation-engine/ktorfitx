@@ -3,7 +3,9 @@ package cn.ktorfitx.multiplatform.ksp.visitor.resolver
 import cn.ktorfitx.common.ksp.util.check.compileCheck
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCompilationError
 import cn.ktorfitx.common.ksp.util.expends.*
+import cn.ktorfitx.common.ksp.util.message.format
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
+import cn.ktorfitx.multiplatform.ksp.message.MultiplatformMessage
 import cn.ktorfitx.multiplatform.ksp.model.*
 import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.symbol.KSClassDeclaration
@@ -22,7 +24,7 @@ internal fun KSFunctionDeclaration.getRequestBodyModel(): RequestBodyModel? {
 	val useRequestBodyMap = classNames.groupBy { requestBodyKindMap[it]!! }
 	this.compileCheck(useRequestBodyMap.size == 1) {
 		val useTypeNames = useRequestBodyMap.values.flatten().joinToString { "@${it.simpleName}" }
-		"${simpleName.asString()} 函数使用了不兼容的注解 $useTypeNames"
+		MultiplatformMessage.FUNCTION_USE_INCOMPATIBLE_ANNOTATIONS.format(simpleName, useTypeNames)
 	}
 	return when (useRequestBodyMap.entries.first().key) {
 		RequestBodyKind.BODY -> this.getBodyModel()
@@ -37,13 +39,13 @@ private fun KSFunctionDeclaration.getBodyModel(): BodyModel? {
 	}
 	if (filters.isEmpty()) return null
 	this.compileCheck(filters.size == 1) {
-		"${simpleName.asString()} 函数不允许使用多个 @Body 注解"
+		MultiplatformMessage.FUNCTION_NOT_ALLOW_USE_MULTIPLE_BODY_ANNOTATIONS.format(simpleName)
 	}
 	val parameter = filters.first()
 	val varName = parameter.name!!.asString()
 	val typeName = parameter.type.toTypeName()
-	this.compileCheck(typeName is ClassName || typeName is ParameterizedTypeName) {
-		"${simpleName.asString()} 函数的参数列表中标记了 @Body 注解，但是未找到参数类型"
+	parameter.compileCheck(typeName is ClassName || typeName is ParameterizedTypeName) {
+		MultiplatformMessage.PARAMETER_MUST_BE_DECLARED_SPECIFIC_TYPE_BECAUSE_MARKED_BODY.format(simpleName, parameter.name!!)
 	}
 	val annotation = parameter.getKSAnnotationByType(TypeNames.Body)!!
 	val formatClassName = annotation.getClassNameOrNull("format") ?: TypeNames.SerializationFormatJson
@@ -87,7 +89,7 @@ private fun KSFunctionDeclaration.getFieldRequestBodyModel(): FieldRequestBodyMo
 			else -> null
 		}
 		parameter.compileCheck(fieldsKind != null) {
-			"${simpleName.asString()} 函数的 $varName 参数只允许使用 Map<String, *> 或 List<Pair<String, *>> 类型或是它的具体化子类型或派生类型"
+			MultiplatformMessage.PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_FIELD.format(simpleName, varName)
 		}
 		val typeName = type.toTypeName() as ParameterizedTypeName
 		val valueTypeName = when (fieldsKind) {
@@ -111,24 +113,24 @@ private fun KSFunctionDeclaration.getPartRequestBodyModel(): PartRequestBodyMode
 		val varName = parameter.name!!.asString()
 		val headerMap = annotation.getValuesOrNull<String>("headers")?.associate {
 			it.parseHeader() ?: parameter.ktorfitxCompilationError {
-				"${simpleName.asString()} 函数的 $varName 参数的 @Part 注解上的 headers 参数格式有误，需要以 <key>:<value> 格式"
+				MultiplatformMessage.PARAMETER_HEADERS_FORMAT_INCORRECT.format(simpleName, varName)
 			}
 		}
 		val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
 		val type = parameter.type.resolve()
 		parameter.compileCheck(!type.isMarkedNullable) {
-			"${simpleName.asString()} 函数的 $varName 参数不允许使用可空类型"
+			MultiplatformMessage.PARAMETER_NOT_ALLOW_USE_NULLABLE_TYPE.format(simpleName, varName)
 		}
 		val typeName = type.toTypeName()
 		val partKind = when {
 			typeName in TypeNames.formPartSupportValueTypes || TypeNames.formPartSupportValueTypes.any { typeName ->
-				val declaration = type.declaration as? KSClassDeclaration ?: return@any false
-				declaration.getAllSuperTypes().any {
+				val declaration = type.declaration
+				declaration is KSClassDeclaration && declaration.getAllSuperTypes().any {
 					it.toTypeName() == typeName
 				}
 			} -> PartKind.KEY_VALUE
 			
-			(typeName as? ParameterizedTypeName)?.rawType == TypeNames.FormPart -> PartKind.DIRECT
+			typeName is ParameterizedTypeName && typeName.rawType == TypeNames.FormPart -> PartKind.DIRECT
 			else -> PartKind.FORM_PART
 		}
 		PartModel(name, varName, headerMap, partKind)
@@ -144,7 +146,7 @@ private fun KSFunctionDeclaration.getPartRequestBodyModel(): PartRequestBodyMode
 			else -> null
 		}
 		parameter.compileCheck(partsKind != null) {
-			"${simpleName.asString()} 函数的 $varName 参数只允许使用 Map<String, Any> 或 List<Pair<String, Any>> 或 List<FormPart<*>> 类型或是它的具体化子类型或派生类型"
+			MultiplatformMessage.PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_PART.format(simpleName, varName)
 		}
 		val valueKind = when (partsKind) {
 			PartsKind.MAP -> {
