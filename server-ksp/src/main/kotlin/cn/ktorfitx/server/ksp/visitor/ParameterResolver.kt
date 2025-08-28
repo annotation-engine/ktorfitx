@@ -3,9 +3,10 @@ package cn.ktorfitx.server.ksp.visitor
 import cn.ktorfitx.common.ksp.util.check.compileCheck
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCompilationError
 import cn.ktorfitx.common.ksp.util.expends.*
-import cn.ktorfitx.common.ksp.util.message.format
+import cn.ktorfitx.common.ksp.util.message.MessageConfig
+import cn.ktorfitx.common.ksp.util.message.getString
 import cn.ktorfitx.server.ksp.constants.TypeNames
-import cn.ktorfitx.server.ksp.message.ServerMessage
+import cn.ktorfitx.server.ksp.message.*
 import cn.ktorfitx.server.ksp.model.*
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.squareup.kotlinpoet.ClassName
@@ -16,11 +17,11 @@ internal fun KSFunctionDeclaration.getVarNames(): List<String> {
 		val count = TypeNames.parameterAnnotations.count { parameter.hasAnnotation(it) }
 		parameter.compileCheck(count > 0) {
 			val annotations = TypeNames.parameterAnnotations.joinToString { "@${it.simpleName}" }
-			ServerMessage.PARAMETER_MUST_USE_ONE_OF_ANNOTATIONS.format(simpleName, parameter.name!!, annotations)
+			MESSAGE_PARAMETER_MUST_USE_ONE_OF_ANNOTATIONS.getString(simpleName, parameter.name!!, annotations)
 		}
 		parameter.compileCheck(count == 1) {
 			val annotations = TypeNames.parameterAnnotations.joinToString { "@${it.simpleName}" }
-			ServerMessage.PARAMETER_ONLY_USE_ONE_OF_ANNOTATIONS.format(simpleName, parameter.name!!, annotations)
+			MESSAGE_PARAMETER_ONLY_USE_ONE_OF_ANNOTATIONS.getString(simpleName, parameter.name!!, annotations)
 		}
 		parameter.name!!.asString()
 	}
@@ -46,7 +47,7 @@ internal fun KSFunctionDeclaration.getQueryModels(): List<QueryModel> {
 		val typeName = type.toTypeName().asNotNullable()
 		if (type.isMarkedNullable) {
 			parameter.compileCheck(typeName == TypeNames.String) {
-				ServerMessage.PARAMETER_NULLABLE_ONLY_STRING.format(simpleName, parameter.name!!)
+				MESSAGE_PARAMETER_NULLABLE_ONLY_STRING.getString(simpleName, parameter.name!!)
 			}
 		}
 		QueryModel(name, varName, typeName, type.isMarkedNullable)
@@ -61,21 +62,21 @@ internal fun KSFunctionDeclaration.getPathModels(routeModel: RouteModel): List<P
 		val varName = parameter.name!!.asString()
 		val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
 		parameter.compileCheck(name in pathParameters) {
-			ServerMessage.PARAMETER_WAS_NOT_FOUND_IN_THE_URL.format(simpleName, parameter.name!!)
+			MESSAGE_PARAMETER_WAS_NOT_FOUND_IN_THE_URL.getString(simpleName, parameter.name!!)
 		}
 		parameter.compileCheck(name in residuePathParameters) {
-			ServerMessage.PARAMETER_REDUNDANTLY_PARSED_AS_THE_PATH_PARAMETER.format(simpleName, parameter.name!!)
+			MESSAGE_PARAMETER_REDUNDANTLY_PARSED_AS_THE_PATH_PARAMETER.getString(simpleName, parameter.name!!)
 		}
 		residuePathParameters -= name
 		
 		val typeName = parameter.type.toTypeName()
 		parameter.compileCheck(!typeName.isNullable) {
-			ServerMessage.PARAMETER_NOT_ALLOWED_NULLABLE.format(simpleName, parameter.name!!)
+			MESSAGE_PARAMETER_NOT_ALLOWED_NULLABLE.getString(simpleName, parameter.name!!)
 		}
 		PathModel(name, varName, typeName)
 	}
 	this.compileCheck(residuePathParameters.isEmpty()) {
-		ServerMessage.FUNCTION_FAILED_PARSE_FOLLOWING_PATH_PARAMETER.format(simpleName, residuePathParameters.joinToString())
+		MESSAGE_FUNCTION_FAILED_PARSE_FOLLOWING_PATH_PARAMETER.getString(simpleName, residuePathParameters.joinToString())
 	}
 	return pathModels
 }
@@ -88,7 +89,7 @@ private fun KSFunctionDeclaration.extractPathParameters(routeModel: RouteModel):
 	for (match in matches) {
 		val name = match.groupValues[1]
 		routeModel.annotation.compileCheck(name !in names) {
-			ServerMessage.ANNOTATION_NOT_ALLOW_USE_SAME_PATH_PARAMETER.format(simpleName, routeModel.annotation, name)
+			MESSAGE_ANNOTATION_NOT_ALLOW_USE_SAME_PATH_PARAMETER.getString(simpleName, routeModel.annotation, name)
 		}
 		names += name
 	}
@@ -112,7 +113,7 @@ internal fun KSFunctionDeclaration.getRequestBody(): RequestBodyModel? {
 	}
 	if (modelKClasses.isEmpty()) return null
 	this.compileCheck(modelKClasses.size == 1) {
-		ServerMessage.FUNCTION_NOT_ALLOW_USE_BODY_FIELD_PART_ANNOTATION.format(simpleName)
+		MESSAGE_FUNCTION_NOT_ALLOW_USE_BODY_FIELD_PART_ANNOTATION.getString(simpleName)
 	}
 	val modelKClass = modelKClasses.single()
 	return when (modelKClass) {
@@ -125,7 +126,7 @@ internal fun KSFunctionDeclaration.getRequestBody(): RequestBodyModel? {
 private fun KSFunctionDeclaration.getBodyModel(): BodyModel {
 	val filters = this.parameters.filter { it.hasAnnotation(TypeNames.Body) }
 	this.compileCheck(filters.size == 1) {
-		ServerMessage.FUNCTION_PARAMETER_NOT_ALLOW_USE_MULTIPLE_BODY.format(simpleName)
+		MESSAGE_FUNCTION_PARAMETER_NOT_ALLOW_USE_MULTIPLE_BODY.getString(simpleName)
 	}
 	val body = filters.single()
 	val varName = body.name!!.asString()
@@ -144,7 +145,7 @@ private fun KSFunctionDeclaration.getFieldModels(): FieldModels {
 		val typeName = type.toTypeName().asNotNullable()
 		if (type.isMarkedNullable) {
 			parameter.compileCheck(typeName == TypeNames.String) {
-				ServerMessage.PARAMETER_NULLABLE_ONLY_STRING.format(simpleName, varName)
+				MESSAGE_PARAMETER_NULLABLE_ONLY_STRING.getString(simpleName, varName)
 			}
 		}
 		FieldModel(name, varName, typeName, type.isMarkedNullable)
@@ -160,7 +161,7 @@ private val partModelConfigs by lazy {
 				TypeNames.FormItem,
 				TypeNames.String
 			),
-			errorMessage = ServerMessage.PARAMETER_ONLY_USE_STRING_OR_FORM_ITEM
+			errorMessage = MESSAGE_PARAMETER_ONLY_USE_STRING_OR_FORM_ITEM
 		),
 		PartModelConfig(
 			annotation = TypeNames.PartFile,
@@ -168,7 +169,7 @@ private val partModelConfigs by lazy {
 				TypeNames.FileItem,
 				TypeNames.ByteArray
 			),
-			errorMessage = ServerMessage.PARAMETER_ONLY_USE_BYTE_ARRAY_OR_FILE_ITEM
+			errorMessage = MESSAGE_PARAMETER_ONLY_USE_BYTE_ARRAY_OR_FILE_ITEM
 		),
 		PartModelConfig(
 			annotation = TypeNames.PartBinary,
@@ -176,14 +177,14 @@ private val partModelConfigs by lazy {
 				TypeNames.BinaryItem,
 				TypeNames.ByteArray
 			),
-			errorMessage = ServerMessage.PARAMETER_ONLY_USE_BYTE_ARRAY_OR_BINARY_ITEM
+			errorMessage = MESSAGE_PARAMETER_ONLY_USE_BYTE_ARRAY_OR_BINARY_ITEM
 		),
 		PartModelConfig(
 			annotation = TypeNames.PartBinaryChannel,
 			supportTypeNames = listOf(
 				TypeNames.BinaryChannelItem
 			),
-			errorMessage = ServerMessage.PARAMETER_ONLY_USE_BINARY_CHANNEL_ITEM
+			errorMessage = MESSAGE_PARAMETER_ONLY_USE_BINARY_CHANNEL_ITEM
 		),
 	)
 }
@@ -199,7 +200,7 @@ private fun KSFunctionDeclaration.getPartModels(): PartModels {
 			val annotation = parameter.getKSAnnotationByType(config.annotation)!!
 			val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
 			parameter.compileCheck(name !in names) {
-				ServerMessage.PARAMETER_RETRIEVED_TWICE_WITH_PART_PARAMETER.format(simpleName, parameter.name!!, name)
+				MESSAGE_PARAMETER_RETRIEVED_TWICE_WITH_PART_PARAMETER.getString(simpleName, parameter.name!!, name)
 			}
 			names += name
 			config.supportTypeNames.forEach { className ->
@@ -209,7 +210,7 @@ private fun KSFunctionDeclaration.getPartModels(): PartModels {
 				}
 			}
 			parameter.ktorfitxCompilationError {
-				config.errorMessage.format(simpleName, parameter.name!!)
+				config.errorMessage.getString(simpleName, parameter.name!!)
 			}
 		}
 	}.let(::PartModels)
@@ -218,7 +219,7 @@ private fun KSFunctionDeclaration.getPartModels(): PartModels {
 private data class PartModelConfig(
 	val annotation: ClassName,
 	val supportTypeNames: List<ClassName>,
-	val errorMessage: ServerMessage
+	val errorMessage: MessageConfig
 )
 
 internal fun KSFunctionDeclaration.getHeaderModels(): List<HeaderModel> {
@@ -229,7 +230,7 @@ internal fun KSFunctionDeclaration.getHeaderModels(): List<HeaderModel> {
 		val type = parameter.type.resolve()
 		val typeName = type.toTypeName()
 		parameter.compileCheck(typeName.equals(TypeNames.String, ignoreNullable = true)) {
-			ServerMessage.PARAMETER_ONLY_USE_STRING.format(simpleName, varName)
+			MESSAGE_PARAMETER_ONLY_USE_STRING.getString(simpleName, varName)
 		}
 		HeaderModel(name, varName, type.isMarkedNullable)
 	}
@@ -242,7 +243,7 @@ internal fun KSFunctionDeclaration.getCookieModels(): List<CookieModel> {
 		val typeName = type.toTypeName()
 		val varName = parameter.name!!.asString()
 		parameter.compileCheck(typeName.equals(TypeNames.String, ignoreNullable = true)) {
-			ServerMessage.PARAMETER_ONLY_USE_STRING.format(simpleName, varName)
+			MESSAGE_PARAMETER_ONLY_USE_STRING.getString(simpleName, varName)
 		}
 		val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
 		val encoding = annotation.getClassNameOrNull("encoding")?.simpleName?.let { simpleName ->

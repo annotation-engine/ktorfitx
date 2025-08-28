@@ -2,9 +2,9 @@ package cn.ktorfitx.multiplatform.ksp.visitor
 
 import cn.ktorfitx.common.ksp.util.check.compileCheck
 import cn.ktorfitx.common.ksp.util.expends.*
-import cn.ktorfitx.common.ksp.util.message.format
+import cn.ktorfitx.common.ksp.util.message.getString
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
-import cn.ktorfitx.multiplatform.ksp.message.MultiplatformMessage
+import cn.ktorfitx.multiplatform.ksp.message.*
 import cn.ktorfitx.multiplatform.ksp.model.*
 import cn.ktorfitx.multiplatform.ksp.visitor.resolver.*
 import com.google.devtools.ksp.getDeclaredFunctions
@@ -38,7 +38,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 	
 	private fun KSClassDeclaration.getClassModel(): ClassModel {
 		this.compileCheck(!(this.isGeneric())) {
-			MultiplatformMessage.INTERFACE_NOT_ALLOW_GENERICS.format(simpleName)
+			MESSAGE_INTERFACE_NOT_ALLOW_GENERICS.getString(simpleName)
 		}
 		val className = ClassName("${packageName.asString()}.impls", "${simpleName.asString()}Impl")
 		val superinterface = this.toClassName()
@@ -56,11 +56,11 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		val annotation = getKSAnnotationByType(TypeNames.Api)!!
 		var url = annotation.getValueOrNull<String>("url")?.takeIf { it.isNotBlank() } ?: return null
 		annotation.compileCheck(!url.containsSchemeSeparator()) {
-			MultiplatformMessage.ANNOTATION_NOT_ALLOW_USE_PROTOCOL_FROM_STRINGS.format(simpleName)
+			MESSAGE_ANNOTATION_NOT_ALLOW_USE_PROTOCOL_FROM_STRINGS.getString(simpleName)
 		}
 		url = url.trim().trim('/')
 		annotation.compileCheck(apiUrlRegex.matches(url)) {
-			MultiplatformMessage.ANNOTATION_URL_PARAMETER_FORMAT_INCORRECT.format(simpleName)
+			MESSAGE_ANNOTATION_URL_PARAMETER_FORMAT_INCORRECT.getString(simpleName)
 		}
 		return url
 	}
@@ -69,11 +69,11 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		val apiScopeAnnotation = getKSAnnotationByType(TypeNames.ApiScope) ?: return listOf(ApiScopeModel(TypeNames.DefaultApiScope))
 		val apiScopeClassNames = apiScopeAnnotation.getClassNamesOrNull("scopes")?.takeIf { it.isNotEmpty() }
 		apiScopeAnnotation.compileCheck(apiScopeClassNames != null) {
-			MultiplatformMessage.ANNOTATION_SCOPES_PARAMETER_NOT_ALLOW_NULLABLE_TYPE.format(simpleName)
+			MESSAGE_ANNOTATION_SCOPES_PARAMETER_NOT_ALLOW_NULLABLE_TYPE.getString(simpleName)
 		}
 		val groupSize = apiScopeClassNames.groupBy { it.simpleNames.joinToString(".") }.size
 		this.compileCheck(apiScopeClassNames.size == groupSize) {
-			MultiplatformMessage.ANNOTATION_SCOPES_NOT_ALLOWED_USE_SAME_CLASS_NAME_K_CLASS.format(simpleName)
+			MESSAGE_ANNOTATION_SCOPES_NOT_ALLOWED_USE_SAME_CLASS_NAME_K_CLASS.getString(simpleName)
 		}
 		return apiScopeClassNames.map { ApiScopeModel(it) }
 	}
@@ -84,7 +84,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 	private fun KSClassDeclaration.getVisibilityKModifier(): KModifier {
 		val visibility = this.getVisibility()
 		this.compileCheck(visibility == PUBLIC || visibility == INTERNAL) {
-			MultiplatformMessage.INTERFACE_MUST_BE_DECLARED_PUBLIC_OR_INTERNAL_ACCESS_PERMISSION.format(simpleName)
+			MESSAGE_INTERFACE_MUST_BE_DECLARED_PUBLIC_OR_INTERNAL_ACCESS_PERMISSION.getString(simpleName)
 		}
 		return KModifier.entries.first { it.name == visibility.name }
 	}
@@ -94,7 +94,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 			.filter { it.isAbstract }
 			.map { function ->
 				function.compileCheck(Modifier.SUSPEND in function.modifiers) {
-					MultiplatformMessage.FUNCTION_LACKS_SUSPEND_MODIFIER.format(function.simpleName)
+					MESSAGE_FUNCTION_LACKS_SUSPEND_MODIFIER.getString(function.simpleName)
 				}
 				val routeModel = function.getRouteModel()
 				val isWebSocket = routeModel is WebSocketModel
@@ -129,11 +129,11 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		val classNames = availableRoutes.filter { hasAnnotation(it) }
 		this.compileCheck(classNames.size <= 1) {
 			val useAnnotations = classNames.joinToString { "@${it.simpleName}" }
-			MultiplatformMessage.FUNCTION_ONLY_ALLOW_USE_ONE_REQUEST_TYPE_ANNOTATION
-				.format(simpleName, useAnnotations, if (classNames.size > 1) "s" else "")
+			MESSAGE_FUNCTION_ONLY_ALLOW_USE_ONE_REQUEST_TYPE_ANNOTATION
+				.getString(simpleName, useAnnotations, if (classNames.size > 1) "s" else "")
 		}
 		this.compileCheck(classNames.size == 1) {
-			MultiplatformMessage.FUNCTION_NOT_USE_ROUTE_ANNOTATION.format(simpleName)
+			MESSAGE_FUNCTION_NOT_USE_ROUTE_ANNOTATION.getString(simpleName)
 		}
 		val className = classNames.first()
 		val isWebSocket = className == TypeNames.WebSocket
@@ -141,30 +141,30 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		
 		if (isWebSocket) {
 			this.compileCheck(dynamicUrl == null) {
-				MultiplatformMessage.FUNCTION_NOT_ALLOW_USE_PATH_PARAMETER.format(simpleName)
+				MESSAGE_FUNCTION_NOT_ALLOW_USE_PATH_PARAMETER.getString(simpleName)
 			}
 		}
 		val rawUrl = getKSAnnotationByType(className)!!.getValueOrNull<String>("url")?.trim('/')
 		val url = if (dynamicUrl != null) {
 			this.compileCheck(rawUrl.isNullOrBlank()) {
-				MultiplatformMessage.FUNCTION_NOW_ALLOW_SETTING_URL_WHEN_MARKED_DYNAMIC_URL.format(simpleName, className.simpleName)
+				MESSAGE_FUNCTION_NOW_ALLOW_SETTING_URL_WHEN_MARKED_DYNAMIC_URL.getString(simpleName, className.simpleName)
 			}
 			dynamicUrl
 		} else {
 			this.compileCheck(!rawUrl.isNullOrBlank()) {
-				MultiplatformMessage.ANNOTATION_NOT_SET_URL_OR_ADDED_DYNAMIC_URL.format(simpleName, className.simpleName)
+				MESSAGE_ANNOTATION_NOT_SET_URL_OR_ADDED_DYNAMIC_URL.getString(simpleName, className.simpleName)
 			}
 			if (isWebSocket) {
 				this.compileCheck(!rawUrl.containsSchemeSeparator() || rawUrl.isWSOrWSS()) {
-					MultiplatformMessage.ANNOTATION_URL_ONLY_SUPPORTED_WS_AND_WSS_PROTOCOLS.format(simpleName, className.simpleName)
+					MESSAGE_ANNOTATION_URL_ONLY_SUPPORTED_WS_AND_WSS_PROTOCOLS.getString(simpleName, className.simpleName)
 				}
 			} else {
 				this.compileCheck(!rawUrl.containsSchemeSeparator() || rawUrl.isHttpOrHttps()) {
-					MultiplatformMessage.ANNOTATION_URL_ONLY_SUPPORTED_HTTP_AND_HTTPS_PROTOCOLS.format(simpleName, className.simpleName)
+					MESSAGE_ANNOTATION_URL_ONLY_SUPPORTED_HTTP_AND_HTTPS_PROTOCOLS.getString(simpleName, className.simpleName)
 				}
 			}
 			this.compileCheck(urlRegex.matches(rawUrl)) {
-				MultiplatformMessage.ANNOTATION_URL_FORMAT_INCORRECT.format(simpleName, className.simpleName)
+				MESSAGE_ANNOTATION_URL_FORMAT_INCORRECT.getString(simpleName, className.simpleName)
 			}
 			StaticUrl(rawUrl)
 		}
@@ -186,28 +186,28 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		val returnKind = when {
 			isWebSocket -> {
 				returnType.compileCheck(!typeName.isNullable && typeName == TypeNames.Unit) {
-					MultiplatformMessage.FUNCTION_HAS_BEEN_WEBSOCKET_SO_RETURN_TYPE_MUST_BE_UNIT.format(simpleName)
+					MESSAGE_FUNCTION_HAS_BEEN_WEBSOCKET_SO_RETURN_TYPE_MUST_BE_UNIT.getString(simpleName)
 				}
 				ReturnKind.Unit
 			}
 			
 			typeName.rawType == TypeNames.Result -> {
 				returnType.compileCheck(!typeName.isNullable && typeName is ParameterizedTypeName) {
-					MultiplatformMessage.FUNCTION_NOT_ALLOW_RETURN_TYPE_RESULT_SET_NULLABLE_TYPE.format(simpleName)
+					MESSAGE_FUNCTION_NOT_ALLOW_RETURN_TYPE_RESULT_SET_NULLABLE_TYPE.getString(simpleName)
 				}
 				ReturnKind.Result
 			}
 			
 			typeName == TypeNames.Unit -> {
 				returnType.compileCheck(!typeName.isNullable) {
-					MultiplatformMessage.FUNCTION_NOT_ALLOW_RETURN_TYPE_UNIT_USE_NULLABLE_TYPE.format(simpleName)
+					MESSAGE_FUNCTION_NOT_ALLOW_RETURN_TYPE_UNIT_USE_NULLABLE_TYPE.getString(simpleName)
 				}
 				ReturnKind.Unit
 			}
 			
 			else -> {
 				returnType.compileCheck(!typeName.equals(TypeNames.Nothing, ignoreNullable = true)) {
-					MultiplatformMessage.FUNCTION_NOT_ALLOW_USE_RETURN_TYPE_NOTHING.format(simpleName, if (typeName.isNullable) "?" else "")
+					MESSAGE_FUNCTION_NOT_ALLOW_USE_RETURN_TYPE_NOTHING.getString(simpleName, if (typeName.isNullable) "?" else "")
 				}
 				ReturnKind.Any
 			}

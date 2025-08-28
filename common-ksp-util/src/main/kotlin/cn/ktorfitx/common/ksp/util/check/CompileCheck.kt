@@ -1,9 +1,10 @@
 package cn.ktorfitx.common.ksp.util.check
 
-import cn.ktorfitx.common.ksp.util.exception.KtorfitxCompilationException
-import cn.ktorfitx.common.ksp.util.exception.KtorfitxConfigException
-import cn.ktorfitx.common.ksp.util.message.CommonMessage
-import cn.ktorfitx.common.ksp.util.message.format
+import cn.ktorfitx.common.ksp.util.exception.KtorfitxCompilationErrorException
+import cn.ktorfitx.common.ksp.util.exception.KtorfitxConfigErrorException
+import cn.ktorfitx.common.ksp.util.message.MESSAGE_ERROR_LOCATION
+import cn.ktorfitx.common.ksp.util.message.MESSAGE_UNKNOWN
+import cn.ktorfitx.common.ksp.util.message.getString
 import com.google.devtools.ksp.symbol.FileLocation
 import com.google.devtools.ksp.symbol.KSNode
 import kotlin.contracts.ExperimentalContracts
@@ -34,10 +35,10 @@ fun <T : KSNode> T.ktorfitxCompilationError(
 ): Nothing {
 	val message = message()
 	val location = this.location as? FileLocation
-	val errorLocation = if (location != null) "${location.filePath}:${location.lineNumber}" else CommonMessage.UNKNOWN.format()
-	throw KtorfitxCompilationException("$message\n${CommonMessage.ERROR_LOCATION.format()}$errorLocation")
+	val errorLocation = if (location != null) "${location.filePath}:${location.lineNumber}" else MESSAGE_UNKNOWN.getString()
+	throw KtorfitxCompilationErrorException("$message\n${MESSAGE_ERROR_LOCATION.getString()}$errorLocation")
 }
 
 fun ktorfitxConfigError(message: String): Nothing {
-	throw KtorfitxConfigException(message)
+	throw KtorfitxConfigErrorException(message)
 }

@@ -2,8 +2,8 @@ package cn.ktorfitx.common.ksp.util.expends
 
 import cn.ktorfitx.common.ksp.util.check.compileCheck
 import cn.ktorfitx.common.ksp.util.constants.TypeNames
+import cn.ktorfitx.common.ksp.util.message.*
 import com.google.devtools.ksp.processing.Resolver
-import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.ClassName
@@ -19,12 +19,8 @@ fun <R : Any> Resolver.getCustomHttpMethodModels(
 	.filterIsInstance<KSClassDeclaration>()
 	.filter { it.validate() }
 	.map {
-		val classKind = it.classKind
-		it.compileCheck(classKind == ClassKind.ANNOTATION_CLASS) {
-			"@HttpMethod 只允许标注在 annotation class 上，而您的是 ${classKind.code}"
-		}
 		it.compileCheck(!it.isGeneric()) {
-			"${it.simpleName.asString()} 注解不允许使用泛型"
+			MESSAGE_ANNOTATION_NOT_ALLOW_USE_GENERIC.getString(it.simpleName)
 		}
 		fun validProperty(): Boolean {
 			val properties = it.getAllProperties().toList()
@@ -36,7 +32,7 @@ fun <R : Any> Resolver.getCustomHttpMethodModels(
 			return simpleName == parameterName
 		}
 		it.compileCheck(validProperty()) {
-			"@${it.simpleName.asString()} 注解必须添加 val $parameterName: String 参数"
+			MESSAGE_ANNOTATION_MUST_INCLUDE_STRING_PARAMETER.getString(it.simpleName, parameterName)
 		}
 		fun validTarget(): Boolean {
 			val annotation = it.getKSAnnotationByType(TypeNames.Target) ?: return false
@@ -46,7 +42,7 @@ fun <R : Any> Resolver.getCustomHttpMethodModels(
 			return className == TypeNames.AnnotationTargetFunction
 		}
 		it.compileCheck(validTarget()) {
-			"${it.simpleName.asString()} 注解必须标注 @Target(AnnotationTarget.FUNCTION)"
+			MESSAGE_ANNOTATION_MUST_BE_ANNOTATED_TARGET_FUNCTION.getString(it.simpleName)
 		}
 		fun validRetention(): Boolean {
 			val annotation = it.getKSAnnotationByType(TypeNames.Retention) ?: return false
@@ -54,17 +50,17 @@ fun <R : Any> Resolver.getCustomHttpMethodModels(
 			return className == TypeNames.AnnotationRetentionSource
 		}
 		it.compileCheck(validRetention()) {
-			"${it.simpleName.asString()} 注解必须标注 @Retention(AnnotationRetention.SOURCE)"
+			MESSAGE_ANNOTATION_MUST_BE_ANNOTATED_RETENTION_SOURCE.getString(it.simpleName)
 		}
 		val httpMethod = it.getKSAnnotationByType(httpMethod)!!
 		val method = httpMethod.getValueOrNull<String>("method")
 			?.takeIf { method -> method.isNotBlank() }
 			?: it.simpleName.asString()
 		httpMethod.compileCheck(method.isValidHttpMethod()) {
-			"${it.simpleName.asString()} 注解上的 $httpMethod 中使用了不合法的 Http Method 名称，只允许包含 A-Z 0-9 '-'"
+			MESSAGE_ANNOTATION_HTTP_METHOD_USE_INVALID_HTTP_METHOD_NAME.getString(it.simpleName, httpMethod)
 		}
 		httpMethod.compileCheck(httpMethods.all { it.simpleName != method }) {
-			"${it.simpleName.asString()} 函数不允许使用 ${httpMethods.joinToString { it.simpleName }} 作为自定义 Http Method 名称"
+			MESSAGE_ANNOTATION_DUPLICATES_PROVIDED_SYSTEM_HTTP_METHOD_ANNOTATION.getString(it.simpleName, method)
 		}
 		transform(method, it.toClassName())
 	}

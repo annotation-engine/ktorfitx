@@ -1,3 +1,4 @@
+import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxLanguage
 import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxMultiplatformMode
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -162,6 +163,7 @@ compose.desktop {
 
 ktorfitx {
 	mode = KtorfitxMultiplatformMode.DEVELOPMENT
+	language = KtorfitxLanguage.CHINESE
 	websockets {
 		enabled = true
 	}

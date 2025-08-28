@@ -2,7 +2,7 @@ package cn.ktorfitx.server.ksp
 
 import cn.ktorfitx.common.ksp.util.check.ktorfitxConfigError
 import cn.ktorfitx.common.ksp.util.log.kspLoggerLocal
-import cn.ktorfitx.common.ksp.util.message.setLanguage
+import cn.ktorfitx.common.ksp.util.message.Language
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
@@ -18,7 +18,7 @@ internal class KtorfitxServerSymbolProcessorProvider : SymbolProcessorProvider {
 		val fileName = environment.options["ktorfitx.generate.fileName"]!!
 		val funName = environment.options["ktorfitx.generate.funName"]!!
 		val language = environment.options["ktorfitx.language"]!!
-		setLanguage(language)
+		Language.set(language)
 		return KtorfitxServerSymbolProcessor(environment.codeGenerator, packageName, fileName, funName)
 	}
 }

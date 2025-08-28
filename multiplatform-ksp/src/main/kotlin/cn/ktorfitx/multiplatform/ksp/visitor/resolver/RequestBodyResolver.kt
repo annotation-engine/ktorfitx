@@ -3,9 +3,9 @@ package cn.ktorfitx.multiplatform.ksp.visitor.resolver
 import cn.ktorfitx.common.ksp.util.check.compileCheck
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCompilationError
 import cn.ktorfitx.common.ksp.util.expends.*
-import cn.ktorfitx.common.ksp.util.message.format
+import cn.ktorfitx.common.ksp.util.message.getString
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
-import cn.ktorfitx.multiplatform.ksp.message.MultiplatformMessage
+import cn.ktorfitx.multiplatform.ksp.message.*
 import cn.ktorfitx.multiplatform.ksp.model.*
 import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.symbol.KSClassDeclaration
@@ -24,7 +24,7 @@ internal fun KSFunctionDeclaration.getRequestBodyModel(): RequestBodyModel? {
 	val useRequestBodyMap = classNames.groupBy { requestBodyKindMap[it]!! }
 	this.compileCheck(useRequestBodyMap.size == 1) {
 		val useTypeNames = useRequestBodyMap.values.flatten().joinToString { "@${it.simpleName}" }
-		MultiplatformMessage.FUNCTION_USE_INCOMPATIBLE_ANNOTATIONS.format(simpleName, useTypeNames)
+		MESSAGE_FUNCTION_USE_INCOMPATIBLE_ANNOTATIONS.getString(simpleName, useTypeNames)
 	}
 	return when (useRequestBodyMap.entries.first().key) {
 		RequestBodyKind.BODY -> this.getBodyModel()
@@ -39,13 +39,13 @@ private fun KSFunctionDeclaration.getBodyModel(): BodyModel? {
 	}
 	if (filters.isEmpty()) return null
 	this.compileCheck(filters.size == 1) {
-		MultiplatformMessage.FUNCTION_NOT_ALLOW_USE_MULTIPLE_BODY_ANNOTATIONS.format(simpleName)
+		MESSAGE_FUNCTION_NOT_ALLOW_USE_MULTIPLE_BODY_ANNOTATIONS.getString(simpleName)
 	}
 	val parameter = filters.first()
 	val varName = parameter.name!!.asString()
 	val typeName = parameter.type.toTypeName()
 	parameter.compileCheck(typeName is ClassName || typeName is ParameterizedTypeName) {
-		MultiplatformMessage.PARAMETER_MUST_BE_DECLARED_SPECIFIC_TYPE_BECAUSE_MARKED_BODY.format(simpleName, parameter.name!!)
+		MESSAGE_PARAMETER_MUST_BE_DECLARED_SPECIFIC_TYPE_BECAUSE_MARKED_BODY.getString(simpleName, parameter.name!!)
 	}
 	val annotation = parameter.getKSAnnotationByType(TypeNames.Body)!!
 	val formatClassName = annotation.getClassNameOrNull("format") ?: TypeNames.SerializationFormatJson
@@ -89,7 +89,7 @@ private fun KSFunctionDeclaration.getFieldRequestBodyModel(): FieldRequestBodyMo
 			else -> null
 		}
 		parameter.compileCheck(fieldsKind != null) {
-			MultiplatformMessage.PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_FIELD.format(simpleName, varName)
+			MESSAGE_PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_FIELD.getString(simpleName, varName)
 		}
 		val typeName = type.toTypeName() as ParameterizedTypeName
 		val valueTypeName = when (fieldsKind) {
@@ -113,13 +113,13 @@ private fun KSFunctionDeclaration.getPartRequestBodyModel(): PartRequestBodyMode
 		val varName = parameter.name!!.asString()
 		val headerMap = annotation.getValuesOrNull<String>("headers")?.associate {
 			it.parseHeader() ?: parameter.ktorfitxCompilationError {
-				MultiplatformMessage.PARAMETER_HEADERS_FORMAT_INCORRECT.format(simpleName, varName)
+				MESSAGE_PARAMETER_HEADERS_FORMAT_INCORRECT.getString(simpleName, varName)
 			}
 		}
 		val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
 		val type = parameter.type.resolve()
 		parameter.compileCheck(!type.isMarkedNullable) {
-			MultiplatformMessage.PARAMETER_NOT_ALLOW_USE_NULLABLE_TYPE.format(simpleName, varName)
+			MESSAGE_PARAMETER_NOT_ALLOW_USE_NULLABLE_TYPE.getString(simpleName, varName)
 		}
 		val typeName = type.toTypeName()
 		val partKind = when {
@@ -146,7 +146,7 @@ private fun KSFunctionDeclaration.getPartRequestBodyModel(): PartRequestBodyMode
 			else -> null
 		}
 		parameter.compileCheck(partsKind != null) {
-			MultiplatformMessage.PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_PART.format(simpleName, varName)
+			MESSAGE_PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_PART.getString(simpleName, varName)
 		}
 		val valueKind = when (partsKind) {
 			PartsKind.MAP -> {
