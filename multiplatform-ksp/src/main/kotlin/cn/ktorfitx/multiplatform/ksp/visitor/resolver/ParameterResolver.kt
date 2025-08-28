@@ -1,7 +1,7 @@
 package cn.ktorfitx.multiplatform.ksp.visitor.resolver
 
-import cn.ktorfitx.common.ksp.util.check.compileCheck
-import cn.ktorfitx.common.ksp.util.check.ktorfitxCompilationError
+import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
+import cn.ktorfitx.common.ksp.util.check.ktorfitxCheckNotNull
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
 import cn.ktorfitx.multiplatform.ksp.model.*
@@ -28,7 +28,7 @@ internal fun KSFunctionDeclaration.getQueriesModels(): List<QueriesModel> {
 		if (!parameter.hasAnnotation(TypeNames.Queries)) return@mapNotNull null
 		val name = parameter.name!!.asString()
 		val type = parameter.type.resolve()
-		parameter.compileCheck(type.isMapOfStringToAny() || type.isListOfStringPair()) {
+		ktorfitxCheck(type.isMapOfStringToAny() || type.isListOfStringPair(), parameter) {
 			"${simpleName.asString()} 函数的 $name 参数只允许使用 Map<String, *> 或 List<Pair<String, *>> 类型或是它的具体化子类型或派生类型"
 		}
 		QueriesModel(name)
@@ -40,10 +40,10 @@ internal fun KSFunctionDeclaration.getCookieModels(): List<CookieModel> {
 		val annotation = parameter.getKSAnnotationByType(TypeNames.Cookie) ?: return@mapNotNull null
 		val varName = parameter.name!!.asString()
 		val typeName = parameter.type.toTypeName()
-		compileCheck(!typeName.isNullable) {
+		ktorfitxCheck(!typeName.isNullable, this) {
 			"${simpleName.asString()} 函数的 $varName 参数不允许为可空类型"
 		}
-		compileCheck(typeName == TypeNames.String) {
+		ktorfitxCheck(typeName == TypeNames.String, this) {
 			"${simpleName.asString()} 函数的 $varName 参数只允许为 String 类型"
 		}
 		val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
@@ -55,7 +55,7 @@ internal fun KSFunctionDeclaration.getCookieModels(): List<CookieModel> {
 		val httpOnly = annotation.getValueOrNull<Boolean>("httpOnly")
 		val extensions = annotation.getValuesOrNull<String>("extensions")
 			?.associate { entry ->
-				entry.parseHeader() ?: parameter.ktorfitxCompilationError {
+				ktorfitxCheckNotNull(entry.parseHeader(), parameter) {
 					"${simpleName.asString()} 函数的 $varName 参数的 @Cookie 注解上 extensions 参数格式错误，需要以 <key>:<value> 格式"
 				}
 			}?.takeIf { it.isNotEmpty() }
@@ -69,7 +69,7 @@ internal fun KSFunctionDeclaration.getAttributeModels(): List<AttributeModel> {
 		val varName = parameter.name!!.asString()
 		val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
 		val type = parameter.type.resolve()
-		parameter.compileCheck(!type.isMarkedNullable) {
+		ktorfitxCheck(!type.isMarkedNullable, parameter) {
 			"${simpleName.asString()} 函数的 $varName 参数不允许使用可空类型"
 		}
 		AttributeModel(name, varName)
@@ -86,7 +86,7 @@ internal fun KSFunctionDeclaration.getAttributesModels(): List<AttributesModel> 
 			type.isListOfStringPair(false) -> AttributesKind.LIST
 			else -> null
 		}
-		parameter.compileCheck(kind != null) {
+		ktorfitxCheckNotNull(kind, parameter) {
 			"${simpleName.asString()} 函数的 $varName 参数只允许使用 Map<String, Any> 或 List<Pair<String, Any>> 类型或是它的具体化子类型或派生类型"
 		}
 		AttributesModel(varName, type.isMarkedNullable, kind)
@@ -104,13 +104,13 @@ internal fun KSFunctionDeclaration.isPrepareType(
 	val isPrepareType = hasAnnotation(TypeNames.Prepare)
 	if (isPrepareType) {
 		val returnType = this.returnType!!.toTypeName()
-		this.compileCheck(returnType == TypeNames.HttpStatement) {
+		ktorfitxCheck(returnType == TypeNames.HttpStatement, this) {
 			"${simpleName.asString()} 函数必须使用 ${TypeNames.HttpStatement.canonicalName} 返回类型"
 		}
-		this.compileCheck(!isMock) {
+		ktorfitxCheck(!isMock, this) {
 			"${simpleName.asString()} 函数不允许同时用 @Prepare 和 @Mock 注解，因为不支持此操作"
 		}
-		this.compileCheck(!isWebSocket) {
+		ktorfitxCheck(!isWebSocket, this) {
 			"${simpleName.asString()} 函数不允许同时用 @Prepare 和 @WebSocket 注解，因为不支持此操作"
 		}
 	}
@@ -133,7 +133,7 @@ internal fun KSFunctionDeclaration.getHeadersModel(): HeadersModel? {
 	val annotation = getKSAnnotationByType(TypeNames.Headers) ?: return null
 	val headers = annotation.getValuesOrNull<String>("headers") ?: return null
 	val headerMap = headers.associate {
-		it.parseHeader() ?: annotation.ktorfitxCompilationError {
+		ktorfitxCheckNotNull(it.parseHeader(), annotation) {
 			"${simpleName.asString()} 函数的 @Headers 注解上的参数格式有错误，需要以 <key>:<value> 格式"
 		}
 	}
@@ -142,21 +142,21 @@ internal fun KSFunctionDeclaration.getHeadersModel(): HeadersModel? {
 
 internal fun KSFunctionDeclaration.getMockModel(isWebSocket: Boolean): MockModel? {
 	val annotation = getKSAnnotationByType(TypeNames.Mock) ?: return null
-	this.compileCheck(!isWebSocket) {
+	ktorfitxCheck(!isWebSocket, this) {
 		"${simpleName.asString()} 函数不支持同时使用 @Mock 和 @WebSocket 注解"
 	}
 	val className = annotation.getClassName("provider")
 	val delay = annotation.getValueOrNull("delay") ?: 0L
 	
-	annotation.compileCheck(className != TypeNames.MockProvider) {
+	ktorfitxCheck(className != TypeNames.MockProvider, annotation) {
 		"${simpleName.asString()} 函数上的 @Mock 注解的 provider 参数不允许使用 MockProvider::class"
 	}
-	val classDeclaration = annotation.getArgumentKSClassDeclaration("provider")!!
+	val classDeclaration = annotation.getArgumentKSClassDeclaration("provider")
 	val classKind = classDeclaration.classKind
-	classDeclaration.compileCheck(classKind == ClassKind.OBJECT) {
+	ktorfitxCheck(classKind == ClassKind.OBJECT, classDeclaration) {
 		"${className.simpleName} 类不允许使用 ${classKind.code} 类型，请使用 object 类型"
 	}
-	classDeclaration.compileCheck(Modifier.PRIVATE !in classDeclaration.modifiers) {
+	ktorfitxCheck(Modifier.PRIVATE !in classDeclaration.modifiers, classDeclaration) {
 		"${className.simpleName} 类不允许使用 private 访问权限"
 	}
 	
@@ -167,7 +167,7 @@ internal fun KSFunctionDeclaration.getMockModel(isWebSocket: Boolean): MockModel
 		?.firstOrNull()
 		?.type
 		?.toTypeName()
-	classDeclaration.compileCheck(mockReturnType != null) {
+	ktorfitxCheckNotNull(mockReturnType, classDeclaration) {
 		"${className.simpleName} 类必须实现 MockProvider<T> 接口"
 	}
 	val returnType = this.returnType!!.toTypeName().let {
@@ -176,10 +176,10 @@ internal fun KSFunctionDeclaration.getMockModel(isWebSocket: Boolean): MockModel
 			it.typeArguments.first()
 		} else it
 	}
-	this.compileCheck(returnType == mockReturnType) {
+	ktorfitxCheck(returnType == mockReturnType, this) {
 		"${simpleName.asString()} 函数的 provider 类型与返回值不一致，应该为 $returnType, 实际为 $mockReturnType"
 	}
-	annotation.compileCheck(delay >= 0L) {
+	ktorfitxCheck(delay >= 0L, annotation) {
 		val funName = simpleName.asString()
 		"$funName 的注解的 delay 参数的值必须不小于 0L"
 	}
@@ -187,22 +187,19 @@ internal fun KSFunctionDeclaration.getMockModel(isWebSocket: Boolean): MockModel
 }
 
 internal fun KSFunctionDeclaration.getParameterModels(isWebSocket: Boolean): List<ParameterModel> {
-	this.compileCheck(!(this.isGeneric())) {
+	ktorfitxCheck(!this.isGeneric(), this) {
 		"${simpleName.asString()} 函数不允许包含泛型"
 	}
 	return if (isWebSocket) {
 		val errorMessage = {
 			"${simpleName.asString()} 函数只允许一个参数，且类型为 WebSocketSessionHandler 别名 或 suspend DefaultClientWebSocketSession.() -> Unit"
 		}
-		this.compileCheck(
-			value = this.parameters.size == 1,
-			errorMessage = errorMessage
-		)
+		ktorfitxCheck(this.parameters.size == 1, this, errorMessage)
 		val valueParameter = this.parameters.first()
 		val typeName = valueParameter.type.toTypeName()
-		this.compileCheck(
-			value = typeName == TypeNames.WebSocketSessionHandler || typeName == TypeNames.DefaultClientWebSocketSessionLambda,
-			errorMessage = errorMessage
+		ktorfitxCheck(
+			typeName == TypeNames.WebSocketSessionHandler || typeName == TypeNames.DefaultClientWebSocketSessionLambda,
+			this, errorMessage
 		)
 		val varName = valueParameter.name!!.asString()
 		return listOf(ParameterModel(varName, typeName))
@@ -212,14 +209,14 @@ internal fun KSFunctionDeclaration.getParameterModels(isWebSocket: Boolean): Lis
 			val count = TypeNames.parameters.count {
 				parameter.hasAnnotation(it)
 			}
-			this.compileCheck(count > 0) {
+			ktorfitxCheck(count > 0, this) {
 				"${simpleName.asString()} 函数上的 $varName 参数未使用任何功能注解"
 			}
-			this.compileCheck(count == 1) {
+			ktorfitxCheck(count == 1, this) {
 				val useAnnotations = this.annotations.joinToString()
 				"${simpleName.asString()} 函数上的 $varName 参数不允许同时使用 $useAnnotations 多个功能注解"
 			}
-			this.compileCheck(varName.isLowerCamelCase()) {
+			ktorfitxCheck(varName.isLowerCamelCase(), this) {
 				val varNameSuggestion = varName.toLowerCamelCase()
 				"${simpleName.asString()} 函数上的 $varName 参数不符合小驼峰命名规则，建议修改为 $varNameSuggestion"
 			}
@@ -240,7 +237,7 @@ internal fun KSFunctionDeclaration.getPathModels(
 				val varName = parameter.name!!.asString()
 				val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
 				val typeName = parameter.type.toTypeName()
-				parameter.compileCheck(!typeName.isNullable) {
+				ktorfitxCheck(!typeName.isNullable, parameter) {
 					"${simpleName.asString()} 函数的 ${parameter.name!!.asString()} 参数不允许可空"
 				}
 				PathModel(name, varName)
@@ -250,7 +247,7 @@ internal fun KSFunctionDeclaration.getPathModels(
 		is StaticUrl -> {
 			val pathParameters = extractUrlPathParameters(url.url)
 			if (isWebSocket) {
-				this.compileCheck(pathParameters.isEmpty()) {
+				ktorfitxCheck(pathParameters.isEmpty(), this) {
 					"${simpleName.asString()} 函数不支持使用 path 参数"
 				}
 			}
@@ -259,20 +256,20 @@ internal fun KSFunctionDeclaration.getPathModels(
 				val annotation = parameter.getKSAnnotationByType(TypeNames.Path) ?: return@mapNotNull null
 				val varName = parameter.name!!.asString()
 				val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
-				parameter.compileCheck(name in pathParameters) {
+				ktorfitxCheck(name in pathParameters, parameter) {
 					"${simpleName.asString()} 函数的 ${parameter.name!!.asString()} 参数未在 url 中找到"
 				}
-				parameter.compileCheck(name in residuePathParameters) {
+				ktorfitxCheck(name in residuePathParameters, parameter) {
 					"${simpleName.asString()} 函数的 ${parameter.name!!.asString()} 参数重复解析 path 参数"
 				}
 				residuePathParameters -= name
 				val typeName = parameter.type.toTypeName()
-				parameter.compileCheck(!typeName.isNullable) {
+				ktorfitxCheck(!typeName.isNullable, parameter) {
 					"${simpleName.asString()} 函数的 ${parameter.name!!.asString()} 参数不允许可空"
 				}
 				PathModel(name, varName)
 			}
-			this.compileCheck(residuePathParameters.isEmpty()) {
+			ktorfitxCheck(residuePathParameters.isEmpty(), this) {
 				"${simpleName.asString()} 函数未解析以下 ${residuePathParameters.size} 个 path 参数：${residuePathParameters.joinToString { it }}"
 			}
 			pathModels
@@ -304,13 +301,13 @@ internal fun KSFunctionDeclaration.getTimeoutModel(): TimeoutModel? {
 internal fun KSFunctionDeclaration.getDynamicUrl(): DynamicUrl? {
 	val annotations = this.parameters.filter { it.hasAnnotation(TypeNames.DynamicUrl) }
 	if (annotations.isEmpty()) return null
-	this.compileCheck(annotations.size == 1) {
+	ktorfitxCheck(annotations.size == 1, this) {
 		"${simpleName.asString()} 函数只允许使用一个 @DynamicUrl 参数来动态设置 url 参数"
 	}
 	val annotation = annotations.first()
 	val typeName = annotation.type.toTypeName()
 	val varName = annotation.name!!.asString()
-	annotation.compileCheck(typeName == TypeNames.String) {
+	ktorfitxCheck(typeName == TypeNames.String, annotation) {
 		"${simpleName.asString()} 函数的 $varName 参数只允许使用 String 类型"
 	}
 	return DynamicUrl(varName)

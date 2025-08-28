@@ -1,6 +1,6 @@
 package cn.ktorfitx.multiplatform.ksp
 
-import cn.ktorfitx.common.ksp.util.check.compileCheck
+import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
 import cn.ktorfitx.common.ksp.util.expends.getCustomHttpMethodModels
 import cn.ktorfitx.common.ksp.util.message.getString
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
@@ -42,13 +42,13 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 			.filterIsInstance<KSClassDeclaration>()
 			.filter { it.validate() }
 			.forEach {
-				it.compileCheck(it.classKind == ClassKind.INTERFACE) {
+				ktorfitxCheck(it.classKind == ClassKind.INTERFACE, it) {
 					MESSAGE_INTERFACE_MUST_BE_INTERFACE_BECAUSE_MARKED_API.getString(it.simpleName)
 				}
-				it.compileCheck(Modifier.SEALED !in it.modifiers) {
+				ktorfitxCheck(Modifier.SEALED !in it.modifiers, it) {
 					MESSAGE_INTERFACE_NOT_SUPPORT_SEALED_MODIFIER.getString(it.simpleName)
 				}
-				it.compileCheck(it.parentDeclaration == null) {
+				ktorfitxCheck(it.parentDeclaration == null, it) {
 					MESSAGE_INTERFACE_MUST_BE_PLACED_FILE_TOP_LEVEL.getString(it.simpleName)
 				}
 				val classModel = it.accept(ApiVisitor, customHttpMethodModels)

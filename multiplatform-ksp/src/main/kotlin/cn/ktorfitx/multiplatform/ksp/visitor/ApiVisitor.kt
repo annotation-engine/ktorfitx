@@ -1,6 +1,7 @@
 package cn.ktorfitx.multiplatform.ksp.visitor
 
-import cn.ktorfitx.common.ksp.util.check.compileCheck
+import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
+import cn.ktorfitx.common.ksp.util.check.ktorfitxCheckNotNull
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.common.ksp.util.message.getString
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
@@ -37,7 +38,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 	}
 	
 	private fun KSClassDeclaration.getClassModel(): ClassModel {
-		this.compileCheck(!(this.isGeneric())) {
+		ktorfitxCheck(!this.isGeneric(), this) {
 			MESSAGE_INTERFACE_NOT_ALLOW_GENERICS.getString(simpleName)
 		}
 		val className = ClassName("${packageName.asString()}.impls", "${simpleName.asString()}Impl")
@@ -55,11 +56,11 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 	private fun KSClassDeclaration.getApiUrl(): String? {
 		val annotation = getKSAnnotationByType(TypeNames.Api)!!
 		var url = annotation.getValueOrNull<String>("url")?.takeIf { it.isNotBlank() } ?: return null
-		annotation.compileCheck(!url.containsSchemeSeparator()) {
+		ktorfitxCheck(!url.containsSchemeSeparator(), annotation) {
 			MESSAGE_ANNOTATION_NOT_ALLOW_USE_PROTOCOL_FROM_STRINGS.getString(simpleName)
 		}
 		url = url.trim().trim('/')
-		annotation.compileCheck(apiUrlRegex.matches(url)) {
+		ktorfitxCheck(apiUrlRegex.matches(url), annotation) {
 			MESSAGE_ANNOTATION_URL_PARAMETER_FORMAT_INCORRECT.getString(simpleName)
 		}
 		return url
@@ -68,11 +69,11 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 	private fun KSClassDeclaration.getApiScopeModels(): List<ApiScopeModel> {
 		val apiScopeAnnotation = getKSAnnotationByType(TypeNames.ApiScope) ?: return listOf(ApiScopeModel(TypeNames.DefaultApiScope))
 		val apiScopeClassNames = apiScopeAnnotation.getClassNamesOrNull("scopes")?.takeIf { it.isNotEmpty() }
-		apiScopeAnnotation.compileCheck(apiScopeClassNames != null) {
+		ktorfitxCheckNotNull(apiScopeClassNames, apiScopeAnnotation) {
 			MESSAGE_ANNOTATION_SCOPES_PARAMETER_NOT_ALLOW_NULLABLE_TYPE.getString(simpleName)
 		}
 		val groupSize = apiScopeClassNames.groupBy { it.simpleNames.joinToString(".") }.size
-		this.compileCheck(apiScopeClassNames.size == groupSize) {
+		ktorfitxCheck(apiScopeClassNames.size == groupSize, this) {
 			MESSAGE_ANNOTATION_SCOPES_NOT_ALLOWED_USE_SAME_CLASS_NAME_K_CLASS.getString(simpleName)
 		}
 		return apiScopeClassNames.map { ApiScopeModel(it) }
@@ -83,7 +84,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 	 */
 	private fun KSClassDeclaration.getVisibilityKModifier(): KModifier {
 		val visibility = this.getVisibility()
-		this.compileCheck(visibility == PUBLIC || visibility == INTERNAL) {
+		ktorfitxCheck(visibility == PUBLIC || visibility == INTERNAL, this) {
 			MESSAGE_INTERFACE_MUST_BE_DECLARED_PUBLIC_OR_INTERNAL_ACCESS_PERMISSION.getString(simpleName)
 		}
 		return KModifier.entries.first { it.name == visibility.name }
@@ -93,7 +94,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		return this.getDeclaredFunctions().toList()
 			.filter { it.isAbstract }
 			.map { function ->
-				function.compileCheck(Modifier.SUSPEND in function.modifiers) {
+				ktorfitxCheck(Modifier.SUSPEND in function.modifiers, function) {
 					MESSAGE_FUNCTION_LACKS_SUSPEND_MODIFIER.getString(function.simpleName)
 				}
 				val routeModel = function.getRouteModel()
@@ -127,12 +128,12 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		val customClassNames = customHttpMethodModels.map { it.className }
 		val availableRoutes = TypeNames.routes + customClassNames
 		val classNames = availableRoutes.filter { hasAnnotation(it) }
-		this.compileCheck(classNames.size <= 1) {
+		ktorfitxCheck(classNames.size <= 1, this) {
 			val useAnnotations = classNames.joinToString { "@${it.simpleName}" }
 			MESSAGE_FUNCTION_ONLY_ALLOW_USE_ONE_REQUEST_TYPE_ANNOTATION
 				.getString(simpleName, useAnnotations, if (classNames.size > 1) "s" else "")
 		}
-		this.compileCheck(classNames.size == 1) {
+		ktorfitxCheck(classNames.size == 1, this) {
 			MESSAGE_FUNCTION_NOT_USE_ROUTE_ANNOTATION.getString(simpleName)
 		}
 		val className = classNames.first()
@@ -140,30 +141,30 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		val dynamicUrl = this.getDynamicUrl()
 		
 		if (isWebSocket) {
-			this.compileCheck(dynamicUrl == null) {
+			ktorfitxCheck(dynamicUrl == null, this) {
 				MESSAGE_FUNCTION_NOT_ALLOW_USE_PATH_PARAMETER.getString(simpleName)
 			}
 		}
 		val rawUrl = getKSAnnotationByType(className)!!.getValueOrNull<String>("url")?.trim('/')
 		val url = if (dynamicUrl != null) {
-			this.compileCheck(rawUrl.isNullOrBlank()) {
+			ktorfitxCheck(rawUrl.isNullOrBlank(), this) {
 				MESSAGE_FUNCTION_NOW_ALLOW_SETTING_URL_WHEN_MARKED_DYNAMIC_URL.getString(simpleName, className.simpleName)
 			}
 			dynamicUrl
 		} else {
-			this.compileCheck(!rawUrl.isNullOrBlank()) {
+			ktorfitxCheck(!rawUrl.isNullOrBlank(), this) {
 				MESSAGE_ANNOTATION_NOT_SET_URL_OR_ADDED_DYNAMIC_URL.getString(simpleName, className.simpleName)
 			}
 			if (isWebSocket) {
-				this.compileCheck(!rawUrl.containsSchemeSeparator() || rawUrl.isWSOrWSS()) {
+				ktorfitxCheck(!rawUrl.containsSchemeSeparator() || rawUrl.isWSOrWSS(), this) {
 					MESSAGE_ANNOTATION_URL_ONLY_SUPPORTED_WS_AND_WSS_PROTOCOLS.getString(simpleName, className.simpleName)
 				}
 			} else {
-				this.compileCheck(!rawUrl.containsSchemeSeparator() || rawUrl.isHttpOrHttps()) {
+				ktorfitxCheck(!rawUrl.containsSchemeSeparator() || rawUrl.isHttpOrHttps(), this) {
 					MESSAGE_ANNOTATION_URL_ONLY_SUPPORTED_HTTP_AND_HTTPS_PROTOCOLS.getString(simpleName, className.simpleName)
 				}
 			}
-			this.compileCheck(urlRegex.matches(rawUrl)) {
+			ktorfitxCheck(urlRegex.matches(rawUrl), this) {
 				MESSAGE_ANNOTATION_URL_FORMAT_INCORRECT.getString(simpleName, className.simpleName)
 			}
 			StaticUrl(rawUrl)
@@ -185,28 +186,28 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		val typeName = returnType.toTypeName()
 		val returnKind = when {
 			isWebSocket -> {
-				returnType.compileCheck(!typeName.isNullable && typeName == TypeNames.Unit) {
+				ktorfitxCheck(!typeName.isNullable && typeName == TypeNames.Unit, returnType) {
 					MESSAGE_FUNCTION_HAS_BEEN_WEBSOCKET_SO_RETURN_TYPE_MUST_BE_UNIT.getString(simpleName)
 				}
 				ReturnKind.Unit
 			}
 			
 			typeName.rawType == TypeNames.Result -> {
-				returnType.compileCheck(!typeName.isNullable && typeName is ParameterizedTypeName) {
+				ktorfitxCheck(!typeName.isNullable && typeName is ParameterizedTypeName, returnType) {
 					MESSAGE_FUNCTION_NOT_ALLOW_RETURN_TYPE_RESULT_SET_NULLABLE_TYPE.getString(simpleName)
 				}
 				ReturnKind.Result
 			}
 			
 			typeName == TypeNames.Unit -> {
-				returnType.compileCheck(!typeName.isNullable) {
+				ktorfitxCheck(!typeName.isNullable, returnType) {
 					MESSAGE_FUNCTION_NOT_ALLOW_RETURN_TYPE_UNIT_USE_NULLABLE_TYPE.getString(simpleName)
 				}
 				ReturnKind.Unit
 			}
 			
 			else -> {
-				returnType.compileCheck(!typeName.equals(TypeNames.Nothing, ignoreNullable = true)) {
+				ktorfitxCheck(!typeName.equals(TypeNames.Nothing, ignoreNullable = true), returnType) {
 					MESSAGE_FUNCTION_NOT_ALLOW_USE_RETURN_TYPE_NOTHING.getString(simpleName, if (typeName.isNullable) "?" else "")
 				}
 				ReturnKind.Any

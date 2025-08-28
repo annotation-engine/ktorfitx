@@ -1,6 +1,6 @@
 package cn.ktorfitx.common.ksp.util.expends
 
-import cn.ktorfitx.common.ksp.util.check.compileCheck
+import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
 import cn.ktorfitx.common.ksp.util.constants.TypeNames
 import cn.ktorfitx.common.ksp.util.message.*
 import com.google.devtools.ksp.processing.Resolver
@@ -19,7 +19,7 @@ fun <R : Any> Resolver.getCustomHttpMethodModels(
 	.filterIsInstance<KSClassDeclaration>()
 	.filter { it.validate() }
 	.map {
-		it.compileCheck(!it.isGeneric()) {
+		ktorfitxCheck(!it.isGeneric(), it) {
 			MESSAGE_ANNOTATION_NOT_ALLOW_USE_GENERIC.getString(it.simpleName)
 		}
 		fun validProperty(): Boolean {
@@ -31,7 +31,7 @@ fun <R : Any> Resolver.getCustomHttpMethodModels(
 			val simpleName = property.simpleName.asString()
 			return simpleName == parameterName
 		}
-		it.compileCheck(validProperty()) {
+		ktorfitxCheck(validProperty(), it) {
 			MESSAGE_ANNOTATION_MUST_INCLUDE_STRING_PARAMETER.getString(it.simpleName, parameterName)
 		}
 		fun validTarget(): Boolean {
@@ -41,7 +41,7 @@ fun <R : Any> Resolver.getCustomHttpMethodModels(
 			val className = classNames.first()
 			return className == TypeNames.AnnotationTargetFunction
 		}
-		it.compileCheck(validTarget()) {
+		ktorfitxCheck(validTarget(), it) {
 			MESSAGE_ANNOTATION_MUST_BE_ANNOTATED_TARGET_FUNCTION.getString(it.simpleName)
 		}
 		fun validRetention(): Boolean {
@@ -49,17 +49,17 @@ fun <R : Any> Resolver.getCustomHttpMethodModels(
 			val className = annotation.getClassNameOrNull("value") ?: return false
 			return className == TypeNames.AnnotationRetentionSource
 		}
-		it.compileCheck(validRetention()) {
+		ktorfitxCheck(validRetention(), it) {
 			MESSAGE_ANNOTATION_MUST_BE_ANNOTATED_RETENTION_SOURCE.getString(it.simpleName)
 		}
 		val httpMethod = it.getKSAnnotationByType(httpMethod)!!
 		val method = httpMethod.getValueOrNull<String>("method")
 			?.takeIf { method -> method.isNotBlank() }
 			?: it.simpleName.asString()
-		httpMethod.compileCheck(method.isValidHttpMethod()) {
+		ktorfitxCheck(method.isValidHttpMethod(), httpMethod) {
 			MESSAGE_ANNOTATION_HTTP_METHOD_USE_INVALID_HTTP_METHOD_NAME.getString(it.simpleName, httpMethod)
 		}
-		httpMethod.compileCheck(httpMethods.all { it.simpleName != method }) {
+		ktorfitxCheck(httpMethods.all { it.simpleName != method }, httpMethod) {
 			MESSAGE_ANNOTATION_DUPLICATES_PROVIDED_SYSTEM_HTTP_METHOD_ANNOTATION.getString(it.simpleName, method)
 		}
 		transform(method, it.toClassName())
