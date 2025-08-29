@@ -1,4 +1,4 @@
-# KtorfitX 3.2.3-3.1.0-Beta4
+# KtorfitX 3.2.3-3.1.0-Beta5
 
 [![Maven](https://img.shields.io/badge/Maven-Central-download.svg)](https://central.sonatype.com/search?q=cn.ktorfitx:multiplatform-core)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://annotation-engine.github.io/ktorfitx-document/index_md.html)
@@ -65,7 +65,7 @@ KSP `2.2.10-2.0.2`
 
 ## 注解介绍
 
-### Kotlin Multiplatform（29个）
+### Kotlin Multiplatform
 
 #### 注解
 
@@ -108,7 +108,7 @@ KSP `2.2.10-2.0.2`
 - `@Parts` 动态 form-data 字段
 - `@Attributes` 动态 attribute 参数
 
-### Ktor Server（22个）
+### Ktor Server
 
 #### 注解
 
@@ -126,6 +126,7 @@ KSP `2.2.10-2.0.2`
 - `@Authentication` 路由授权
 - `@WebSocket` WebSocket
 - `@Regex` 正则匹配 path
+- `@Timeout` 超时时间
 
 #### 参数
 
