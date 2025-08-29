@@ -182,6 +182,16 @@ internal val MESSAGE_FUNCTION_ONLY_ACCEPTS_ONE_PARAMETER_AND_TYPE_IS_SUPPORTED_B
 	chinese { "{1} 函数只允许一个参数，且类型为 \"WebSocketSessionHandler\" 别名 或使用 \"suspend DefaultClientWebSocketSession.() -> Unit\" 类型" }
 }
 
+internal val MESSAGE_FUNCTION_FAILED_PARSE_FOLLOWING_PATH_PARAMETER = message {
+	english { "The {1} function failed to parse the following {2} Path parameter." }
+	chinese { "{1} 函数未解析以下 {2} Path 参数" }
+}
+
+internal val MESSAGE_FUNCTION_NOT_ALLOW_USE_ONE_PARAMETER_MARKED_DYNAMIC_URL_ANNOTATION = message {
+	english { "The {1} function only allows the use of one parameter marked with the @DynamicUrl annotation to dynamically set the URL parameter." }
+	chinese { "{1} 函数只允许使用一个标注了 @DynamicUrl 注解的参数来动态设置 url 参数" }
+}
+
 internal val MESSAGE_PARAMETER_MUST_BE_DECLARED_SPECIFIC_TYPE_BECAUSE_MARKED_BODY = message {
 	english { "The {2} parameter of the {1} function must be declared as a specific type because you have marked the @Body annotation." }
 	chinese { "{1} 函数的 {2} 参数必须声明为具体类型，因为您标记了 @Body 注解" }
@@ -240,4 +250,24 @@ internal val MESSAGE_PARAMETER_NOT_USE_ANY_FUNCTIONAL_ANNOTATIONS = message {
 internal val MESSAGE_PARAMETER_NOT_ALLOW_USE_MORE_THAN_ONE_FUNCTIONALITY_ANNOTATION_AT_SAME_TIME = message {
 	english { "The {2} parameter on the {1} function is not allowed to use more than one {3} functionality annotation at the same time." }
 	chinese { "{1} 函数上的 {2} 参数不允许同时使用 {3} 多个功能注解" }
+}
+
+internal val MESSAGE_PARAMETER_NOT_FOLLOW_LOWERCASE_CAMEL_CASE_NAMING_CONVENTION = message {
+	english { "The {2} parameter on the {1} function does not follow the lowercase camel case naming convention. It is recommended to modify it to \"{3}\"." }
+	chinese { "{1} 函数上的 {2} 参数不符合小驼峰命名规则，建议修改为 \"{3}\"" }
+}
+
+internal val MESSAGE_PARAMETER_REDUNDANTLY_PARSED_AS_THE_PATH_PARAMETER = message {
+	english { "The {2} parameter of the {1} function is redundantly parsed as the path parameter." }
+	chinese { "{1} 函数的 {2} 参数重复解析 Path 参数" }
+}
+
+internal val MESSAGE_PARAMETER_WAS_NOT_FOUND_IN_THE_URL = message {
+	english { "The {2} parameter of the {1} function was not found in the url." }
+	chinese { "{1} 函数的 {2} 参数未在 url 中找到" }
+}
+
+internal val MESSAGE_PARAMETER_ONLY_USE_STRING = message {
+	english { "The {2} parameter of the {1} function is restricted to accepting only String type values." }
+	chinese { "{1} 函数的 {2} 参数只允许使用 String 类型" }
 }

@@ -9,12 +9,18 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 
 internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorProvider {
 	
+	private companion object {
+		
+		private const val OPTION_MULTIPLATFORM_GRADLE_PLUGIN_ENABLED = "ktorfitx.multiplatform.gradle.plugin.enabled"
+		private const val OPTION_LANGUAGE = "ktorfitx.language"
+	}
+	
 	override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
 		kspLoggerLocal.set(environment.logger)
-		if (environment.options["ktorfitx.multiplatform.gradle.plugin.enabled"] != "true") {
-			ktorfitxConfigError("Please add \"cn.ktorfitx.multiplatform\" Gradle Plugin!")
+		if (!environment.options[OPTION_MULTIPLATFORM_GRADLE_PLUGIN_ENABLED].toBoolean()) {
+			ktorfitxConfigError("Please add the \"cn.ktorfitx.multiplatform\" Gradle plugin")
 		}
-		val language = environment.options["ktorfitx.language"]!!
+		val language = environment.options[OPTION_LANGUAGE]!!
 		Language.set(language)
 		return KtorfitxMultiplatformSymbolProcessor(environment.codeGenerator)
 	}

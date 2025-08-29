@@ -220,7 +220,7 @@ internal fun KSFunctionDeclaration.getParameterModels(isWebSocket: Boolean): Lis
 			}
 			ktorfitxCheck(varName.isLowerCamelCase(), this) {
 				val varNameSuggestion = varName.toLowerCamelCase()
-				"${simpleName.asString()} 函数上的 $varName 参数不符合小驼峰命名规则，建议修改为 $varNameSuggestion"
+				MESSAGE_PARAMETER_NOT_FOLLOW_LOWERCASE_CAMEL_CASE_NAMING_CONVENTION.getString(simpleName, varName, varNameSuggestion)
 			}
 			val typeName = parameter.type.toTypeName()
 			ParameterModel(varName, typeName)
@@ -240,7 +240,7 @@ internal fun KSFunctionDeclaration.getPathModels(
 				val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
 				val typeName = parameter.type.toTypeName()
 				ktorfitxCheck(!typeName.isNullable, parameter) {
-					"${simpleName.asString()} 函数的 ${parameter.name!!.asString()} 参数不允许可空"
+					MESSAGE_PARAMETER_NOT_ALLOW_USE_NULLABLE_TYPE.getString(simpleName, parameter.name!!)
 				}
 				PathModel(name, varName)
 			}
@@ -250,7 +250,7 @@ internal fun KSFunctionDeclaration.getPathModels(
 			val pathParameters = extractUrlPathParameters(url.url)
 			if (isWebSocket) {
 				ktorfitxCheck(pathParameters.isEmpty(), this) {
-					"${simpleName.asString()} 函数不支持使用 path 参数"
+					MESSAGE_FUNCTION_NOT_ALLOW_USE_PATH_PARAMETER.getString(simpleName)
 				}
 			}
 			val residuePathParameters = pathParameters.toMutableSet()
@@ -259,20 +259,20 @@ internal fun KSFunctionDeclaration.getPathModels(
 				val varName = parameter.name!!.asString()
 				val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
 				ktorfitxCheck(name in pathParameters, parameter) {
-					"${simpleName.asString()} 函数的 ${parameter.name!!.asString()} 参数未在 url 中找到"
+					MESSAGE_PARAMETER_WAS_NOT_FOUND_IN_THE_URL.getString(simpleName, parameter.name!!)
 				}
 				ktorfitxCheck(name in residuePathParameters, parameter) {
-					"${simpleName.asString()} 函数的 ${parameter.name!!.asString()} 参数重复解析 path 参数"
+					MESSAGE_PARAMETER_REDUNDANTLY_PARSED_AS_THE_PATH_PARAMETER.getString(simpleName, parameter.name!!)
 				}
 				residuePathParameters -= name
 				val typeName = parameter.type.toTypeName()
 				ktorfitxCheck(!typeName.isNullable, parameter) {
-					"${simpleName.asString()} 函数的 ${parameter.name!!.asString()} 参数不允许可空"
+					MESSAGE_PARAMETER_NOT_ALLOW_USE_NULLABLE_TYPE.getString(simpleName, parameter.name!!)
 				}
 				PathModel(name, varName)
 			}
 			ktorfitxCheck(residuePathParameters.isEmpty(), this) {
-				"${simpleName.asString()} 函数未解析以下 ${residuePathParameters.size} 个 path 参数：${residuePathParameters.joinToString { it }}"
+				MESSAGE_FUNCTION_FAILED_PARSE_FOLLOWING_PATH_PARAMETER.getString(simpleName, residuePathParameters.joinToString())
 			}
 			pathModels
 		}
@@ -304,13 +304,13 @@ internal fun KSFunctionDeclaration.getDynamicUrl(): DynamicUrl? {
 	val annotations = this.parameters.filter { it.hasAnnotation(TypeNames.DynamicUrl) }
 	if (annotations.isEmpty()) return null
 	ktorfitxCheck(annotations.size == 1, this) {
-		"${simpleName.asString()} 函数只允许使用一个 @DynamicUrl 参数来动态设置 url 参数"
+		MESSAGE_FUNCTION_NOT_ALLOW_USE_ONE_PARAMETER_MARKED_DYNAMIC_URL_ANNOTATION.getString(simpleName)
 	}
 	val annotation = annotations.first()
 	val typeName = annotation.type.toTypeName()
 	val varName = annotation.name!!.asString()
 	ktorfitxCheck(typeName == TypeNames.String, annotation) {
-		"${simpleName.asString()} 函数的 $varName 参数只允许使用 String 类型"
+		MESSAGE_PARAMETER_ONLY_USE_STRING.getString(simpleName, varName)
 	}
 	return DynamicUrl(varName)
 }

@@ -14,7 +14,14 @@ import org.gradle.kotlin.dsl.project
 class KtorfitxServerPlugin : Plugin<Project> {
 	
 	private companion object {
+		
 		private const val VERSION = "3.2.3-3.1.0-Beta4"
+		
+		private const val OPTION_SERVER_GRADLE_PLUGIN_ENABLED = "ktorfitx.server.gradle.plugin.enabled"
+		private const val OPTION_GENERATE_PACKAGE_NAME = "ktorfitx.generate.packageName"
+		private const val OPTION_GENERATE_FILE_NAME = "ktorfitx.generate.fileName"
+		private const val OPTION_GENERATE_FUN_NAME = "ktorfitx.generate.funName"
+		private const val OPTION_LANGUAGE = "ktorfitx.language"
 	}
 	
 	override fun apply(target: Project) {
@@ -25,11 +32,11 @@ class KtorfitxServerPlugin : Plugin<Project> {
 		}
 		target.afterEvaluate {
 			this.extensions.configure(KspExtension::class) {
-				this.arg("ktorfitx.generate.packageName", extension.generate.packageName.getOrElse("$group.generated"))
-				this.arg("ktorfitx.generate.fileName", extension.generate.fileName.get().removeSuffix(".kt"))
-				this.arg("ktorfitx.generate.funName", extension.generate.funName.get())
-				this.arg("ktorfitx.language", extension.language.get().name)
-				this.arg("ktorfitx.server.gradle.plugin.enabled", "true")
+				this.arg(OPTION_GENERATE_PACKAGE_NAME, extension.generate.packageName.getOrElse("$group.generated"))
+				this.arg(OPTION_GENERATE_FILE_NAME, extension.generate.fileName.get().removeSuffix(".kt"))
+				this.arg(OPTION_GENERATE_FUN_NAME, extension.generate.funName.get())
+				this.arg(OPTION_LANGUAGE, extension.language.get().name)
+				this.arg(OPTION_SERVER_GRADLE_PLUGIN_ENABLED, true.toString())
 			}
 			when (extension.mode.get()) {
 				KtorfitxServerMode.RELEASE -> onReleaseMode(extension)

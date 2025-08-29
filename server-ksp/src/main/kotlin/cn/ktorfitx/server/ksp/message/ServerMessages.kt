@@ -23,7 +23,7 @@ internal val MESSAGE_FUNCTION_RETURN_TYPE_MUST_BE_DEFINITE_CLASS = message {
 }
 
 internal val MESSAGE_FUNCTION_FAILED_PARSE_FOLLOWING_PATH_PARAMETER = message {
-	english { "{1} x function failed to parse the following {2} Path parameter." }
+	english { "The {1} function failed to parse the following {2} Path parameter." }
 	chinese { "{1} 函数未解析以下 {2} Path 参数" }
 }
 
@@ -74,7 +74,7 @@ internal val MESSAGE_PARAMETER_WAS_NOT_FOUND_IN_THE_URL = message {
 
 internal val MESSAGE_PARAMETER_REDUNDANTLY_PARSED_AS_THE_PATH_PARAMETER = message {
 	english { "The {2} parameter of the {1} function is redundantly parsed as the path parameter." }
-	chinese { "{1} 函数的 {2} 参数重复解析 path 参数" }
+	chinese { "{1} 函数的 {2} 参数重复解析 Path 参数" }
 }
 
 internal val MESSAGE_PARAMETER_NOT_ALLOWED_NULLABLE = message {

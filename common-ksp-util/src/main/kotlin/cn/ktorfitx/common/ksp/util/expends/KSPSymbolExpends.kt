@@ -34,7 +34,7 @@ fun KSAnnotated.getKSAnnotationByType(annotationClassName: ClassName): KSAnnotat
  */
 fun KSAnnotation.getArgumentKSClassDeclaration(propertyName: String): KSClassDeclaration {
 	val value = this.arguments.find { it.name?.asString() == propertyName }?.value
-	check(value is KSType) { "$value is not KSType!" }
+	check(value is KSType)
 	return value.declaration as KSClassDeclaration
 }
 
@@ -75,7 +75,7 @@ fun KSAnnotation.getClassName(propertyName: String): ClassName {
 	return when (value) {
 		is KSClassDeclaration -> value.toClassName()
 		is KSType -> (value.declaration as KSClassDeclaration).toClassName()
-		else -> error("$value is not a KSClassDeclaration or KSType.")
+		else -> error("$propertyName is not a KSClassDeclaration or KSType.")
 	}
 }
 
