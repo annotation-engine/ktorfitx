@@ -113,7 +113,7 @@ private fun KSFunctionDeclaration.getPartRequestBodyModel(): PartRequestBodyMode
 		val varName = parameter.name!!.asString()
 		val headerMap = annotation.getValuesOrNull<String>("headers")?.associate {
 			ktorfitxCheckNotNull(it.parseHeader(), parameter) {
-				MESSAGE_PARAMETER_HEADERS_FORMAT_INCORRECT.getString(simpleName, varName)
+				MESSAGE_PARAMETER_PART_FORMAT_IS_INCORRECT.getString(simpleName, varName)
 			}
 		}
 		val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
@@ -146,7 +146,7 @@ private fun KSFunctionDeclaration.getPartRequestBodyModel(): PartRequestBodyMode
 			else -> null
 		}
 		ktorfitxCheckNotNull(partsKind, parameter) {
-			MESSAGE_PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_PART.getString(simpleName, varName)
+			MESSAGE_PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_PARTS.getString(simpleName, varName)
 		}
 		val valueKind = when (partsKind) {
 			PartsKind.MAP -> {

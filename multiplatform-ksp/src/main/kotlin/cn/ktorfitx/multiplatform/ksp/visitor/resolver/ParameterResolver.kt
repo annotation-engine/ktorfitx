@@ -3,7 +3,9 @@ package cn.ktorfitx.multiplatform.ksp.visitor.resolver
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCheckNotNull
 import cn.ktorfitx.common.ksp.util.expends.*
+import cn.ktorfitx.common.ksp.util.message.getString
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
+import cn.ktorfitx.multiplatform.ksp.message.*
 import cn.ktorfitx.multiplatform.ksp.model.*
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
@@ -29,7 +31,7 @@ internal fun KSFunctionDeclaration.getQueriesModels(): List<QueriesModel> {
 		val name = parameter.name!!.asString()
 		val type = parameter.type.resolve()
 		ktorfitxCheck(type.isMapOfStringToAny() || type.isListOfStringPair(), parameter) {
-			"${simpleName.asString()} 函数的 $name 参数只允许使用 Map<String, *> 或 List<Pair<String, *>> 类型或是它的具体化子类型或派生类型"
+			MESSAGE_PARAMETER_ONLY_ALLOW_UES_SUPPORTED_BY_QUERIES.getString(simpleName, name)
 		}
 		QueriesModel(name)
 	}
@@ -41,10 +43,10 @@ internal fun KSFunctionDeclaration.getCookieModels(): List<CookieModel> {
 		val varName = parameter.name!!.asString()
 		val typeName = parameter.type.toTypeName()
 		ktorfitxCheck(!typeName.isNullable, this) {
-			"${simpleName.asString()} 函数的 $varName 参数不允许为可空类型"
+			MESSAGE_PARAMETER_NOT_ALLOW_USE_NULLABLE_TYPE.getString(simpleName, varName)
 		}
 		ktorfitxCheck(typeName == TypeNames.String, this) {
-			"${simpleName.asString()} 函数的 $varName 参数只允许为 String 类型"
+			MESSAGE_PARAMETER_MUST_USE_STRING_TYPE.getString(simpleName, varName)
 		}
 		val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
 		val maxAge = annotation.getValueOrNull<Int>("maxAge")?.takeIf { it >= 0 }
@@ -56,7 +58,7 @@ internal fun KSFunctionDeclaration.getCookieModels(): List<CookieModel> {
 		val extensions = annotation.getValuesOrNull<String>("extensions")
 			?.associate { entry ->
 				ktorfitxCheckNotNull(entry.parseHeader(), parameter) {
-					"${simpleName.asString()} 函数的 $varName 参数的 @Cookie 注解上 extensions 参数格式错误，需要以 <key>:<value> 格式"
+					MESSAGE_PARAMETER_COOKIE_FORMAT_IS_INCORRECT.getString(simpleName, varName)
 				}
 			}?.takeIf { it.isNotEmpty() }
 		CookieModel(varName, name, maxAge, expires, domain, path, secure, httpOnly, extensions)
@@ -70,7 +72,7 @@ internal fun KSFunctionDeclaration.getAttributeModels(): List<AttributeModel> {
 		val name = annotation.getValueOrNull<String>("name")?.takeIf { it.isNotBlank() } ?: varName
 		val type = parameter.type.resolve()
 		ktorfitxCheck(!type.isMarkedNullable, parameter) {
-			"${simpleName.asString()} 函数的 $varName 参数不允许使用可空类型"
+			MESSAGE_PARAMETER_NOT_ALLOW_USE_NULLABLE_TYPE.getString(simpleName, varName)
 		}
 		AttributeModel(name, varName)
 	}
@@ -87,7 +89,7 @@ internal fun KSFunctionDeclaration.getAttributesModels(): List<AttributesModel> 
 			else -> null
 		}
 		ktorfitxCheckNotNull(kind, parameter) {
-			"${simpleName.asString()} 函数的 $varName 参数只允许使用 Map<String, Any> 或 List<Pair<String, Any>> 类型或是它的具体化子类型或派生类型"
+			MESSAGE_PARAMETER_ONLY_ALLOW_UES_SUPPORTED_BY_ATTRIBUTES.getString(simpleName, varName)
 		}
 		AttributesModel(varName, type.isMarkedNullable, kind)
 	}
@@ -105,13 +107,13 @@ internal fun KSFunctionDeclaration.isPrepareType(
 	if (isPrepareType) {
 		val returnType = this.returnType!!.toTypeName()
 		ktorfitxCheck(returnType == TypeNames.HttpStatement, this) {
-			"${simpleName.asString()} 函数必须使用 ${TypeNames.HttpStatement.canonicalName} 返回类型"
+			MESSAGE_FUNCTION_MUST_USE_HTTP_STATEMENT_RETURN_TYPE.getString(simpleName)
 		}
 		ktorfitxCheck(!isMock, this) {
-			"${simpleName.asString()} 函数不允许同时用 @Prepare 和 @Mock 注解，因为不支持此操作"
+			MESSAGE_FUNCTION_NOT_ALLOW_SIMULTANEOUS_USE_PREPARE_AND_MOCK_ANNOTATIONS.getString(simpleName)
 		}
 		ktorfitxCheck(!isWebSocket, this) {
-			"${simpleName.asString()} 函数不允许同时用 @Prepare 和 @WebSocket 注解，因为不支持此操作"
+			MESSAGE_FUNCTION_NOT_ALLOW_SIMULTANEOUS_USE_PREPARE_AND_WEBSOCKET_ANNOTATIONS.getString(simpleName)
 		}
 	}
 	return isPrepareType
@@ -134,7 +136,7 @@ internal fun KSFunctionDeclaration.getHeadersModel(): HeadersModel? {
 	val headers = annotation.getValuesOrNull<String>("headers") ?: return null
 	val headerMap = headers.associate {
 		ktorfitxCheckNotNull(it.parseHeader(), annotation) {
-			"${simpleName.asString()} 函数的 @Headers 注解上的参数格式有错误，需要以 <key>:<value> 格式"
+			MESSAGE_FUNCTION_HEADERS_FORMAT_IS_INCORRECT.getString(simpleName)
 		}
 	}
 	return HeadersModel(headerMap)
@@ -143,32 +145,33 @@ internal fun KSFunctionDeclaration.getHeadersModel(): HeadersModel? {
 internal fun KSFunctionDeclaration.getMockModel(isWebSocket: Boolean): MockModel? {
 	val annotation = getKSAnnotationByType(TypeNames.Mock) ?: return null
 	ktorfitxCheck(!isWebSocket, this) {
-		"${simpleName.asString()} 函数不支持同时使用 @Mock 和 @WebSocket 注解"
+		MESSAGE_FUNCTION_NOT_ALLOW_SIMULTANEOUS_USE_MOCK_AND_WEBSOCKET_ANNOTATIONS.getString(simpleName)
 	}
-	val className = annotation.getClassName("provider")
+	val providerClassName = annotation.getClassName("provider")
 	val delay = annotation.getValueOrNull("delay") ?: 0L
 	
-	ktorfitxCheck(className != TypeNames.MockProvider, annotation) {
-		"${simpleName.asString()} 函数上的 @Mock 注解的 provider 参数不允许使用 MockProvider::class"
+	ktorfitxCheck(providerClassName != TypeNames.MockProvider, annotation) {
+		MESSAGE_FUNCTION_MUST_USE_MOCK_PROVIDER_DERIVED_CLASS.getString(simpleName)
 	}
-	val classDeclaration = annotation.getArgumentKSClassDeclaration("provider")
-	val classKind = classDeclaration.classKind
-	ktorfitxCheck(classKind == ClassKind.OBJECT, classDeclaration) {
-		"${className.simpleName} 类不允许使用 ${classKind.code} 类型，请使用 object 类型"
+	val providerClassDeclaration = annotation.getArgumentKSClassDeclaration("provider")
+	val classKind = providerClassDeclaration.classKind
+	ktorfitxCheck(classKind == ClassKind.OBJECT, providerClassDeclaration) {
+		MESSAGE_CLASS_MUST_USE_OBJECT_TYPE.getString(providerClassName.simpleName)
 	}
-	ktorfitxCheck(Modifier.PRIVATE !in classDeclaration.modifiers, classDeclaration) {
-		"${className.simpleName} 类不允许使用 private 访问权限"
+	ktorfitxCheck(Modifier.PRIVATE !in providerClassDeclaration.modifiers, providerClassDeclaration) {
+		MESSAGE_CLASS_NOT_ALLOW_USE_PRIVATE_ACCESS_MODIFIER.getString(providerClassName.simpleName)
 	}
 	
-	val mockReturnType = classDeclaration.superTypes
+	val mockReturnType = providerClassDeclaration.superTypes
 		.map { it.resolve() }
-		.find { it.toTypeName().rawType == TypeNames.MockProvider }
-		?.arguments
-		?.firstOrNull()
-		?.type
-		?.toTypeName()
-	ktorfitxCheckNotNull(mockReturnType, classDeclaration) {
-		"${className.simpleName} 类必须实现 MockProvider<T> 接口"
+		.firstNotNullOfOrNull { superType ->
+			if (superType.toTypeName().rawType == TypeNames.MockProvider) {
+				superType.arguments.firstOrNull()?.type?.toTypeName()
+			} else null
+		}
+	
+	ktorfitxCheckNotNull(mockReturnType, providerClassDeclaration) {
+		MESSAGE_CLASS_MUST_IMPLEMENT_MOCK_PROVIDER_INTERFACE.getString(providerClassName.simpleName)
 	}
 	val returnType = this.returnType!!.toTypeName().let {
 		if (it.rawType == TypeNames.Result) {
@@ -177,22 +180,21 @@ internal fun KSFunctionDeclaration.getMockModel(isWebSocket: Boolean): MockModel
 		} else it
 	}
 	ktorfitxCheck(returnType == mockReturnType, this) {
-		"${simpleName.asString()} 函数的 provider 类型与返回值不一致，应该为 $returnType, 实际为 $mockReturnType"
+		MESSAGE_FUNCTION_USE_MOCK_PROVIDER_IMPLEMENTATION_CLASS_THAT_IS_INCOMPATIBLE_WITH_RETURN_TYPE.getString(simpleName, returnType)
 	}
 	ktorfitxCheck(delay >= 0L, annotation) {
-		val funName = simpleName.asString()
-		"$funName 的注解的 delay 参数的值必须不小于 0L"
+		MESSAGE_PARAMETER_DELAY_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO.getString(simpleName)
 	}
-	return MockModel(className, delay)
+	return MockModel(providerClassName, delay)
 }
 
 internal fun KSFunctionDeclaration.getParameterModels(isWebSocket: Boolean): List<ParameterModel> {
 	ktorfitxCheck(!this.isGeneric(), this) {
-		"${simpleName.asString()} 函数不允许包含泛型"
+		MESSAGE_FUNCTION_NOT_ALLOWED_TO_CONTAIN_GENERICS.getString(simpleName)
 	}
 	return if (isWebSocket) {
 		val errorMessage = {
-			"${simpleName.asString()} 函数只允许一个参数，且类型为 WebSocketSessionHandler 别名 或 suspend DefaultClientWebSocketSession.() -> Unit"
+			MESSAGE_FUNCTION_ONLY_ACCEPTS_ONE_PARAMETER_AND_TYPE_IS_SUPPORTED_BY_WEB_SOCKET.getString(simpleName)
 		}
 		ktorfitxCheck(this.parameters.size == 1, this, errorMessage)
 		val valueParameter = this.parameters.first()
@@ -210,11 +212,11 @@ internal fun KSFunctionDeclaration.getParameterModels(isWebSocket: Boolean): Lis
 				parameter.hasAnnotation(it)
 			}
 			ktorfitxCheck(count > 0, this) {
-				"${simpleName.asString()} 函数上的 $varName 参数未使用任何功能注解"
+				MESSAGE_PARAMETER_NOT_USE_ANY_FUNCTIONAL_ANNOTATIONS.getString(simpleName, varName)
 			}
 			ktorfitxCheck(count == 1, this) {
 				val useAnnotations = this.annotations.joinToString()
-				"${simpleName.asString()} 函数上的 $varName 参数不允许同时使用 $useAnnotations 多个功能注解"
+				MESSAGE_PARAMETER_NOT_ALLOW_USE_MORE_THAN_ONE_FUNCTIONALITY_ANNOTATION_AT_SAME_TIME.getString(simpleName, varName, useAnnotations)
 			}
 			ktorfitxCheck(varName.isLowerCamelCase(), this) {
 				val varNameSuggestion = varName.toLowerCamelCase()

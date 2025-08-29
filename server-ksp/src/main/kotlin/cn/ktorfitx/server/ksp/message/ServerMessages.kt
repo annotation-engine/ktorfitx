@@ -129,7 +129,7 @@ internal val MESSAGE_PARAMETER_ONLY_USE_BINARY_CHANNEL_ITEM = message {
 
 internal val MESSAGE_ANNOTATION_NOT_ALLOW_USE_SAME_PATH_PARAMETER = message {
 	english { "The {2} annotation of the {1} function does not allow the use of the same {3} parameter for the Path." }
-	chinese { "{1} 函数的 {2} 注解中不允许使用相同的 Path 参数 {3}" }
+	chinese { "{1} 函数上的 {2} 注解中不允许使用相同的 Path 参数 {3}" }
 }
 
 internal val MESSAGE_ANNOTATION_NOT_ALLOW_USE_REGEX_WHEN_WEBSOCKET_HAS_BEEN_MARKED = message {

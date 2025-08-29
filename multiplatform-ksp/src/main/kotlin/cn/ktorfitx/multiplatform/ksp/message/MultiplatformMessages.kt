@@ -2,14 +2,29 @@ package cn.ktorfitx.multiplatform.ksp.message
 
 import cn.ktorfitx.common.ksp.util.message.message
 
+internal val MESSAGE_CLASS_MUST_USE_OBJECT_TYPE = message {
+	english { "The {1} class must be of the object type." }
+	chinese { "{1} 类必须是 object 类型的" }
+}
+
+internal val MESSAGE_CLASS_NOT_ALLOW_USE_PRIVATE_ACCESS_MODIFIER = message {
+	english { "The {1} class does not allow the use of the \"private\" access modifier." }
+	chinese { "{1} 类不允许使用 \"private\" 访问修饰符" }
+}
+
+internal val MESSAGE_CLASS_MUST_IMPLEMENT_MOCK_PROVIDER_INTERFACE = message {
+	english { "Class {1} must implement the MockProvider<T> interface." }
+	chinese { "{1} 类必须实现 MockProvider<T> 接口" }
+}
+
 internal val MESSAGE_INTERFACE_NOT_ALLOW_GENERICS = message {
 	english { "{1} 接口不允许包含泛型" }
 	chinese { "The {1} interface does not allow generics." }
 }
 
 internal val MESSAGE_INTERFACE_MUST_BE_DECLARED_PUBLIC_OR_INTERNAL_ACCESS_PERMISSION = message {
-	english { "The {1} interface must be declared with public or internal access permission." }
-	chinese { "{1} 接口必须声明为 public 或 internal 访问权限" }
+	english { "The {1} interface must be declared with \"public\" or \"internal\" access modifier." }
+	chinese { "{1} 接口必须声明 \"public\" 或 \"internal\" 访问修饰符" }
 }
 
 internal val MESSAGE_INTERFACE_MUST_BE_INTERFACE_BECAUSE_MARKED_API = message {
@@ -62,14 +77,14 @@ internal val MESSAGE_ANNOTATION_URL_ONLY_SUPPORTED_HTTP_AND_HTTPS_PROTOCOLS = me
 	chinese { "{1} 函数上的 @{2} 注解中的 url 参数仅支持 \"http://\" 和 \"https://\" 协议" }
 }
 
-internal val MESSAGE_FUNCTION_NOW_ALLOW_SETTING_URL_WHEN_MARKED_DYNAMIC_URL = message {
-	english { "The {2} annotation on the {1} function does not allow setting URL parameter because the function has already been marked with the @DynamicUrl annotation." }
-	chinese { "{1} 函数上的 {2} 注解不允许设置 url 参数，因为函数已经标记了 @DynamicUrl 注解" }
-}
-
 internal val MESSAGE_ANNOTATION_URL_FORMAT_INCORRECT = message {
 	english { "The format of the url parameter on the @{2} annotation of the {1} function is incorrect." }
 	chinese { "{1} 函数上的 @{2} 注解上的 url 参数格式错误" }
+}
+
+internal val MESSAGE_FUNCTION_NOW_ALLOW_SETTING_URL_WHEN_MARKED_DYNAMIC_URL = message {
+	english { "The {2} annotation on the {1} function does not allow setting URL parameter because the function has already been marked with the @DynamicUrl annotation." }
+	chinese { "{1} 函数上的 {2} 注解不允许设置 url 参数，因为函数已经标记了 @DynamicUrl 注解" }
 }
 
 internal val MESSAGE_FUNCTION_LACKS_SUSPEND_MODIFIER = message {
@@ -122,6 +137,51 @@ internal val MESSAGE_FUNCTION_NOT_ALLOW_USE_MULTIPLE_BODY_ANNOTATIONS = message 
 	chinese { "{1} 函数不允许使用多个 @Body 注解" }
 }
 
+internal val MESSAGE_FUNCTION_USE_MOCK_PROVIDER_IMPLEMENTATION_CLASS_THAT_IS_INCOMPATIBLE_WITH_RETURN_TYPE = message {
+	english { "The @Mock annotation on the {1} function uses a MockProvider<R> implementation class that is incompatible with the return type. The generic type R should be set to {2}." }
+	chinese { "{1} 函数上的 @Mock 注解中使用了与返回类型不兼容的 MockProvider<R> 实现类，泛型 R 应该为 {2}" }
+}
+
+internal val MESSAGE_FUNCTION_MUST_USE_HTTP_STATEMENT_RETURN_TYPE = message {
+	english { "The {1} function must use HttpStatement as its return type." }
+	chinese { "{1} 函数必须使用 HttpStatement 作为返回类型" }
+}
+
+internal val MESSAGE_FUNCTION_NOT_ALLOW_SIMULTANEOUS_USE_PREPARE_AND_MOCK_ANNOTATIONS = message {
+	english { "The {1} function does not allow the simultaneous use of @Prepare and @Mock annotations." }
+	chinese { "{1} 函数不允许同时使用 @Prepare 和 @Mock 注解" }
+}
+
+internal val MESSAGE_FUNCTION_NOT_ALLOW_SIMULTANEOUS_USE_PREPARE_AND_WEBSOCKET_ANNOTATIONS = message {
+	english { "The {1} function does not allow the simultaneous use of @Prepare and @WebSocket annotations." }
+	chinese { "{1} 函数不允许同时使用 @Prepare 和 @WebSocket 注解" }
+}
+
+internal val MESSAGE_FUNCTION_NOT_ALLOW_SIMULTANEOUS_USE_MOCK_AND_WEBSOCKET_ANNOTATIONS = message {
+	english { "The {1} function does not allow the simultaneous use of @Mock and @WebSocket annotations." }
+	chinese { "{1} 函数不允许同时使用 @Mock 和 @WebSocket 注解" }
+}
+
+internal val MESSAGE_FUNCTION_HEADERS_FORMAT_IS_INCORRECT = message {
+	english { "The @Headers annotation parameter format on the {1} function is incorrect. The correct format should be: \"<key>:<value>\"" }
+	chinese { "{1} 函数上的 @Headers 注解参数格式错误，正确格式为：\"<key>:<value>\"" }
+}
+
+internal val MESSAGE_FUNCTION_MUST_USE_MOCK_PROVIDER_DERIVED_CLASS = message {
+	english { "In the @Mock annotation on the {1} function, the KClass of the derived class of MockProvider must be used as the value." }
+	chinese { "{1} 函数上的 @Mock 注解中必须使用 MockProvider 的派生类的 KClass 作为值" }
+}
+
+internal val MESSAGE_FUNCTION_NOT_ALLOWED_TO_CONTAIN_GENERICS = message {
+	english { "The {1} function does not allow the use of generics." }
+	chinese { "{1} 函数不允许包含泛型" }
+}
+
+internal val MESSAGE_FUNCTION_ONLY_ACCEPTS_ONE_PARAMETER_AND_TYPE_IS_SUPPORTED_BY_WEB_SOCKET = message {
+	english { "The {1} function only accepts one parameter, and its type is either the alias of \"WebSocketSessionHandler\" or the type of \"suspend DefaultClientWebSocketSession.() -> Unit\"." }
+	chinese { "{1} 函数只允许一个参数，且类型为 \"WebSocketSessionHandler\" 别名 或使用 \"suspend DefaultClientWebSocketSession.() -> Unit\" 类型" }
+}
+
 internal val MESSAGE_PARAMETER_MUST_BE_DECLARED_SPECIFIC_TYPE_BECAUSE_MARKED_BODY = message {
 	english { "The {2} parameter of the {1} function must be declared as a specific type because you have marked the @Body annotation." }
 	chinese { "{1} 函数的 {2} 参数必须声明为具体类型，因为您标记了 @Body 注解" }
@@ -132,17 +192,52 @@ internal val MESSAGE_PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_FIELD = message {
 	chinese { "{1} 函数的 {2} 参数只允许使用 Map<String, *> 或 List<Pair<String, *>> 类型或是它们的具体化子类型或是派生类型" }
 }
 
-internal val MESSAGE_PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_PART = message {
+internal val MESSAGE_PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_PARTS = message {
 	english { "The {2} parameter of the {1} function can only be of the types Map<String, Any>, List<Pair<String, Any>> or List<FormPart<*>>, or its specificized subtypes or derived types." }
 	chinese { "{1} 函数的 {2} 参数只允许使用 Map<String, Any> 或 List<Pair<String, Any>> 或 List<FormPart<*>> 类型或是它的具体化子类型或派生类型" }
 }
 
-internal val MESSAGE_PARAMETER_HEADERS_FORMAT_INCORRECT = message {
-	english { "The format of the headers parameter on the @Part annotation of the {1} function's {2} parameter is incorrect. It needs to be in the format of <key>:<value>." }
-	chinese { "xx 函数的 xx 参数的 @Part 注解上的 headers 参数格式有误，需要以 <key>:<value> 格式" }
+internal val MESSAGE_PARAMETER_ONLY_ALLOW_UES_SUPPORTED_BY_QUERIES = message {
+	english { "The {2} parameter of the {1} function can only be of the types Map<String, *> or List<Pair<String, *>>, or its specificized subtypes or derived types." }
+	chinese { "{1} 函数的 {2} 参数只允许使用 Map<String, *> 或 List<Pair<String, *>> 类型或是它的具体化子类型或派生类型" }
+}
+
+internal val MESSAGE_PARAMETER_ONLY_ALLOW_UES_SUPPORTED_BY_ATTRIBUTES = message {
+	english { "The {2} parameter of the {1} function can only be of the types Map<String, Any> or List<Pair<String, Any>>, or its specificized subtypes or derived types." }
+	chinese { "{1} 函数的 {2} 参数只允许使用 Map<String, Any> 或 List<Pair<String, Any>> 类型或是它的具体化子类型或派生类型" }
 }
 
 internal val MESSAGE_PARAMETER_NOT_ALLOW_USE_NULLABLE_TYPE = message {
 	english { "The {2} parameter of the {1} function is not allowed to use nullable types." }
 	chinese { "{1} 函数的 {2} 参数不允许使用可空类型" }
+}
+
+internal val MESSAGE_PARAMETER_MUST_USE_STRING_TYPE = message {
+	english { "The {2} parameter of the {1} function can only be of the String type." }
+	chinese { "{1} 函数的 {2} 参数只允许为 String 类型" }
+}
+
+internal val MESSAGE_PARAMETER_PART_FORMAT_IS_INCORRECT = message {
+	english { "The @Part annotation parameter on the {2} parameter of the {1} function has an incorrect format. The correct format should be: \"<key>:<value>\"." }
+	chinese { "{1} 函数的 {2} 参数上的 @Part 注解参数的格式错误，正确格式为：\"<key>:<value>\"" }
+}
+
+internal val MESSAGE_PARAMETER_COOKIE_FORMAT_IS_INCORRECT = message {
+	english { "The @Cookie annotation parameter on the {2} parameter of the {1} function has a format error. The correct format should be: \"<key>:<value>\"." }
+	chinese { "{1} 函数的 {2} 参数上的 @Cookie 注解参数的格式错误，正确格式为：\"<key>:<value>\"" }
+}
+
+internal val MESSAGE_PARAMETER_DELAY_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO = message {
+	english { "The delay parameter of the @Mock annotation on the {1} function must be greater than or equal to 0." }
+	chinese { "{1} 函数上的 @Mock 注解的 delay 参数必须大于等于 0" }
+}
+
+internal val MESSAGE_PARAMETER_NOT_USE_ANY_FUNCTIONAL_ANNOTATIONS = message {
+	english { "The {2} parameter on the {1} function does not use any functional annotations." }
+	chinese { "{1} 函数上的 {2} 参数未使用任何功能注解" }
+}
+
+internal val MESSAGE_PARAMETER_NOT_ALLOW_USE_MORE_THAN_ONE_FUNCTIONALITY_ANNOTATION_AT_SAME_TIME = message {
+	english { "The {2} parameter on the {1} function is not allowed to use more than one {3} functionality annotation at the same time." }
+	chinese { "{1} 函数上的 {2} 参数不允许同时使用 {3} 多个功能注解" }
 }
