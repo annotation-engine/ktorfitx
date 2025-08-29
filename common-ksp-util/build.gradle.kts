@@ -4,7 +4,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 plugins {
 	alias(libs.plugins.kotlin.jvm)
 	alias(libs.plugins.maven.publish)
-	alias(libs.plugins.kotlin.serialization)
 }
 
 val ktorfitxVersion = property("ktorfitx.version").toString()
@@ -37,7 +36,6 @@ sourceSets {
 
 dependencies {
 	implementation(libs.bundles.common.ksp.util)
-	api(libs.kotlinx.serialization.json)
 }
 
 mavenPublishing {

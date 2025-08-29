@@ -11,12 +11,10 @@ maven-publish = "0.34.0"
 compose-plugin = "1.8.2"
 androidx-activity-compose = "1.10.1"
 logback-classic = "1.5.18"
-kotlinx-serialization = "1.8.1"
 
 [libraries]
 # Common
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
 # Kotlin Multiplatform
