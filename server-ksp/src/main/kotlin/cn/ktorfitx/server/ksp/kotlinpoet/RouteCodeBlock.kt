@@ -11,7 +11,7 @@ internal class RouteCodeBlock(
 ) {
 	
 	private val varNames = funModel.varNames.toMutableSet()
-	private var multipartParametersVarName: String? = null
+	private var multiPartParametersVarName: String? = null
 	private var isNeedExecutePartDisposeAll = false
 	
 	fun CodeBlock.Builder.addCodeBlock(funName: String) {
@@ -159,22 +159,30 @@ internal class RouteCodeBlock(
 	private fun CodeBlock.Builder.addPartsCodeBlock(
 		partModels: List<PartModel>
 	) {
-		fileSpecBuilder.addImport(PackageNames.KTORFITX_SERVER_CORE, "getMultipartParameters")
+		fileSpecBuilder.addImport(PackageNames.KTORFITX_SERVER_CORE, "resolve")
 		fileSpecBuilder.addImport(PackageNames.KTOR_SERVER_REQUEST, "receiveMultipart")
-		multipartParametersVarName = getVarName("parameters")
-		addStatement("val %N = this.call.receiveMultipart().getMultipartParameters()", multipartParametersVarName)
+		multiPartParametersVarName = getVarName("parameters")
+		addStatement("val %N = this.call.receiveMultipart().resolve()", multiPartParametersVarName)
 		partModels.forEach {
 			if (!isNeedExecutePartDisposeAll) {
 				isNeedExecutePartDisposeAll = it.isPartData
 			}
-			val orNull = if (it.isNullable) "OrNull" else ""
-			val funName = when (it.annotation) {
-				TypeNames.PartForm -> "getForm${if (it.isPartData) "" else "Value"}$orNull"
-				TypeNames.PartFile -> "getFile${if (it.isPartData) "" else "ByteArray"}$orNull"
-				TypeNames.PartBinary -> "getBinary${if (it.isPartData) "" else "ByteArray"}$orNull"
-				else -> "getBinaryChannel$orNull"
+			val funName = when {
+				it.isNullable && it.isPartData -> "getPartDataOrNull"
+				it.isNullable && !it.isPartData -> "getValueOrNull"
+				!it.isNullable && it.isPartData -> "getPartData"
+				else -> "getValue"
 			}
-			addStatement("val %N = %N.%N(%S)", it.varName, multipartParametersVarName, funName, it.name)
+			val genericType = when (it.annotation) {
+				TypeNames.PartForm if it.isPartData -> TypeNames.FormItem
+				TypeNames.PartForm -> TypeNames.String
+				TypeNames.PartFile -> TypeNames.FileItem
+				TypeNames.PartBinary if it.isPartData -> TypeNames.BinaryItem
+				TypeNames.PartBinary -> TypeNames.ByteArray
+				TypeNames.PartBinaryChannel -> TypeNames.BinaryChannelItem
+				else -> error("Unsupported type: ${it.annotation}")
+			}
+			addStatement("val %N = %N.%N<%T>(%S)", it.varName, multiPartParametersVarName, funName, genericType, it.name)
 		}
 	}
 	
@@ -196,7 +204,7 @@ internal class RouteCodeBlock(
 					if (!isNeedExecutePartDisposeAll) {
 						return@buildTimeoutIfNeed
 					}
-					addStatement("%N.disposeAll()", multipartParametersVarName)
+					addStatement("%N.disposeAll()", multiPartParametersVarName)
 					if (timeoutModel != null) {
 						addStatement("%N", varName)
 					}

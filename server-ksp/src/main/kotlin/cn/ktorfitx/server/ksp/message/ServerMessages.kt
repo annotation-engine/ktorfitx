@@ -108,13 +108,13 @@ internal val MESSAGE_PARAMETER_ONLY_USE_STRING = message {
 }
 
 internal val MESSAGE_PARAMETER_ONLY_USE_STRING_OR_FORM_ITEM = message {
-	english { "The {2} parameter of the {1} function can only accept values of type String or PartData.FormItem." }
+	english { "The {2} parameter of the {1} function can only accept String and PartData.FormItem types." }
 	chinese { "{1} 函数的 {2} 参数只允许使用 String 和 PartData.FormItem 类型" }
 }
 
-internal val MESSAGE_PARAMETER_ONLY_USE_BYTE_ARRAY_OR_FILE_ITEM = message {
-	english { "The {2} parameter of the {1} function can only accept types of ByteArray and PartData.FileItem." }
-	chinese { "{1} 函数的 {2} 参数只允许使用 ByteArray 和 PartData.FileItem 类型" }
+internal val MESSAGE_PARAMETER_ONLY_USE_FILE_ITEM = message {
+	english { "The {2} parameter of the {1} function can only use the PartData.FileItem type." }
+	chinese { "{1} 函数的 {2} 参数只允许使用 PartData.FileItem 类型" }
 }
 
 internal val MESSAGE_PARAMETER_ONLY_USE_BYTE_ARRAY_OR_BINARY_ITEM = message {

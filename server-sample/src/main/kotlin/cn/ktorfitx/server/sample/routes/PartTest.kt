@@ -7,7 +7,6 @@ import io.ktor.http.content.*
 fun partTest1(
 	@PartForm name: String,
 	@PartForm("custom1") name2: PartData.FormItem?,
-	@PartFile file: ByteArray?,
 	@PartFile("custom2") file2: PartData.FileItem
 ): String = ""
 
@@ -22,6 +21,6 @@ fun partTest2(
 @POST("part/test3")
 fun partTest3(
 	@PartForm name: String,
-	@PartFile file: ByteArray?,
+	@PartFile file: PartData.FileItem,
 	@PartBinary binary: ByteArray
 ): String = ""

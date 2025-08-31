@@ -19,7 +19,7 @@ fun complexTest1(
 fun complexTest2(
 	@PartForm part: String,
 	@PartForm("custom1") part2: String,
-	@PartFile file: ByteArray?,
+	@PartFile file: PartData.FileItem,
 	@PartBinary binary: PartData.BinaryItem,
 	@PartBinaryChannel binaryChannel: PartData.BinaryChannelItem,
 	@Principal principal: UserIdPrincipal,

@@ -166,10 +166,9 @@ private val partModelConfigs by lazy {
 		PartModelConfig(
 			annotation = TypeNames.PartFile,
 			supportTypeNames = listOf(
-				TypeNames.FileItem,
-				TypeNames.ByteArray
+				TypeNames.FileItem
 			),
-			errorMessage = MESSAGE_PARAMETER_ONLY_USE_BYTE_ARRAY_OR_FILE_ITEM
+			errorMessage = MESSAGE_PARAMETER_ONLY_USE_FILE_ITEM
 		),
 		PartModelConfig(
 			annotation = TypeNames.PartBinary,
