@@ -18,10 +18,11 @@ fun complexTest1(
 @POST("complex/{name}")
 fun complexTest2(
 	@PartForm part: String,
+	@PartForm parts: List<String>?,
 	@PartForm("custom1") part2: String,
-	@PartFile file: PartData.FileItem,
+	@PartFile files: List<PartData.FileItem>?,
 	@PartBinary binary: PartData.BinaryItem,
-	@PartBinaryChannel binaryChannel: PartData.BinaryChannelItem,
+	@PartBinaryChannel binaryChannel: PartData.BinaryChannelItem?,
 	@Principal principal: UserIdPrincipal,
 	@Query query: String,
 	@Query("custom2") query2: Int,

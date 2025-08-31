@@ -13,7 +13,7 @@ fun timeoutTest01(): String = ""
 @Timeout(value = 30L, unit = DurationUnit.SECONDS)
 @POST(path = "/timeoutTest02")
 fun timeoutTest02(
-	@PartForm name: String,
+	@PartForm name: String?,
 ): String = ""
 
 @Timeout(value = 1L, unit = DurationUnit.MINUTES)

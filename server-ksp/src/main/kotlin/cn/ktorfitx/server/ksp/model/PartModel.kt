@@ -7,5 +7,6 @@ internal class PartModel(
 	val varName: String,
 	val annotation: ClassName,
 	val isNullable: Boolean,
-	val isPartData: Boolean
+	val isPartData: Boolean,
+	val isList: Boolean
 )

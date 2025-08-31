@@ -34,6 +34,8 @@ internal object TypeNames {
 	
 	val ByteArray = BYTE_ARRAY
 	
+	val List = LIST
+	
 	val TimeoutCancellationException = ClassName("kotlinx.coroutines", "TimeoutCancellationException")
 	
 	val Controller = ClassName("cn.ktorfitx.server.annotation", "Controller")

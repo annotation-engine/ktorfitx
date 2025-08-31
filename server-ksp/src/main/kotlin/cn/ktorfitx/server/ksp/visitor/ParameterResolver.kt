@@ -10,6 +10,7 @@ import cn.ktorfitx.server.ksp.message.*
 import cn.ktorfitx.server.ksp.model.*
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ksp.toTypeName
 
 internal fun KSFunctionDeclaration.getVarNames(): List<String> {
@@ -203,9 +204,18 @@ private fun KSFunctionDeclaration.getPartModels(): PartModels {
 			}
 			names += name
 			config.supportTypeNames.forEach { className ->
-				if (typeName == className) {
-					val isPartData = className in TypeNames.partDatas
-					return@map PartModel(name, varName, config.annotation, type.isMarkedNullable, isPartData)
+				when (typeName) {
+					className -> {
+						val isPartData = className in TypeNames.partDatas
+						return@map PartModel(name, varName, config.annotation, type.isMarkedNullable, isPartData, false)
+					}
+					
+					is ParameterizedTypeName if typeName.rawType == TypeNames.List && typeName.typeArguments.first() == className -> {
+						val isPartData = className in TypeNames.partDatas
+						return@map PartModel(name, varName, config.annotation, type.isMarkedNullable, isPartData, true)
+					}
+					
+					else -> {}
 				}
 			}
 			ktorfitxCompilationError(parameter, config.errorMessage.getString(simpleName, parameter.name!!))

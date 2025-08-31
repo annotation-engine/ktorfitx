@@ -167,11 +167,17 @@ internal class RouteCodeBlock(
 			if (!isNeedExecutePartDisposeAll) {
 				isNeedExecutePartDisposeAll = it.isPartData
 			}
-			val funName = when {
-				it.isNullable && it.isPartData -> "getPartDataOrNull"
-				it.isNullable && !it.isPartData -> "getValueOrNull"
-				!it.isNullable && it.isPartData -> "getPartData"
-				else -> "getValue"
+			val funName = buildString {
+				append("get")
+				when {
+					it.isPartData && it.isList -> append("PartDataList")
+					it.isPartData -> append("PartData")
+					it.isList -> append("Values")
+					else -> append("Value")
+				}
+				if (it.isNullable) {
+					append("OrNull")
+				}
 			}
 			val genericType = when (it.annotation) {
 				TypeNames.PartForm if it.isPartData -> TypeNames.FormItem

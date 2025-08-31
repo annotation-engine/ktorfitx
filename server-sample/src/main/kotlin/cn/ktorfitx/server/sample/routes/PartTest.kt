@@ -7,7 +7,9 @@ import io.ktor.http.content.*
 fun partTest1(
 	@PartForm name: String,
 	@PartForm("custom1") name2: PartData.FormItem?,
-	@PartFile("custom2") file2: PartData.FileItem
+	@PartForm names: List<String>,
+	@PartForm("custom2") names2: List<PartData.FormItem>?,
+	@PartFile("custom3") file2: PartData.FileItem
 ): String = ""
 
 @POST("part/test2")
