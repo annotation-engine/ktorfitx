@@ -46,7 +46,9 @@ internal class HttpClientCodeBlock(
 			TypeNames.ByteReadChannel -> "bodyAsChannel"
 			else -> "body"
 		}
-		fileSpecBuilder.addImport(if (bodyFunName == "body") PackageNames.KTOR_CALL else PackageNames.KTOR_STATEMENT, bodyFunName)
+		if (!isPrepareType) {
+			fileSpecBuilder.addImport(if (bodyFunName == "body") PackageNames.KTOR_CALL else PackageNames.KTOR_STATEMENT, bodyFunName)
+		}
 		if (returnModel.returnKind == ReturnKind.Any) {
 			if (isPrepareType) {
 				add("return ")

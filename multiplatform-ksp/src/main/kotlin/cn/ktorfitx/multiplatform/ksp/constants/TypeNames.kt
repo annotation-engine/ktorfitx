@@ -115,8 +115,6 @@ internal object TypeNames {
 	
 	val SerializationFormatCbor = ClassName("cn.ktorfitx.multiplatform.annotation", "SerializationFormat", "CBOR")
 	
-	val SerializationFormatProtoBuf = ClassName("cn.ktorfitx.multiplatform.annotation", "SerializationFormat", "PROTO_BUF")
-	
 	val Header = ClassName("cn.ktorfitx.multiplatform.annotation", "Header")
 	
 	val Cookie = ClassName("cn.ktorfitx.multiplatform.annotation", "Cookie")

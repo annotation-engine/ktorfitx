@@ -4,22 +4,22 @@ import com.squareup.kotlinpoet.*
 
 internal object TypeNames {
 	
-	val routes by lazy {
+	val routeAnnotationTypes by lazy {
 		listOf(
 			GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS,
 			WebSocket, WebSocketRaw
 		)
 	}
 	
-	val httpMethods by lazy {
+	val httpMethodAnnotationTypes by lazy {
 		listOf(GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS)
 	}
 	
-	val partDatas by lazy {
+	val partDataTypes by lazy {
 		listOf(FormItem, FileItem, BinaryItem, BinaryChannelItem)
 	}
 	
-	val parameterAnnotations by lazy {
+	val parameterAnnotationTypes by lazy {
 		listOf(
 			Principal, Body, Field, Path, Query, PartForm, PartFile,
 			PartBinary, PartBinaryChannel, Header, Cookie, Attribute

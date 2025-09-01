@@ -87,7 +87,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		customHttpMethodModels: List<CustomHttpMethodModel>
 	): RouteModel {
 		val customHttpMethodClassNames = customHttpMethodModels.map { it.className }
-		val dataList = (TypeNames.routes + customHttpMethodClassNames)
+		val dataList = (TypeNames.routeAnnotationTypes + customHttpMethodClassNames)
 			.mapNotNull { this.getKSAnnotationByType(it)?.let(it::to) }
 		ktorfitxCheck(dataList.size == 1, this) {
 			MESSAGE_FUNCTION_NOT_ALLOW_ADDING_MULTIPLE_REQUEST_TYPES_SIMULTANEOUSLY.getString(simpleName)
@@ -127,7 +127,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 						MESSAGE_FUNCTION_ONLY_ALLOW_CREATION_OF_EXTENSION_METHODS_FOR_ROUTING_CONTEXT.getString(simpleName)
 					}
 				}
-				if (className in TypeNames.httpMethods) {
+				if (className in TypeNames.httpMethodAnnotationTypes) {
 					HttpRequestModel(path, annotation, className.simpleName, false)
 				} else {
 					val method = customHttpMethodModels.first { it.className == className }.method

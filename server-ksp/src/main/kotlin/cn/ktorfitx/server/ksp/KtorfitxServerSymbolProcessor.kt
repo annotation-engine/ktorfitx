@@ -28,7 +28,7 @@ internal class KtorfitxServerSymbolProcessor(
 		if (isGenerated) return emptyList()
 		val customHttpMethodModels = resolver.getCustomHttpMethodModels(
 			httpMethod = TypeNames.HttpMethod,
-			httpMethods = TypeNames.httpMethods,
+			httpMethods = TypeNames.httpMethodAnnotationTypes,
 			parameterName = "path",
 			transform = ::CustomHttpMethodModel
 		)
@@ -40,7 +40,7 @@ internal class KtorfitxServerSymbolProcessor(
 	private fun Resolver.getFunModels(
 		customHttpMethodModels: List<CustomHttpMethodModel>
 	): List<FunModel> {
-		return (TypeNames.routes + customHttpMethodModels.map { it.className })
+		return (TypeNames.routeAnnotationTypes + customHttpMethodModels.map { it.className })
 			.flatMap { this.getSymbolsWithAnnotation(it.canonicalName) }
 			.filterIsInstance<KSFunctionDeclaration>()
 			.map {

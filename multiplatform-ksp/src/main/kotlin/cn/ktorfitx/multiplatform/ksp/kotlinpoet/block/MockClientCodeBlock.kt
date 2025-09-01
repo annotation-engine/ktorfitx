@@ -210,7 +210,6 @@ internal class MockClientCodeBlock(
 		cookieModels: List<CookieModel>
 	) {
 		beginControlFlow("this.cookies")
-		fileSpecBuilder.addImport(PackageNames.KTORFITX_MOCK, "MockClient")
 		cookieModels.forEach { model ->
 			val codeBlock = buildCodeBlock {
 				addStatement("this.append(")

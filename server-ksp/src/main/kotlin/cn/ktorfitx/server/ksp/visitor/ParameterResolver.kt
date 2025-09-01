@@ -15,13 +15,13 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 
 internal fun KSFunctionDeclaration.getVarNames(): List<String> {
 	return this.parameters.map { parameter ->
-		val count = TypeNames.parameterAnnotations.count { parameter.hasAnnotation(it) }
+		val count = TypeNames.parameterAnnotationTypes.count { parameter.hasAnnotation(it) }
 		ktorfitxCheck(count > 0, parameter) {
-			val annotations = TypeNames.parameterAnnotations.joinToString { "@${it.simpleName}" }
+			val annotations = TypeNames.parameterAnnotationTypes.joinToString { "@${it.simpleName}" }
 			MESSAGE_PARAMETER_MUST_USE_ONE_OF_ANNOTATIONS.getString(simpleName, parameter.name!!, annotations)
 		}
 		ktorfitxCheck(count == 1, parameter) {
-			val annotations = TypeNames.parameterAnnotations.joinToString { "@${it.simpleName}" }
+			val annotations = TypeNames.parameterAnnotationTypes.joinToString { "@${it.simpleName}" }
 			MESSAGE_PARAMETER_ONLY_USE_ONE_OF_ANNOTATIONS.getString(simpleName, parameter.name!!, annotations)
 		}
 		parameter.name!!.asString()
@@ -206,12 +206,12 @@ private fun KSFunctionDeclaration.getPartModels(): PartModels {
 			config.supportTypeNames.forEach { className ->
 				when (typeName) {
 					className -> {
-						val isPartData = className in TypeNames.partDatas
+						val isPartData = className in TypeNames.partDataTypes
 						return@map PartModel(name, varName, config.annotation, type.isMarkedNullable, isPartData, false)
 					}
 					
 					is ParameterizedTypeName if typeName.rawType == TypeNames.List && typeName.typeArguments.first() == className -> {
-						val isPartData = className in TypeNames.partDatas
+						val isPartData = className in TypeNames.partDataTypes
 						return@map PartModel(name, varName, config.annotation, type.isMarkedNullable, isPartData, true)
 					}
 					
