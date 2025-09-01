@@ -4,22 +4,16 @@ import cn.ktorfitx.common.ksp.util.builders.buildFileSpec
 import cn.ktorfitx.common.ksp.util.builders.buildFunSpec
 import cn.ktorfitx.common.ksp.util.builders.fileSpecBuilder
 import cn.ktorfitx.common.ksp.util.builders.fileSpecBuilderLocal
+import cn.ktorfitx.common.ksp.util.message.getString
 import cn.ktorfitx.server.ksp.constants.PackageNames
 import cn.ktorfitx.server.ksp.constants.TypeNames
+import cn.ktorfitx.server.ksp.message.FILE_COMMENT
 import cn.ktorfitx.server.ksp.model.*
 import com.squareup.kotlinpoet.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 internal class RouteKotlinPoet {
-	
-	private val fileComment = """
-        该文件是由 cn.ktorfitx:server-ksp 在编译期间根据注解生成的代码，
-        所有手动修改将会在下次构建时被覆盖，
-        若需修改行为，请修改对应的注解或源代码定义，而不是此文件本身。
-        
-        生成时间：%L
-        """.trimIndent()
 	
 	fun getFileSpec(
 		funModels: List<FunModel>,
@@ -28,7 +22,7 @@ internal class RouteKotlinPoet {
 		funName: String
 	): FileSpec = buildFileSpec(packageName, fileName) {
 		fileSpecBuilderLocal.set(this)
-		addFileComment(fileComment, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+		addFileComment(FILE_COMMENT.getString(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 		indent("\t")
 		val funSpec = getFunctionSpec(funName, funModels)
 		addFunction(funSpec)

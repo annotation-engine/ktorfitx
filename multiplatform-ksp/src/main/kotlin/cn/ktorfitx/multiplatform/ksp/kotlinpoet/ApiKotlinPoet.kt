@@ -4,10 +4,12 @@ import cn.ktorfitx.common.ksp.util.builders.*
 import cn.ktorfitx.common.ksp.util.expends.asNullable
 import cn.ktorfitx.common.ksp.util.expends.replaceFirstToLowercase
 import cn.ktorfitx.common.ksp.util.expends.replaceFirstToUppercase
+import cn.ktorfitx.common.ksp.util.message.getString
 import cn.ktorfitx.multiplatform.ksp.constants.PackageNames
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
 import cn.ktorfitx.multiplatform.ksp.kotlinpoet.block.HttpCodeBlockBuilder
 import cn.ktorfitx.multiplatform.ksp.kotlinpoet.block.WebSocketCodeBuilder
+import cn.ktorfitx.multiplatform.ksp.message.FILE_COMMENT
 import cn.ktorfitx.multiplatform.ksp.model.*
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
@@ -16,23 +18,13 @@ import java.time.format.DateTimeFormatter
 
 internal object ApiKotlinPoet {
 	
-	private const val TOKEN_VAR_NAME = "token"
-	
-	private val fileComment = """
-        该文件是由 cn.ktorfitx:multiplatform-ksp 在编译期间根据注解生成的代码，
-        所有手动修改将会在下次构建时被覆盖，
-        若需修改行为，请修改对应的注解或源代码定义，而不是此文件本身。
-        
-        生成时间：%L
-        """.trimIndent()
-	
 	/**
 	 * 文件
 	 */
 	fun getFileSpec(classModel: ClassModel): FileSpec {
 		return buildFileSpec(classModel.className) {
 			fileSpecBuilderLocal.set(this)
-			addFileComment(fileComment, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+			addFileComment(FILE_COMMENT.getString(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 			indent("\t")
 			addType(getTypeSpec(classModel))
 			addProperties(getExpendPropertySpecs(classModel))
@@ -179,10 +171,11 @@ internal object ApiKotlinPoet {
 		parameterModels: List<ParameterModel>
 	): String {
 		var i = 0
-		var varName = TOKEN_VAR_NAME
+		val raw = "token"
+		var varName = raw
 		val varNames = parameterModels.map { it.varName }
 		while (varName in varNames) {
-			varName = TOKEN_VAR_NAME + i++
+			varName = raw + i++
 		}
 		return varName
 	}
