@@ -3,7 +3,6 @@ package cn.ktorfitx.multiplatform.sample.http.api
 import cn.ktorfitx.multiplatform.annotation.*
 import cn.ktorfitx.multiplatform.sample.http.ApiResult
 import cn.ktorfitx.multiplatform.sample.http.mock.ApiResultMockProvider
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 @Api("body")
@@ -12,15 +11,7 @@ interface BodyApi {
 	@POST("test01")
 	suspend fun test01(
 		@Body body: BodyTest
-	): Result<Test>
-	
-	class Test(
-		@Contextual val name1234: A
-	)
-	
-	class A(
-		val name: String
-	)
+	): Result<String>
 	
 	@POST("test02")
 	suspend fun test02(
