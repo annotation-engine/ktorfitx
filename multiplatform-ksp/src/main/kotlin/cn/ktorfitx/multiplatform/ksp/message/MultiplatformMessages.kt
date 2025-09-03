@@ -17,6 +17,11 @@ internal val MESSAGE_CLASS_MUST_IMPLEMENT_MOCK_PROVIDER_INTERFACE = message {
 	chinese { "{1} 类必须实现 MockProvider<T> 接口" }
 }
 
+internal val MESSAGE_CLASS_NOT_MEET_SERIALIZATION_REQUIREMENTS = message {
+	english { "The return type of the {1} function does not meet the serialization requirements. Please check if a @Serializable annotation has been marked on the class, or if @Contextual or @Transient annotations have been set for the parameters." }
+	chinese { "{1} 函数的返回类型不满足序列化要求，请检查是否为类标注了 @Serializable 注解，或为参数设置 @Contextual 或 @Transient 注解" }
+}
+
 internal val MESSAGE_INTERFACE_NOT_ALLOW_GENERICS = message {
 	english { "{1} 接口不允许包含泛型" }
 	chinese { "The {1} interface does not allow generics." }
@@ -28,8 +33,8 @@ internal val MESSAGE_INTERFACE_MUST_BE_DECLARED_PUBLIC_OR_INTERNAL_ACCESS_PERMIS
 }
 
 internal val MESSAGE_INTERFACE_MUST_BE_INTERFACE_BECAUSE_MARKED_API = message {
-	english { "The {1} must be an interface because you have marked the @Api annotation." }
-	chinese { "{1} 必须是 interface，因为您标记了 @Api 注解" }
+	english { "{1} must be an interface because you have annotated it with @Api." }
+	chinese { "{1} 必须是 interface，因为您标注了 @Api 注解" }
 }
 
 internal val MESSAGE_INTERFACE_NOT_SUPPORT_SEALED_MODIFIER = message {
@@ -83,7 +88,7 @@ internal val MESSAGE_ANNOTATION_URL_FORMAT_INCORRECT = message {
 }
 
 internal val MESSAGE_FUNCTION_NOW_ALLOW_SETTING_URL_WHEN_MARKED_DYNAMIC_URL = message {
-	english { "The {2} annotation on the {1} function does not allow setting URL parameter because the function has already been marked with the @DynamicUrl annotation." }
+	english { "The {2} annotation on the {1} function does not allow setting URL parameters, as the function has already been marked with the @DynamicUrl annotation." }
 	chinese { "{1} 函数上的 {2} 注解不允许设置 url 参数，因为函数已经标记了 @DynamicUrl 注解" }
 }
 
@@ -193,8 +198,8 @@ internal val MESSAGE_FUNCTION_NOT_ALLOW_USE_ONE_PARAMETER_MARKED_DYNAMIC_URL_ANN
 }
 
 internal val MESSAGE_PARAMETER_MUST_BE_DECLARED_SPECIFIC_TYPE_BECAUSE_MARKED_BODY = message {
-	english { "The {2} parameter of the {1} function must be declared as a specific type because you have marked the @Body annotation." }
-	chinese { "{1} 函数的 {2} 参数必须声明为具体类型，因为您标记了 @Body 注解" }
+	english { "The {2} parameter of the {1} function must be declared as a specific type because you have annotated it with the @Body annotation." }
+	chinese { "{1} 函数的 {2} 参数必须声明为具体类型，因为您标注了 @Body 注解" }
 }
 
 internal val MESSAGE_PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_FIELD = message {

@@ -1,8 +1,9 @@
 package cn.ktorfitx.multiplatform.ksp
 
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
-import cn.ktorfitx.common.ksp.util.expends.getCustomHttpMethodModels
 import cn.ktorfitx.common.ksp.util.message.getString
+import cn.ktorfitx.common.ksp.util.resolver.getCustomHttpMethodModels
+import cn.ktorfitx.common.ksp.util.resolver.safeResolver
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
 import cn.ktorfitx.multiplatform.ksp.kotlinpoet.ApiKotlinPoet
 import cn.ktorfitx.multiplatform.ksp.message.MESSAGE_INTERFACE_MUST_BE_INTERFACE_BECAUSE_MARKED_API
@@ -25,9 +26,10 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 ) : SymbolProcessor {
 	
 	override fun process(resolver: Resolver): List<KSAnnotated> {
+		safeResolver = resolver
 		val customHttpMethods = resolver.getCustomHttpMethodModels(
 			httpMethod = TypeNames.HttpMethod,
-			httpMethods = TypeNames.httpMethods,
+			defaultHttpMethods = TypeNames.httpMethods,
 			parameterName = "url",
 			transform = ::CustomHttpMethodModel
 		)

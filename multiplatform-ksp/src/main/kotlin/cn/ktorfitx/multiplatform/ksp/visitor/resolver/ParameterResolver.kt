@@ -99,26 +99,6 @@ internal fun KSFunctionDeclaration.hasBearerAuth(): Boolean {
 	return hasAnnotation(TypeNames.BearerAuth)
 }
 
-internal fun KSFunctionDeclaration.isPrepareType(
-	isWebSocket: Boolean,
-	isMock: Boolean
-): Boolean {
-	val isPrepareType = hasAnnotation(TypeNames.Prepare)
-	if (isPrepareType) {
-		val returnType = this.returnType!!.toTypeName()
-		ktorfitxCheck(returnType == TypeNames.HttpStatement, this) {
-			MESSAGE_FUNCTION_MUST_USE_HTTP_STATEMENT_RETURN_TYPE.getString(simpleName)
-		}
-		ktorfitxCheck(!isMock, this) {
-			MESSAGE_FUNCTION_NOT_ALLOW_SIMULTANEOUS_USE_PREPARE_AND_MOCK_ANNOTATIONS.getString(simpleName)
-		}
-		ktorfitxCheck(!isWebSocket, this) {
-			MESSAGE_FUNCTION_NOT_ALLOW_SIMULTANEOUS_USE_PREPARE_AND_WEBSOCKET_ANNOTATIONS.getString(simpleName)
-		}
-	}
-	return isPrepareType
-}
-
 internal fun KSFunctionDeclaration.getHeaderModels(): List<HeaderModel> {
 	return this.parameters.mapNotNull { parameter ->
 		val annotation = parameter.getKSAnnotationByType(TypeNames.Header) ?: return@mapNotNull null

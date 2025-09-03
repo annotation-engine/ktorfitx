@@ -4,6 +4,7 @@ import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCheckNotNull
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.common.ksp.util.message.getString
+import cn.ktorfitx.common.ksp.util.resolver.isSerializableType
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
 import cn.ktorfitx.multiplatform.ksp.message.*
 import cn.ktorfitx.multiplatform.ksp.model.*
@@ -27,7 +28,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 	
 	private val apiUrlRegex = "^\\S*[a-zA-Z0-9]+\\S*$".toRegex()
 	
-	private lateinit var customHttpMethodModels: List<CustomHttpMethodModel>
+	private var customHttpMethodModels: List<CustomHttpMethodModel>? = null
 	
 	override fun visitClassDeclaration(
 		classDeclaration: KSClassDeclaration,
@@ -100,14 +101,15 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 				val routeModel = function.getRouteModel()
 				val isWebSocket = routeModel is WebSocketModel
 				val mockModel = function.getMockModel(isWebSocket)
+				val isPrepareType = function.hasAnnotation(TypeNames.Prepare)
 				FunModel(
 					funName = function.simpleName.asString(),
-					returnModel = function.getReturnModel(isWebSocket),
+					returnModel = function.getReturnModel(isWebSocket, isPrepareType, mockModel != null),
 					parameterModels = function.getParameterModels(isWebSocket),
 					routeModel = routeModel,
 					mockModel = mockModel,
 					hasBearerAuth = function.hasBearerAuth(),
-					isPrepareType = function.isPrepareType(isWebSocket, mockModel != null),
+					isPrepareType = isPrepareType,
 					timeoutModel = function.getTimeoutModel(),
 					queryModels = function.getQueryModels(),
 					pathModels = function.getPathModels(routeModel.url, isWebSocket),
@@ -125,7 +127,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 	private val urlRegex = "^\\S*[a-zA-Z0-9]+\\S*$".toRegex()
 	
 	private fun KSFunctionDeclaration.getRouteModel(): RouteModel {
-		val customClassNames = customHttpMethodModels.map { it.className }
+		val customClassNames = customHttpMethodModels!!.map { it.className }
 		val availableRoutes = TypeNames.routes + customClassNames
 		val classNames = availableRoutes.filter { hasAnnotation(it) }
 		ktorfitxCheck(classNames.size <= 1, this) {
@@ -173,47 +175,69 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 			TypeNames.WebSocket -> WebSocketModel(url as StaticUrl)
 			in TypeNames.httpMethods -> HttpRequestModel(url, className.simpleName, false)
 			else -> {
-				val method = customHttpMethodModels.first { it.className == className }.method
+				val method = customHttpMethodModels!!.first { it.className == className }.method
 				HttpRequestModel(url, method, true)
 			}
 		}
 	}
 	
 	private fun KSFunctionDeclaration.getReturnModel(
-		isWebSocket: Boolean
+		isWebSocket: Boolean,
+		isPrepareType: Boolean,
+		isMock: Boolean
 	): ReturnModel {
 		val returnType = this.returnType!!
 		val typeName = returnType.toTypeName()
-		val returnKind = when {
+		return when {
+			isPrepareType -> {
+				ktorfitxCheck(returnType.toTypeName() == TypeNames.HttpStatement, returnType) {
+					MESSAGE_FUNCTION_MUST_USE_HTTP_STATEMENT_RETURN_TYPE.getString(simpleName)
+				}
+				ktorfitxCheck(!isMock, this) {
+					MESSAGE_FUNCTION_NOT_ALLOW_SIMULTANEOUS_USE_PREPARE_AND_MOCK_ANNOTATIONS.getString(simpleName)
+				}
+				ktorfitxCheck(!isWebSocket, this) {
+					MESSAGE_FUNCTION_NOT_ALLOW_SIMULTANEOUS_USE_PREPARE_AND_WEBSOCKET_ANNOTATIONS.getString(simpleName)
+				}
+				ReturnModel(typeName, typeName, ReturnKind.Any)
+			}
+			
 			isWebSocket -> {
 				ktorfitxCheck(!typeName.isNullable && typeName == TypeNames.Unit, returnType) {
 					MESSAGE_FUNCTION_HAS_BEEN_WEBSOCKET_SO_RETURN_TYPE_MUST_BE_UNIT.getString(simpleName)
 				}
-				ReturnKind.Unit
+				ReturnModel(typeName, typeName, ReturnKind.Unit)
 			}
 			
 			typeName.rawType == TypeNames.Result -> {
 				ktorfitxCheck(!typeName.isNullable && typeName is ParameterizedTypeName, returnType) {
 					MESSAGE_FUNCTION_NOT_ALLOW_RETURN_TYPE_RESULT_SET_NULLABLE_TYPE.getString(simpleName)
 				}
-				ReturnKind.Result
+				val serializedTypeName = typeName.typeArguments.first()
+				
+				ktorfitxCheck(serializedTypeName.isSerializableType(), returnType) {
+					MESSAGE_CLASS_NOT_MEET_SERIALIZATION_REQUIREMENTS.getString(simpleName)
+				}
+				ReturnModel(typeName, serializedTypeName, ReturnKind.Result)
 			}
 			
 			typeName == TypeNames.Unit -> {
 				ktorfitxCheck(!typeName.isNullable, returnType) {
 					MESSAGE_FUNCTION_NOT_ALLOW_RETURN_TYPE_UNIT_USE_NULLABLE_TYPE.getString(simpleName)
 				}
-				ReturnKind.Unit
+				ReturnModel(typeName, typeName, ReturnKind.Unit)
 			}
 			
 			else -> {
 				ktorfitxCheck(!typeName.equals(TypeNames.Nothing, ignoreNullable = true), returnType) {
 					MESSAGE_FUNCTION_NOT_ALLOW_USE_RETURN_TYPE_NOTHING.getString(simpleName, if (typeName.isNullable) "?" else "")
 				}
-				ReturnKind.Any
+				ktorfitxCheck(typeName.isSerializableType(), returnType) {
+					MESSAGE_CLASS_NOT_MEET_SERIALIZATION_REQUIREMENTS.getString(simpleName)
+				}
+				ReturnModel(typeName, typeName, ReturnKind.Any)
 			}
 		}
-		return ReturnModel(typeName, returnKind)
 	}
 	
 	override fun defaultHandler(node: KSNode, data: List<CustomHttpMethodModel>): ClassModel = error("Not Implemented.")

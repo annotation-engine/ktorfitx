@@ -1,4 +1,4 @@
-# KtorfitX 3.2.3-3.1.0-Beta6
+# KtorfitX 3.2.3-3.1.0-RC1
 
 [![Maven](https://img.shields.io/badge/Maven-Central-download.svg)](https://central.sonatype.com/search?q=cn.ktorfitx:multiplatform-core)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://annotation-engine.github.io/ktorfitx-document/index_md.html)
@@ -152,7 +152,7 @@ KSP `2.2.10-2.0.2`
 
 - 支持服务端
 
-添加 Ktor Server 端支持，标记注解，符号处理器会自动生成对应的路由解析函数，包含参数解析授权等行为
+添加 Ktor Server 端支持，标注注解，符号处理器会自动生成对应的路由解析函数，包含参数解析授权等行为
 
 ## Gradle 配置
 

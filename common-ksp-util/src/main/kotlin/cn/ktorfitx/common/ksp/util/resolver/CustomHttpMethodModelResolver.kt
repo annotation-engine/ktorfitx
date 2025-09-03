@@ -1,7 +1,8 @@
-package cn.ktorfitx.common.ksp.util.expends
+package cn.ktorfitx.common.ksp.util.resolver
 
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
 import cn.ktorfitx.common.ksp.util.constants.TypeNames
+import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.common.ksp.util.message.*
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSClassDeclaration
@@ -12,7 +13,7 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 
 fun <R : Any> Resolver.getCustomHttpMethodModels(
 	httpMethod: ClassName,
-	httpMethods: List<ClassName>,
+	defaultHttpMethods: List<ClassName>,
 	parameterName: String,
 	transform: (method: String, className: ClassName) -> R
 ): List<R> = this.getSymbolsWithAnnotation(httpMethod.canonicalName)
@@ -59,7 +60,7 @@ fun <R : Any> Resolver.getCustomHttpMethodModels(
 		ktorfitxCheck(method.isValidHttpMethod(), httpMethod) {
 			MESSAGE_ANNOTATION_HTTP_METHOD_USE_INVALID_HTTP_METHOD_NAME.getString(it.simpleName, httpMethod)
 		}
-		ktorfitxCheck(httpMethods.all { it.simpleName != method }, httpMethod) {
+		ktorfitxCheck(defaultHttpMethods.all { it.simpleName != method }, httpMethod) {
 			MESSAGE_ANNOTATION_DUPLICATES_PROVIDED_SYSTEM_HTTP_METHOD_ANNOTATION.getString(it.simpleName, method)
 		}
 		transform(method, it.toClassName())

@@ -12,20 +12,20 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 /**
  * 是否包含注解
  */
-fun KSAnnotated.hasAnnotation(annotationClassName: ClassName): Boolean {
+fun KSAnnotated.hasAnnotation(annotation: ClassName): Boolean {
 	return this.annotations.any {
-		it.shortName.getShortName() == annotationClassName.simpleName &&
-			it.annotationType.resolve().declaration.qualifiedName?.asString() == annotationClassName.canonicalName
+		it.shortName.getShortName() == annotation.simpleName &&
+			it.annotationType.resolve().declaration.qualifiedName?.asString() == annotation.canonicalName
 	}
 }
 
 /**
  * 获取 KSAnnotation
  */
-fun KSAnnotated.getKSAnnotationByType(annotationClassName: ClassName): KSAnnotation? {
+fun KSAnnotated.getKSAnnotationByType(annotation: ClassName): KSAnnotation? {
 	return this.annotations.filter {
-		it.shortName.getShortName() == annotationClassName.simpleName &&
-			it.annotationType.resolve().declaration.qualifiedName?.asString() == annotationClassName.canonicalName
+		it.shortName.getShortName() == annotation.simpleName &&
+			it.annotationType.resolve().declaration.qualifiedName?.asString() == annotation.canonicalName
 	}.firstOrNull()
 }
 

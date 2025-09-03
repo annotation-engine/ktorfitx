@@ -4,6 +4,7 @@ import com.squareup.kotlinpoet.TypeName
 
 internal class ReturnModel(
 	val typeName: TypeName,
+	val serializedTypeName: TypeName,
 	val returnKind: ReturnKind
 )
 

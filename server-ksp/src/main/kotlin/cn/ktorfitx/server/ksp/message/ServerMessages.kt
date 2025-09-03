@@ -133,13 +133,13 @@ internal val MESSAGE_ANNOTATION_NOT_ALLOW_USE_SAME_PATH_PARAMETER = message {
 }
 
 internal val MESSAGE_ANNOTATION_NOT_ALLOW_USE_REGEX_WHEN_WEBSOCKET_HAS_BEEN_MARKED = message {
-	english { "The {1} function does not allow the use of the @Regex annotation when the {2} annotation has been marked." }
-	chinese { "{1} 函数不允许在标记了 {2} 注解的情况下使用 @Regex 注解" }
+	english { "The {1} function does not allow the use of the @Regex annotation when the {2} annotation is already present." }
+	chinese { "{1} 函数不允许在标注了 {2} 注解的情况下使用 @Regex 注解" }
 }
 
 internal val MESSAGE_ANNOTATION_NOT_ALLOW_USE_TIMEOUT_WHEN_WEBSOCKET_HAS_BEEN_MARKED = message {
-	english { "The {1} function does not allow the use of the @Timeout annotation when the {2} annotation has been marked." }
-	chinese { "{1} 函数不允许在标记了 {2} 注解的情况下使用 @Timeout 注解" }
+	english { "The {1} function does not allow the use of the @Timeout annotation when the {2} annotation is already present." }
+	chinese { "{1} 函数不允许在标注了 {2} 注解的情况下使用 @Timeout 注解" }
 }
 
 internal val MESSAGE_ANNOTATION_VALUE_PARAMETER_MUST_BE_GREATER_THAN_ZERO = message {

@@ -7,7 +7,6 @@ import cn.ktorfitx.multiplatform.ksp.constants.PackageNames
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
 import cn.ktorfitx.multiplatform.ksp.model.*
 import com.squareup.kotlinpoet.CodeBlock
-import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.buildCodeBlock
 
 internal class HttpClientCodeBlock(
@@ -34,12 +33,7 @@ internal class HttpClientCodeBlock(
 			endControlFlow()
 			return
 		}
-		
-		var typeName = returnModel.typeName
-		if (returnModel.returnKind == ReturnKind.Result) {
-			typeName = (typeName as ParameterizedTypeName).typeArguments.first()
-		}
-		val rawType = typeName.asNotNullable()
+		val rawType = returnModel.serializedTypeName.asNotNullable()
 		val bodyFunName = when (rawType) {
 			TypeNames.String -> "bodyAsText"
 			TypeNames.ByteArray -> "bodyAsBytes"

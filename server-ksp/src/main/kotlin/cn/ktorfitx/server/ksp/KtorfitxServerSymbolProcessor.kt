@@ -1,8 +1,8 @@
 package cn.ktorfitx.server.ksp
 
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
-import cn.ktorfitx.common.ksp.util.expends.getCustomHttpMethodModels
 import cn.ktorfitx.common.ksp.util.message.getString
+import cn.ktorfitx.common.ksp.util.resolver.getCustomHttpMethodModels
 import cn.ktorfitx.server.ksp.constants.TypeNames
 import cn.ktorfitx.server.ksp.kotlinpoet.RouteKotlinPoet
 import cn.ktorfitx.server.ksp.message.MESSAGE_FUNCTION_TOP_LEVEL_OR_OBJECT_ONLY
@@ -28,7 +28,7 @@ internal class KtorfitxServerSymbolProcessor(
 		if (isGenerated) return emptyList()
 		val customHttpMethodModels = resolver.getCustomHttpMethodModels(
 			httpMethod = TypeNames.HttpMethod,
-			httpMethods = TypeNames.httpMethodAnnotationTypes,
+			defaultHttpMethods = TypeNames.httpMethodAnnotationTypes,
 			parameterName = "path",
 			transform = ::CustomHttpMethodModel
 		)
