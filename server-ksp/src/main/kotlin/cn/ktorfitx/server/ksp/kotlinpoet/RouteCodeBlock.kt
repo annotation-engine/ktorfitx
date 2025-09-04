@@ -198,7 +198,6 @@ internal class RouteCodeBlock(
 	) {
 		val parameters = funModel.varNames.joinToString()
 		if (funModel.routeModel is HttpRequestModel) {
-			fileSpecBuilder.addImport(PackageNames.KTOR_SERVER_RESPONSE, "respond")
 			val varName = getVarName("result")
 			buildTryCatchIfNeed(timeoutModel != null) {
 				buildTimeoutIfNeed(timeoutModel, varName) {
@@ -217,8 +216,10 @@ internal class RouteCodeBlock(
 				}
 				fileSpecBuilder.addImport(PackageNames.KTOR_HTTP, "HttpStatusCode")
 				if (funModel.isReturnNullable) {
+					fileSpecBuilder.addImport(PackageNames.KTOR_SERVER_RESPONSE, "respondNullable")
 					addStatement("this.call.respondNullable(HttpStatusCode.OK, %N)", varName)
 				} else {
+					fileSpecBuilder.addImport(PackageNames.KTOR_SERVER_RESPONSE, "respond")
 					addStatement("this.call.respond(HttpStatusCode.OK, %N)", varName)
 				}
 			}
