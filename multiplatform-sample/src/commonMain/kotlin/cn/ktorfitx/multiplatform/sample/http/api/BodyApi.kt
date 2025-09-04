@@ -28,6 +28,11 @@ interface BodyApi {
 		@Body(format = SerializationFormat.CBOR) body: List<Int>
 	): ApiResult<Unit>
 	
+	@POST("test05")
+	suspend fun test05(
+		@Body enum: EnumTest
+	): ApiResult<Unit>
+	
 	@Mock(provider = ApiResultMockProvider::class)
 	@POST("testMock01")
 	suspend fun testMock01(
@@ -57,3 +62,9 @@ interface BodyApi {
 data class BodyTest(
 	val data: String
 )
+
+@Serializable
+enum class EnumTest {
+	ENUM1,
+	ENUM2
+}

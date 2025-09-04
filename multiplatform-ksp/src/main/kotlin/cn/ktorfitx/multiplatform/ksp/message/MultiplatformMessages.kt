@@ -18,8 +18,8 @@ internal val MESSAGE_CLASS_MUST_IMPLEMENT_MOCK_PROVIDER_INTERFACE = message {
 }
 
 internal val MESSAGE_CLASS_NOT_MEET_SERIALIZATION_REQUIREMENTS = message {
-	english { "The return type of the {1} function does not meet the serialization requirements. Please check if a @Serializable annotation has been marked on the class, or if @Contextual or @Transient annotations have been set for the parameters." }
-	chinese { "{1} 函数的返回类型不满足序列化要求，请检查是否为类标注了 @Serializable 注解，或为参数设置 @Contextual 或 @Transient 注解" }
+	english { "The return type of the {1} function does not meet the serialization requirements. Please kindly verify if the type complies with Kotlinx Serialization rules." }
+	chinese { "{1} 函数的返回类型不满足序列化要求，请检查类型是否符合 Kotlinx Serialization 规则" }
 }
 
 internal val MESSAGE_INTERFACE_NOT_ALLOW_GENERICS = message {
@@ -197,9 +197,9 @@ internal val MESSAGE_FUNCTION_NOT_ALLOW_USE_ONE_PARAMETER_MARKED_DYNAMIC_URL_ANN
 	chinese { "{1} 函数只允许使用一个标注了 @DynamicUrl 注解的参数来动态设置 url 参数" }
 }
 
-internal val MESSAGE_PARAMETER_MUST_BE_DECLARED_SPECIFIC_TYPE_BECAUSE_MARKED_BODY = message {
-	english { "The {2} parameter of the {1} function must be declared as a specific type because you have annotated it with the @Body annotation." }
-	chinese { "{1} 函数的 {2} 参数必须声明为具体类型，因为您标注了 @Body 注解" }
+internal val MESSAGE_PARAMETER_NOT_MEET_SERIALIZATION_REQUIREMENTS = message {
+	english { "The {2} parameter of the {1} function does not meet the serialization requirements. Please check if the type conforms to the rules of Kotlinx Serialization." }
+	chinese { "{1} 函数的 {2} 参数不满足序列化要求，请检查类型是否符合 Kotlinx Serialization 规则" }
 }
 
 internal val MESSAGE_PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_FIELD = message {

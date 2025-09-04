@@ -4,6 +4,7 @@ import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCheckNotNull
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.common.ksp.util.message.getString
+import cn.ktorfitx.common.ksp.util.resolver.isSerializableType
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
 import cn.ktorfitx.multiplatform.ksp.message.*
 import cn.ktorfitx.multiplatform.ksp.model.*
@@ -11,7 +12,6 @@ import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSType
-import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.WildcardTypeName
 import com.squareup.kotlinpoet.ksp.toTypeName
@@ -44,8 +44,8 @@ private fun KSFunctionDeclaration.getBodyModel(): BodyModel? {
 	val parameter = filters.first()
 	val varName = parameter.name!!.asString()
 	val typeName = parameter.type.toTypeName()
-	ktorfitxCheck(typeName is ClassName || typeName is ParameterizedTypeName, parameter) {
-		MESSAGE_PARAMETER_MUST_BE_DECLARED_SPECIFIC_TYPE_BECAUSE_MARKED_BODY.getString(simpleName, parameter.name!!)
+	ktorfitxCheck(typeName.isSerializableType(), parameter) {
+		MESSAGE_PARAMETER_NOT_MEET_SERIALIZATION_REQUIREMENTS.getString(simpleName, parameter.name!!)
 	}
 	val annotation = parameter.getKSAnnotationByType(TypeNames.Body)!!
 	val formatClassName = annotation.getClassNameOrNull("format") ?: TypeNames.SerializationFormatJson
