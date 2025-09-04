@@ -159,10 +159,10 @@ internal class RouteCodeBlock(
 	private fun CodeBlock.Builder.addPartsCodeBlock(
 		partModels: List<PartModel>
 	) {
-		fileSpecBuilder.addImport(PackageNames.KTORFITX_SERVER_CORE, "resolve")
+		fileSpecBuilder.addImport(PackageNames.KTORFITX_SERVER_CORE, "extractParameters")
 		fileSpecBuilder.addImport(PackageNames.KTOR_SERVER_REQUEST, "receiveMultipart")
 		multiPartParametersVarName = getVarName("parameters")
-		addStatement("val %N = this.call.receiveMultipart().resolve()", multiPartParametersVarName)
+		addStatement("val %N = this.call.receiveMultipart().extractParameters()", multiPartParametersVarName)
 		partModels.forEach {
 			if (!isNeedExecutePartDisposeAll) {
 				isNeedExecutePartDisposeAll = it.isPartData

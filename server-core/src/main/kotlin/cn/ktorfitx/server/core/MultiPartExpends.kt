@@ -4,7 +4,7 @@ import io.ktor.http.content.*
 import kotlinx.io.readByteArray
 import kotlin.reflect.KClass
 
-suspend fun MultiPartData.resolve(): MultiPartParameters {
+suspend fun MultiPartData.extractParameters(): MultiPartParameters {
 	val partDataList = mutableListOf<Pair<String, PartData>>()
 	this.forEachPart {
 		if (it.name == null) {
