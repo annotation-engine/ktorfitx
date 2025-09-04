@@ -90,7 +90,7 @@ fun String.isValidRegex(
 		if (options.isEmpty()) {
 			this.toRegex()
 		} else if (options.size == 1) {
-			this.toRegex(options.first())
+			this.toRegex(options.single())
 		} else {
 			this.toRegex(options)
 		}

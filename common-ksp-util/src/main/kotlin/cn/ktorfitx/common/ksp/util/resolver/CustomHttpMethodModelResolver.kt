@@ -26,7 +26,7 @@ fun <R : Any> Resolver.getCustomHttpMethodModels(
 		fun validProperty(): Boolean {
 			val properties = it.getAllProperties().toList()
 			if (properties.size != 1) return false
-			val property = properties.first()
+			val property = properties.single()
 			val typeName = property.type.toTypeName()
 			if (typeName != TypeNames.String) return false
 			val simpleName = property.simpleName.asString()
@@ -39,7 +39,7 @@ fun <R : Any> Resolver.getCustomHttpMethodModels(
 			val annotation = it.getKSAnnotationByType(TypeNames.Target) ?: return false
 			val classNames = annotation.getClassNamesOrNull("allowedTargets") ?: return false
 			if (classNames.size != 1) return false
-			val className = classNames.first()
+			val className = classNames.single()
 			return className == TypeNames.AnnotationTargetFunction
 		}
 		ktorfitxCheck(validTarget(), it) {

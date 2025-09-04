@@ -134,7 +134,7 @@ fun KSType.isListOfStringPair(
 		if (it.declaration !is KSClassDeclaration) return@find false
 		it.declaration.qualifiedName?.asString() == TypeNames.List.canonicalName
 	}?.toTypeName() ?: this.toTypeName()) as? ParameterizedTypeName ?: return false
-	val pairTypeName = (typeName.typeArguments.first() as? ParameterizedTypeName)
+	val pairTypeName = (typeName.typeArguments.single() as? ParameterizedTypeName)
 		?.takeIf { it.rawType == TypeNames.Pair } ?: return false
 	val keyTypeName = pairTypeName.typeArguments.first()
 	if (keyTypeName != TypeNames.String) return false

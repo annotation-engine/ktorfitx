@@ -138,7 +138,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		ktorfitxCheck(classNames.size == 1, this) {
 			MESSAGE_FUNCTION_NOT_USE_ROUTE_ANNOTATION.getString(simpleName)
 		}
-		val className = classNames.first()
+		val className = classNames.single()
 		val isWebSocket = className == TypeNames.WebSocket
 		val dynamicUrl = this.getDynamicUrl()
 		
@@ -213,7 +213,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 				ktorfitxCheck(!typeName.isNullable && typeName is ParameterizedTypeName, returnType) {
 					MESSAGE_FUNCTION_NOT_ALLOW_RETURN_TYPE_RESULT_SET_NULLABLE_TYPE.getString(simpleName)
 				}
-				val serializedTypeName = typeName.typeArguments.first()
+				val serializedTypeName = typeName.typeArguments.single()
 				
 				ktorfitxCheck(serializedTypeName.isSerializableType(), returnType) {
 					MESSAGE_CLASS_NOT_MEET_SERIALIZATION_REQUIREMENTS.getString(simpleName)

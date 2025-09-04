@@ -1,7 +1,7 @@
 package cn.ktorfitx.multiplatform.ksp
 
 import cn.ktorfitx.common.ksp.util.check.ktorfitxConfigError
-import cn.ktorfitx.common.ksp.util.log.kspLoggerLocal
+import cn.ktorfitx.common.ksp.util.log.kspLogger
 import cn.ktorfitx.common.ksp.util.message.Language
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -16,7 +16,7 @@ internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorPro
 	}
 	
 	override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-		kspLoggerLocal.set(environment.logger)
+		kspLogger = environment.logger
 		if (!environment.options[OPTION_MULTIPLATFORM_GRADLE_PLUGIN_ENABLED].toBoolean()) {
 			ktorfitxConfigError("Please add the \"cn.ktorfitx.multiplatform\" Gradle plugin")
 		}

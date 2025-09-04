@@ -1,7 +1,7 @@
 package cn.ktorfitx.server.ksp
 
 import cn.ktorfitx.common.ksp.util.check.ktorfitxConfigError
-import cn.ktorfitx.common.ksp.util.log.kspLoggerLocal
+import cn.ktorfitx.common.ksp.util.log.kspLogger
 import cn.ktorfitx.common.ksp.util.message.Language
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -19,7 +19,8 @@ internal class KtorfitxServerSymbolProcessorProvider : SymbolProcessorProvider {
 	}
 	
 	override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-		kspLoggerLocal.set(environment.logger)
+		kspLogger = environment.logger
+		kspLogger.warn("1" + Thread.currentThread().name)
 		if (!environment.options[OPTION_SERVER_GRADLE_PLUGIN_ENABLED].toBoolean()) {
 			ktorfitxConfigError("Please add the \"cn.ktorfitx.server\" Gradle Plugin!")
 		}

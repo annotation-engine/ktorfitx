@@ -52,6 +52,8 @@ internal object TypeNames {
 		FLOAT_ARRAY,
 		DOUBLE,
 		DOUBLE_ARRAY,
+		BOOLEAN,
+		BOOLEAN_ARRAY,
 		UNIT,
 		STRING,
 		ARRAY,

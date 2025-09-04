@@ -3,6 +3,7 @@ package cn.ktorfitx.server.ksp
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
 import cn.ktorfitx.common.ksp.util.message.getString
 import cn.ktorfitx.common.ksp.util.resolver.getCustomHttpMethodModels
+import cn.ktorfitx.common.ksp.util.resolver.safeResolver
 import cn.ktorfitx.server.ksp.constants.TypeNames
 import cn.ktorfitx.server.ksp.kotlinpoet.RouteKotlinPoet
 import cn.ktorfitx.server.ksp.message.MESSAGE_FUNCTION_TOP_LEVEL_OR_OBJECT_ONLY
@@ -22,10 +23,12 @@ internal class KtorfitxServerSymbolProcessor(
 	private val funName: String
 ) : SymbolProcessor {
 	
-	private var isGenerated = false
+	private var isProcessed = false
 	
 	override fun process(resolver: Resolver): List<KSAnnotated> {
-		if (isGenerated) return emptyList()
+		if (isProcessed) return emptyList()
+		isProcessed = true
+		safeResolver = resolver
 		val customHttpMethodModels = resolver.getCustomHttpMethodModels(
 			httpMethod = TypeNames.HttpMethod,
 			defaultHttpMethods = TypeNames.httpMethodAnnotationTypes,
@@ -56,15 +59,12 @@ internal class KtorfitxServerSymbolProcessor(
 	private fun generateRouteFile(
 		funModels: List<FunModel>,
 	) {
-		isGenerated = true
 		val fileSpec = RouteKotlinPoet()
 			.getFileSpec(funModels, packageName, fileName, funName)
 		codeGenerator.createNewFile(
 			dependencies = Dependencies.ALL_FILES,
 			packageName = packageName,
 			fileName = fileName
-		).bufferedWriter().use {
-			fileSpec.writeTo(it)
-		}
+		).bufferedWriter().use(fileSpec::writeTo)
 	}
 }

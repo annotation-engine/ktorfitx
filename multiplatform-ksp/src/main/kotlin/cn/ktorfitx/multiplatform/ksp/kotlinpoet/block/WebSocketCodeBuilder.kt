@@ -74,7 +74,7 @@ internal class WebSocketCodeBuilder(
 	}
 	
 	private fun CodeBlock.Builder.buildBlock() {
-		val varName = parameterModels.first().varName
+		val varName = parameterModels.single().varName
 		addStatement("block = %N", varName)
 	}
 }

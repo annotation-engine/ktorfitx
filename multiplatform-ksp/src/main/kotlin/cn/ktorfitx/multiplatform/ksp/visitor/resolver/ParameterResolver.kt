@@ -155,8 +155,7 @@ internal fun KSFunctionDeclaration.getMockModel(isWebSocket: Boolean): MockModel
 	}
 	val returnType = this.returnType!!.toTypeName().let {
 		if (it.rawType == TypeNames.Result) {
-			it as ParameterizedTypeName
-			it.typeArguments.first()
+			(it as ParameterizedTypeName).typeArguments.single()
 		} else it
 	}
 	ktorfitxCheck(returnType == mockReturnType, this) {
@@ -177,7 +176,7 @@ internal fun KSFunctionDeclaration.getParameterModels(isWebSocket: Boolean): Lis
 			MESSAGE_FUNCTION_ONLY_ACCEPTS_ONE_PARAMETER_AND_TYPE_IS_SUPPORTED_BY_WEB_SOCKET.getString(simpleName)
 		}
 		ktorfitxCheck(this.parameters.size == 1, this, errorMessage)
-		val valueParameter = this.parameters.first()
+		val valueParameter = this.parameters.single()
 		val typeName = valueParameter.type.toTypeName()
 		ktorfitxCheck(
 			typeName == TypeNames.WebSocketSessionHandler || typeName == TypeNames.DefaultClientWebSocketSessionLambda,
@@ -286,7 +285,7 @@ internal fun KSFunctionDeclaration.getDynamicUrl(): DynamicUrl? {
 	ktorfitxCheck(annotations.size == 1, this) {
 		MESSAGE_FUNCTION_NOT_ALLOW_USE_ONE_PARAMETER_MARKED_DYNAMIC_URL_ANNOTATION.getString(simpleName)
 	}
-	val annotation = annotations.first()
+	val annotation = annotations.single()
 	val typeName = annotation.type.toTypeName()
 	val varName = annotation.name!!.asString()
 	ktorfitxCheck(typeName == TypeNames.String, annotation) {

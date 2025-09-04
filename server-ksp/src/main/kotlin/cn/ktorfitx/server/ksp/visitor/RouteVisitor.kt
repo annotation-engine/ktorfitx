@@ -3,6 +3,7 @@ package cn.ktorfitx.server.ksp.visitor
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.common.ksp.util.message.getString
+import cn.ktorfitx.common.ksp.util.resolver.isSerializableType
 import cn.ktorfitx.server.ksp.constants.TypeNames
 import cn.ktorfitx.server.ksp.message.*
 import cn.ktorfitx.server.ksp.model.*
@@ -11,8 +12,6 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSNode
 import com.google.devtools.ksp.visitor.KSEmptyVisitor
-import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 
@@ -26,11 +25,12 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 			MESSAGE_FUNCTION_NOT_ALLOWED_TO_CONTAIN_GENERICS.getString(function.simpleName)
 		}
 		val routeModel = function.getRouteModel(data)
-		function.checkReturnType(routeModel)
+		val isReturnNullable = function.getReturnNullableAndCheck(routeModel)
 		return FunModel(
 			funName = function.simpleName.asString(),
 			canonicalName = function.getCanonicalName(),
 			isExtension = function.extensionReceiver != null,
+			isReturnNullable = isReturnNullable,
 			authenticationModel = function.getAuthenticationModel(),
 			routeModel = routeModel,
 			regexModel = function.getRegexModel(routeModel),
@@ -53,27 +53,25 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		}
 	}
 	
-	private fun KSFunctionDeclaration.checkReturnType(
+	private fun KSFunctionDeclaration.getReturnNullableAndCheck(
 		routeModel: RouteModel
-	) {
-		val returnType = this.returnType!!.resolve()
-		ktorfitxCheck(!returnType.isMarkedNullable, this) {
-			MESSAGE_FUNCTION_NOT_ALLOWED_NULLABLE_RETURN_TYPE.getString(simpleName)
-		}
+	): Boolean {
+		val returnType = this.returnType!!
+		val type = returnType.resolve()
 		val typeName = returnType.toTypeName()
 		if (routeModel is HttpRequestModel) {
-			val validType = typeName is ClassName || typeName is ParameterizedTypeName
-			ktorfitxCheck(validType, this) {
-				MESSAGE_FUNCTION_RETURN_TYPE_MUST_BE_DEFINITE_CLASS.getString(simpleName)
-			}
-			ktorfitxCheck(typeName != TypeNames.Unit && typeName != TypeNames.Nothing, this) {
+			ktorfitxCheck(typeName != TypeNames.Unit && typeName != TypeNames.Nothing, returnType) {
 				MESSAGE_FUNCTION_NOT_ALLOW_USE_UNIT_AND_NOTHING.getString(simpleName)
+			}
+			ktorfitxCheck(typeName.isSerializableType(), returnType) {
+				MESSAGE_FUNCTION_RETURN_TYPE_NOT_MEET_SERIALIZATION_REQUIREMENTS.getString(simpleName)
 			}
 		} else {
 			ktorfitxCheck(typeName == TypeNames.Unit, this) {
 				MESSAGE_FUNCTION_IS_WEBSOCKET_TYPE_NOT_ALLOW_USE_UNIT.getString(simpleName, routeModel.annotation)
 			}
 		}
+		return type.isMarkedNullable
 	}
 	
 	private fun KSFunctionDeclaration.getAuthenticationModel(): AuthenticationModel? {
@@ -92,7 +90,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		ktorfitxCheck(dataList.size == 1, this) {
 			MESSAGE_FUNCTION_NOT_ALLOW_ADDING_MULTIPLE_REQUEST_TYPES_SIMULTANEOUSLY.getString(simpleName)
 		}
-		val data = dataList.first()
+		val data = dataList.single()
 		val className = data.first
 		val annotation = data.second
 		val path = this.parseFullPath(annotation)

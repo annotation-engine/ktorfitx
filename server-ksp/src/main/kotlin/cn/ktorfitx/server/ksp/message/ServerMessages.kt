@@ -12,16 +12,6 @@ internal val MESSAGE_FUNCTION_NOT_ALLOWED_TO_CONTAIN_GENERICS = message {
 	chinese { "{1} 函数不允许包含泛型" }
 }
 
-internal val MESSAGE_FUNCTION_NOT_ALLOWED_NULLABLE_RETURN_TYPE = message {
-	english { "The return type of the {1} function is not allowed to be a nullable type." }
-	chinese { "{1} 函数返回类型不允许为可空类型" }
-}
-
-internal val MESSAGE_FUNCTION_RETURN_TYPE_MUST_BE_DEFINITE_CLASS = message {
-	english { "The return type of the {1} function must be a definite class." }
-	chinese { "{1} 函数返回类型必须是明确的类" }
-}
-
 internal val MESSAGE_FUNCTION_FAILED_PARSE_FOLLOWING_PATH_PARAMETER = message {
 	english { "The {1} function failed to parse the following {2} Path parameter." }
 	chinese { "{1} 函数未解析以下 {2} Path 参数" }
@@ -41,6 +31,12 @@ internal val MESSAGE_FUNCTION_NOT_ALLOW_USE_UNIT_AND_NOTHING = message {
 	english { "The {1} function does not allow the use of Unit and Nothing as return types." }
 	chinese { "{1} 函数不允许使用 Unit 和 Nothing 返回类型" }
 }
+
+internal val MESSAGE_FUNCTION_RETURN_TYPE_NOT_MEET_SERIALIZATION_REQUIREMENTS = message {
+	english { "The return type of the {1} function does not meet the serialization requirements. Please check if it complies with the rules of Kotlinx Serialization." }
+	chinese { "{1} 函数的返回类型不满足序列化要求，请检查是否符合 Kotlinx Serialization 规则" }
+}
+
 
 internal val MESSAGE_FUNCTION_IS_WEBSOCKET_TYPE_NOT_ALLOW_USE_UNIT = message {
 	english { "The {1} function is annotated with the {2} annotation, so the return type can only be of the Unit type." }
@@ -125,6 +121,11 @@ internal val MESSAGE_PARAMETER_ONLY_USE_BYTE_ARRAY_OR_BINARY_ITEM = message {
 internal val MESSAGE_PARAMETER_ONLY_USE_BINARY_CHANNEL_ITEM = message {
 	english { "The {2} parameter of the {1} function can only be of the PartData.BinaryChannelItem type." }
 	chinese { "{1} 函数的 {2} 参数只允许使用 PartData.BinaryChannelItem 类型" }
+}
+
+internal val MESSAGE_PARAMETER_TYPE_NOT_MEET_SERIALIZATION_REQUIREMENTS = message {
+	english { "The type of the {2} parameter of the {1} function does not meet the serialization requirements. Please check if it complies with the rules of Kotlinx Serialization." }
+	chinese { "{1} 函数的 {2} 参数的类型不满足序列化要求，请检查是否符合 Kotlinx Serialization 规则" }
 }
 
 internal val MESSAGE_ANNOTATION_NOT_ALLOW_USE_SAME_PATH_PARAMETER = message {

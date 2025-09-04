@@ -3,7 +3,6 @@ package cn.ktorfitx.server.ksp.kotlinpoet
 import cn.ktorfitx.common.ksp.util.builders.buildFileSpec
 import cn.ktorfitx.common.ksp.util.builders.buildFunSpec
 import cn.ktorfitx.common.ksp.util.builders.fileSpecBuilder
-import cn.ktorfitx.common.ksp.util.builders.fileSpecBuilderLocal
 import cn.ktorfitx.common.ksp.util.message.getString
 import cn.ktorfitx.server.ksp.constants.PackageNames
 import cn.ktorfitx.server.ksp.constants.TypeNames
@@ -21,12 +20,11 @@ internal class RouteKotlinPoet {
 		fileName: String,
 		funName: String
 	): FileSpec = buildFileSpec(packageName, fileName) {
-		fileSpecBuilderLocal.set(this)
+		fileSpecBuilder = this
 		addFileComment(FILE_COMMENT.getString(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 		indent("\t")
 		val funSpec = getFunctionSpec(funName, funModels)
 		addFunction(funSpec)
-		fileSpecBuilderLocal.remove()
 	}
 	
 	private fun getFunctionSpec(
@@ -159,14 +157,17 @@ internal class RouteKotlinPoet {
 		funModel: FunModel
 	) {
 		with(RouteCodeBlock(funModel)) {
-			val funName = getFunNameAndImport(funModel)
-			addCodeBlock(funName)
+			val withoutSameFunName = getWithoutSameFunNameAndImport(funModel)
+			addCodeBlock(withoutSameFunName)
 		}
 	}
 	
 	private val funNameCanonicalNamesMap = mutableMapOf<String, MutableSet<String>>()
 	
-	private fun getFunNameAndImport(funModel: FunModel): String {
+	/**
+	 * 获取不重名的方法
+	 */
+	private fun getWithoutSameFunNameAndImport(funModel: FunModel): String {
 		val canonicalNames = funNameCanonicalNamesMap.getOrPut(funModel.funName) { mutableSetOf() }
 		if (canonicalNames.isEmpty()) {
 			canonicalNames += funModel.canonicalName
@@ -191,7 +192,7 @@ internal class RouteKotlinPoet {
 		if (regexModel == null) return ""
 		if (regexModel.classNames.isEmpty()) return ".toRegex()"
 		if (regexModel.classNames.size == 1) {
-			val className = regexModel.classNames.first()
+			val className = regexModel.classNames.single()
 			val option = className.simpleNames.joinToString(".")
 			return ".toRegex($option)"
 		}

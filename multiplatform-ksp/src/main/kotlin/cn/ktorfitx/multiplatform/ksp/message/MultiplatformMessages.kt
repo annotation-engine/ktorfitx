@@ -197,9 +197,9 @@ internal val MESSAGE_FUNCTION_NOT_ALLOW_USE_ONE_PARAMETER_MARKED_DYNAMIC_URL_ANN
 	chinese { "{1} 函数只允许使用一个标注了 @DynamicUrl 注解的参数来动态设置 url 参数" }
 }
 
-internal val MESSAGE_PARAMETER_NOT_MEET_SERIALIZATION_REQUIREMENTS = message {
-	english { "The {2} parameter of the {1} function does not meet the serialization requirements. Please check if the type conforms to the rules of Kotlinx Serialization." }
-	chinese { "{1} 函数的 {2} 参数不满足序列化要求，请检查类型是否符合 Kotlinx Serialization 规则" }
+internal val MESSAGE_PARAMETER_TYPE_NOT_MEET_SERIALIZATION_REQUIREMENTS = message {
+	english { "The type of the {2} parameter of the {1} function does not meet the serialization requirements. Please check if it complies with the rules of Kotlinx Serialization." }
+	chinese { "{1} 函数的 {2} 参数的类型不满足序列化要求，请检查是否符合 Kotlinx Serialization 规则" }
 }
 
 internal val MESSAGE_PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_FIELD = message {

@@ -4,6 +4,7 @@ internal class FunModel(
 	val funName: String,
 	val canonicalName: String,
 	val isExtension: Boolean,
+	val isReturnNullable: Boolean,
 	val authenticationModel: AuthenticationModel?,
 	val routeModel: RouteModel,
 	val regexModel: RegexModel?,

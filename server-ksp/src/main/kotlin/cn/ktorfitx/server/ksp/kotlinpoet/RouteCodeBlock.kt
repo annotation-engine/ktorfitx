@@ -14,7 +14,7 @@ internal class RouteCodeBlock(
 	private var multiPartParametersVarName: String? = null
 	private var isNeedExecutePartDisposeAll = false
 	
-	fun CodeBlock.Builder.addCodeBlock(funName: String) {
+	fun CodeBlock.Builder.addCodeBlock(withoutSameFunName: String) {
 		addPrincipalsCodeBlock()
 		addQueriesCodeBlock()
 		addPathsCodeBlock()
@@ -22,7 +22,7 @@ internal class RouteCodeBlock(
 		addCookiesCodeBlock()
 		addAttributesCodeBlock()
 		addRequestBodyCodeBlock()
-		addFunCodeBlock(funName, funModel.timeoutModel)
+		addFunCodeBlock(withoutSameFunName, funModel.timeoutModel)
 	}
 	
 	private fun CodeBlock.Builder.addPrincipalsCodeBlock() {
@@ -216,7 +216,11 @@ internal class RouteCodeBlock(
 					}
 				}
 				fileSpecBuilder.addImport(PackageNames.KTOR_HTTP, "HttpStatusCode")
-				addStatement("this.call.respond(HttpStatusCode.OK, %N)", varName)
+				if (funModel.isReturnNullable) {
+					addStatement("this.call.respondNullable(HttpStatusCode.OK, %N)", varName)
+				} else {
+					addStatement("this.call.respond(HttpStatusCode.OK, %N)", varName)
+				}
 			}
 		} else {
 			addStatement("%N(%L)", funName, parameters)

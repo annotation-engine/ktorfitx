@@ -6,8 +6,8 @@ import cn.ktorfitx.server.sample.model.Custom
 import io.ktor.server.routing.*
 
 @GET(path = "/test1")
-fun test1(): String {
-	return ""
+fun test1(): String? {
+	return null
 }
 
 @Authentication

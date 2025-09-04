@@ -23,12 +23,11 @@ internal object ApiKotlinPoet {
 	 */
 	fun getFileSpec(classModel: ClassModel): FileSpec {
 		return buildFileSpec(classModel.className) {
-			fileSpecBuilderLocal.set(this)
+			fileSpecBuilder = this
 			addFileComment(FILE_COMMENT.getString(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 			indent("\t")
 			addType(getTypeSpec(classModel))
 			addProperties(getExpendPropertySpecs(classModel))
-			fileSpecBuilderLocal.remove()
 		}
 	}
 	

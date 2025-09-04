@@ -5,6 +5,7 @@ import cn.ktorfitx.common.ksp.util.check.ktorfitxCompilationError
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.common.ksp.util.message.MessageConfig
 import cn.ktorfitx.common.ksp.util.message.getString
+import cn.ktorfitx.common.ksp.util.resolver.isSerializableType
 import cn.ktorfitx.server.ksp.constants.TypeNames
 import cn.ktorfitx.server.ksp.message.*
 import cn.ktorfitx.server.ksp.model.*
@@ -129,10 +130,13 @@ private fun KSFunctionDeclaration.getBodyModel(): BodyModel {
 	ktorfitxCheck(filters.size == 1, this) {
 		MESSAGE_FUNCTION_PARAMETER_NOT_ALLOW_USE_MULTIPLE_BODY.getString(simpleName)
 	}
-	val body = filters.single()
-	val varName = body.name!!.asString()
-	val type = body.type.resolve()
+	val parameter = filters.single()
+	val varName = parameter.name!!.asString()
+	val type = parameter.type.resolve()
 	val typeName = type.toTypeName().asNotNullable()
+	ktorfitxCheck(typeName.isSerializableType(), parameter) {
+		MESSAGE_PARAMETER_TYPE_NOT_MEET_SERIALIZATION_REQUIREMENTS.getString(simpleName, varName)
+	}
 	return BodyModel(varName, typeName, type.isMarkedNullable)
 }
 
@@ -210,7 +214,7 @@ private fun KSFunctionDeclaration.getPartModels(): PartModels {
 						return@map PartModel(name, varName, config.annotation, type.isMarkedNullable, isPartData, false)
 					}
 					
-					is ParameterizedTypeName if typeName.rawType == TypeNames.List && typeName.typeArguments.first() == className -> {
+					is ParameterizedTypeName if typeName.rawType == TypeNames.List && typeName.typeArguments.single() == className -> {
 						val isPartData = className in TypeNames.partDataTypes
 						return@map PartModel(name, varName, config.annotation, type.isMarkedNullable, isPartData, true)
 					}

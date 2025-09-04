@@ -26,7 +26,7 @@ internal fun KSFunctionDeclaration.getRequestBodyModel(): RequestBodyModel? {
 		val useTypeNames = useRequestBodyMap.values.flatten().joinToString { "@${it.simpleName}" }
 		MESSAGE_FUNCTION_USE_INCOMPATIBLE_ANNOTATIONS.getString(simpleName, useTypeNames)
 	}
-	return when (useRequestBodyMap.entries.first().key) {
+	return when (useRequestBodyMap.keys.single()) {
 		RequestBodyKind.BODY -> this.getBodyModel()
 		RequestBodyKind.PART -> this.getPartRequestBodyModel()
 		RequestBodyKind.FIELD -> this.getFieldRequestBodyModel()
@@ -41,11 +41,11 @@ private fun KSFunctionDeclaration.getBodyModel(): BodyModel? {
 	ktorfitxCheck(filters.size == 1, this) {
 		MESSAGE_FUNCTION_NOT_ALLOW_USE_MULTIPLE_BODY_ANNOTATIONS.getString(simpleName)
 	}
-	val parameter = filters.first()
+	val parameter = filters.single()
 	val varName = parameter.name!!.asString()
 	val typeName = parameter.type.toTypeName()
 	ktorfitxCheck(typeName.isSerializableType(), parameter) {
-		MESSAGE_PARAMETER_NOT_MEET_SERIALIZATION_REQUIREMENTS.getString(simpleName, parameter.name!!)
+		MESSAGE_PARAMETER_TYPE_NOT_MEET_SERIALIZATION_REQUIREMENTS.getString(simpleName, parameter.name!!)
 	}
 	val annotation = parameter.getKSAnnotationByType(TypeNames.Body)!!
 	val formatClassName = annotation.getClassNameOrNull("format") ?: TypeNames.SerializationFormatJson
@@ -93,7 +93,7 @@ private fun KSFunctionDeclaration.getFieldRequestBodyModel(): FieldRequestBodyMo
 		}
 		val typeName = type.toTypeName() as ParameterizedTypeName
 		val valueTypeName = when (fieldsKind) {
-			FieldsKind.LIST -> (typeName.typeArguments.first() as ParameterizedTypeName).typeArguments[1]
+			FieldsKind.LIST -> (typeName.typeArguments.single() as ParameterizedTypeName).typeArguments[1]
 			FieldsKind.MAP -> typeName.typeArguments[1]
 		}
 		FieldsModel(
@@ -160,7 +160,7 @@ private fun KSFunctionDeclaration.getPartRequestBodyModel(): PartRequestBodyMode
 			
 			PartsKind.LIST_PAIR -> {
 				fun getValueKind(): PartsValueKind? {
-					val pairType = type.arguments.first().type?.resolve() ?: return null
+					val pairType = type.arguments.single().type?.resolve() ?: return null
 					val declaration = pairType.arguments[1].type?.resolve()?.declaration as? KSClassDeclaration ?: return null
 					val isKeyValue = declaration.getAllSuperTypes().any { it.toTypeName() in TypeNames.formPartSupportValueTypes }
 					return if (isKeyValue) PartsValueKind.KEY_VALUE else PartsValueKind.FORM_PART
@@ -181,6 +181,6 @@ private fun KSType.isListOfFormPart(): Boolean {
 		if (it.declaration !is KSClassDeclaration) return@find false
 		it.declaration.qualifiedName?.asString() == TypeNames.List.canonicalName
 	}?.toTypeName() ?: this.toTypeName()) as? ParameterizedTypeName ?: return false
-	val first = typeName.typeArguments.first()
+	val first = typeName.typeArguments.single()
 	return first is ParameterizedTypeName && first.rawType == TypeNames.FormPart
 }
