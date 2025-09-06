@@ -56,9 +56,13 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 	
 	private fun KSClassDeclaration.getApiUrl(): String? {
 		val annotation = getKSAnnotationByType(TypeNames.Api)!!
+		val argument = annotation.arguments.single { it.name?.asString() == "url" }
 		var url = annotation.getValueOrNull<String>("url")?.takeIf { it.isNotBlank() } ?: return null
-		ktorfitxCheck(!url.containsSchemeSeparator(), annotation) {
+		ktorfitxCheck(!url.isContainSchemeSeparator(), argument) {
 			MESSAGE_ANNOTATION_NOT_ALLOW_USE_PROTOCOL_FROM_STRINGS.getString(simpleName)
+		}
+		ktorfitxCheck(!url.isContainBraceSymbol(), argument) {
+			MESSAGE_ANNOTATION_NOT_ALLOW_USE_BRACE_SYMBOL.getString(simpleName)
 		}
 		url = url.trim().trim('/')
 		ktorfitxCheck(apiUrlRegex.matches(url), annotation) {
@@ -158,11 +162,11 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 				MESSAGE_ANNOTATION_NOT_SET_URL_OR_ADDED_DYNAMIC_URL.getString(simpleName, className.simpleName)
 			}
 			if (isWebSocket) {
-				ktorfitxCheck(!rawUrl.containsSchemeSeparator() || rawUrl.isWSOrWSS(), this) {
+				ktorfitxCheck(!rawUrl.isContainSchemeSeparator() || rawUrl.isWSOrWSS(), this) {
 					MESSAGE_ANNOTATION_URL_ONLY_SUPPORTED_WS_AND_WSS_PROTOCOLS.getString(simpleName, className.simpleName)
 				}
 			} else {
-				ktorfitxCheck(!rawUrl.containsSchemeSeparator() || rawUrl.isHttpOrHttps(), this) {
+				ktorfitxCheck(!rawUrl.isContainSchemeSeparator() || rawUrl.isHttpOrHttps(), this) {
 					MESSAGE_ANNOTATION_URL_ONLY_SUPPORTED_HTTP_AND_HTTPS_PROTOCOLS.getString(simpleName, className.simpleName)
 				}
 			}

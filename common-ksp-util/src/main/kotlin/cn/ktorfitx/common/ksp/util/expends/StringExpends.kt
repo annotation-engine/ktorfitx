@@ -69,10 +69,20 @@ fun String.isWSOrWSS(): Boolean {
 }
 
 /**
- * 包含 ://
+ * 是否包含 "://" 字符串
  */
-fun String.containsSchemeSeparator(): Boolean {
+fun String.isContainSchemeSeparator(): Boolean {
 	return SCHEME_SEPARATOR in this
+}
+
+private const val LEFT_BRACE = "{"
+private const val RIGHT_BRACE = "}"
+
+/**
+ * 是否包含 '{' 或 '}' 符号
+ */
+fun String.isContainBraceSymbol(): Boolean {
+	return LEFT_BRACE in this || RIGHT_BRACE in this
 }
 
 private val headerCaseRegex by lazy { "([a-z])([A-Z])".toRegex() }

@@ -18,4 +18,12 @@ object UrlUtil {
 			acc.replace("{${it.first}}", it.second.toString())
 		}
 	}
+	
+	fun parseUrl(
+		url: String,
+		vararg args: Pair<String, Any>
+	): String {
+		if (args.isEmpty()) return url
+		TODO()
+	}
 }
