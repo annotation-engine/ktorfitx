@@ -1,4 +1,4 @@
-# KtorfitX 3.2.3-3.1.0-RC1
+# KtorfitX 3.2.3-3.1.0
 
 [![Maven](https://img.shields.io/badge/Maven-Central-download.svg)](https://central.sonatype.com/search?q=cn.ktorfitx:multiplatform-core)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://annotation-engine.github.io/ktorfitx-document/index_md.html)
@@ -114,6 +114,10 @@ KSP `2.2.10-2.0.2`
 
 - `@HttpMethod` 自定义 HttpMethod
 
+#### 类
+
+- `@Controller` 控制器
+
 #### 方法
 
 - `@GET` GET 请求
@@ -125,22 +129,23 @@ KSP `2.2.10-2.0.2`
 - `@HEAD` HEAD 请求
 - `@Authentication` 路由授权
 - `@WebSocket` WebSocket
+- `@WebSocketRaw` WebSocketRaw
 - `@Regex` 正则匹配 path
 - `@Timeout` 超时时间
 
 #### 参数
 
-- `@Attribute` attribute 参数
+- `@Query` 查询参数
 - `@Body` 请求体参数
-- `@Cookie` cookie 参数
 - `@Field` x-www-form-urlencoded 字段
-- `@Header` 请求头参数
 - `@PartForm` form-data 参数
 - `@PartFile` form-data 文件
 - `@PartBinary` form-data 二进制参数
 - `@PartBinaryChannel` form-data 数据流
 - `@Path` path 参数，支持正则表达式
-- `@Query` 查询参数
+- `@Header` 请求头参数
+- `@Attribute` attribute 参数
+- `@Cookie` cookie 参数
 
 ## 迁移 从 2.x 迁移至 3.x
 
@@ -170,6 +175,9 @@ plugins {
 }
 
 ktorfitx {
+	// 将所有提示文本改为中文，默认：ENGLISH，支持：ENGLISH, CHINESE
+	language = KtorfitxLanguage.CHINESE
+	
 	websockets {
 		enabled = true  // 启用 WebSockets 功能，默认关闭
 	}
@@ -194,6 +202,9 @@ plugins {
 }
 
 ktorfitx {
+	// 将所有提示文本改为中文，默认：ENGLISH，支持：ENGLISH, CHINESE
+	language = KtorfitxLanguage.CHINESE
+	
 	websockets {
 		enabled = true  // 启用 WebSockets 功能，默认关闭
 	}
@@ -212,8 +223,8 @@ ktorfitx {
 
 ## 编译期错误检查
 
-支持编译期错误检查，当您使用的方式不正确时，Ktorfitx 将会在编译期提供错误检查，
-以帮助用户更快的定位错误
+支持编译期错误检查，当您使用的方式不正确时，Ktorfitx 会在编译期提供错误检查，以帮助用户更快的定位错误
+目前支持英文和中文两种语言，如果需要更多语言，请联系我
 
 ## 异常处理及返回类型
 
