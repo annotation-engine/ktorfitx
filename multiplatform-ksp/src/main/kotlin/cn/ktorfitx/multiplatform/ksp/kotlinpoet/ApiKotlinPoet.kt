@@ -65,7 +65,7 @@ internal object ApiKotlinPoet {
 				addMember("%T::class", TypeNames.InternalAPI)
 			}
 			addAnnotation(optInSpec)
-			if (classModel.apiUrl != null) {
+			if (classModel.apiUrl != null && classModel.funModels.isNotEmpty()) {
 				val apiUrlPropertySpec = buildPropertySpec("API_URL", TypeNames.String, KModifier.CONST, KModifier.PRIVATE) {
 					initializer("%S", classModel.apiUrl)
 				}

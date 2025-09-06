@@ -132,9 +132,14 @@ internal val MESSAGE_FUNCTION_NOT_USE_ROUTE_ANNOTATION = message {
 	chinese { "{1} 函数没有添加任何路由注解" }
 }
 
-internal val MESSAGE_FUNCTION_NOT_SUPPORT_PARAMETERS_ANNOTATED_WITH_PATH = message {
-	english { "The {1} function does not support parameters annotated with @Path." }
-	chinese { "{1} 函数不支持使用带 @Path 注解的参数" }
+internal val MESSAGE_FUNCTION_NOT_ALLOW_PATH_ANNOTATION_MARKED_IN_PARAMETERS = message {
+	english { "The {1} function does not allow the @Path annotation to be marked in the parameters." }
+	chinese { "{1} 函数不允许在参数中标注 @Path 注解" }
+}
+
+internal val MESSAGE_FUNCTION_NOT_ALLOW_DYNAMIC_URL_ANNOTATION_MARKED_IN_PARAMETERS = message {
+	english { "The {1} function does not allow the @DynamicUrl annotation to be marked in the parameters." }
+	chinese { "{1} 函数不允许在参数中标注 @DynamicUrl 注解" }
 }
 
 internal val MESSAGE_FUNCTION_USE_INCOMPATIBLE_ANNOTATIONS = message {

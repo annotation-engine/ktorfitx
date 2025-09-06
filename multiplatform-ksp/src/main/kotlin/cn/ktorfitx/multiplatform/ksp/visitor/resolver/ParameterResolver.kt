@@ -229,7 +229,7 @@ internal fun KSFunctionDeclaration.getPathModels(
 			val pathParameters = extractUrlPathParameters(url.url)
 			if (isWebSocket) {
 				ktorfitxCheck(pathParameters.isEmpty(), this) {
-					MESSAGE_FUNCTION_NOT_SUPPORT_PARAMETERS_ANNOTATED_WITH_PATH.getString(simpleName)
+					MESSAGE_FUNCTION_NOT_ALLOW_PATH_ANNOTATION_MARKED_IN_PARAMETERS.getString(simpleName)
 				}
 			}
 			val residuePathParameters = pathParameters.toMutableSet()

@@ -3,11 +3,12 @@ package cn.ktorfitx.multiplatform.sample.http.api
 import cn.ktorfitx.multiplatform.annotation.*
 import cn.ktorfitx.multiplatform.sample.http.mock.StringMockProvider
 
-@Api("field")
+@Api
 interface FieldApi {
 	
-	@POST("test01")
+	@POST
 	suspend fun test01(
+		@DynamicUrl url: String,
 		@Field field1: String,
 		@Field field2: Int
 	): String

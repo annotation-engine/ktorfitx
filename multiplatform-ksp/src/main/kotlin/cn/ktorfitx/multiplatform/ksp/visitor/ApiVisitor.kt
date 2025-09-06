@@ -56,12 +56,11 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 	
 	private fun KSClassDeclaration.getApiUrl(): String? {
 		val annotation = getKSAnnotationByType(TypeNames.Api)!!
-		val argument = annotation.arguments.single { it.name?.asString() == "url" }
 		var url = annotation.getValueOrNull<String>("url")?.takeIf { it.isNotBlank() } ?: return null
-		ktorfitxCheck(!url.isContainSchemeSeparator(), argument) {
+		ktorfitxCheck(!url.isContainSchemeSeparator(), annotation) {
 			MESSAGE_ANNOTATION_NOT_ALLOW_USE_PROTOCOL_FROM_STRINGS.getString(simpleName)
 		}
-		ktorfitxCheck(!url.isContainBraceSymbol(), argument) {
+		ktorfitxCheck(!url.isContainBraceSymbol(), annotation) {
 			MESSAGE_ANNOTATION_NOT_ALLOW_USE_BRACE_SYMBOL.getString(simpleName)
 		}
 		url = url.trim().trim('/')
@@ -148,7 +147,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		
 		if (isWebSocket) {
 			ktorfitxCheck(dynamicUrl == null, this) {
-				MESSAGE_FUNCTION_NOT_SUPPORT_PARAMETERS_ANNOTATED_WITH_PATH.getString(simpleName)
+				MESSAGE_FUNCTION_NOT_ALLOW_DYNAMIC_URL_ANNOTATION_MARKED_IN_PARAMETERS.getString(simpleName)
 			}
 		}
 		val rawUrl = getKSAnnotationByType(className)!!.getValueOrNull<String>("url")?.trim('/')
