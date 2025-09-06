@@ -144,7 +144,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		
 		if (isWebSocket) {
 			ktorfitxCheck(dynamicUrl == null, this) {
-				MESSAGE_FUNCTION_NOT_ALLOW_USE_PATH_PARAMETER.getString(simpleName)
+				MESSAGE_FUNCTION_NOT_SUPPORT_PARAMETERS_ANNOTATED_WITH_PATH.getString(simpleName)
 			}
 		}
 		val rawUrl = getKSAnnotationByType(className)!!.getValueOrNull<String>("url")?.trim('/')

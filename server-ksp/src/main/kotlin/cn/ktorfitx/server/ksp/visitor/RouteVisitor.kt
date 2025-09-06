@@ -68,7 +68,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 			}
 		} else {
 			ktorfitxCheck(typeName == TypeNames.Unit, this) {
-				MESSAGE_FUNCTION_IS_WEBSOCKET_TYPE_NOT_ALLOW_USE_UNIT.getString(simpleName, routeModel.annotation)
+				MESSAGE_FUNCTION_IS_WEBSOCKET_TYPE_SO_RETURN_TYPE_ONLY_USE_UNIT_TYPE.getString(simpleName, routeModel.annotation)
 			}
 		}
 		return type.isMarkedNullable

@@ -19,12 +19,12 @@ internal val MESSAGE_CLASS_MUST_IMPLEMENT_MOCK_PROVIDER_INTERFACE = message {
 
 internal val MESSAGE_CLASS_NOT_MEET_SERIALIZATION_REQUIREMENTS = message {
 	english { "The return type of the {1} function does not meet the serialization requirements. Please kindly verify if the type complies with Kotlinx Serialization rules." }
-	chinese { "{1} 函数的返回类型不满足序列化要求，请检查类型是否符合 Kotlinx Serialization 规则" }
+	chinese { "{1} 函数的返回类型不满足序列化要求，请检查该类型是否符合 Kotlinx Serialization 规则" }
 }
 
 internal val MESSAGE_INTERFACE_NOT_ALLOW_GENERICS = message {
-	english { "{1} 接口不允许包含泛型" }
-	chinese { "The {1} interface does not allow generics." }
+	english { "The {1} interface does not allow generics." }
+	chinese { "{1} 接口不允许包含泛型" }
 }
 
 internal val MESSAGE_INTERFACE_MUST_BE_DECLARED_PUBLIC_OR_INTERNAL_ACCESS_PERMISSION = message {
@@ -59,7 +59,7 @@ internal val MESSAGE_ANNOTATION_URL_PARAMETER_FORMAT_INCORRECT = message {
 
 internal val MESSAGE_ANNOTATION_SCOPES_PARAMETER_NOT_ALLOW_NULLABLE_TYPE = message {
 	english { "The scopes parameter of the @ApiScope annotation on the {1} interface is not allowed to be empty." }
-	chinese { "{1} 接口上的 @ApiScope 注解的 scopes 参数不允许为空" }
+	chinese { "{1} 接口上的 @ApiScope 注解的 scopes 参数不允许为 \"null\" 值" }
 }
 
 internal val MESSAGE_ANNOTATION_SCOPES_NOT_ALLOWED_USE_SAME_CLASS_NAME_K_CLASS = message {
@@ -68,7 +68,7 @@ internal val MESSAGE_ANNOTATION_SCOPES_NOT_ALLOWED_USE_SAME_CLASS_NAME_K_CLASS =
 }
 
 internal val MESSAGE_ANNOTATION_NOT_SET_URL_OR_ADDED_DYNAMIC_URL = message {
-	english { "The @{2} annotation on the {1} function is not set with a URL parameter, or the @DynamicUrl annotation is not added to the parameters." }
+	english { "The @{2} annotation on the {1} function is not set with a url parameter, or the @DynamicUrl annotation is not added to the parameters." }
 	chinese { "{1} 函数上的 @{2} 注解未设置 url 参数，或在参数上添加 @DynamicUrl 注解" }
 }
 
@@ -88,7 +88,7 @@ internal val MESSAGE_ANNOTATION_URL_FORMAT_INCORRECT = message {
 }
 
 internal val MESSAGE_FUNCTION_NOW_ALLOW_SETTING_URL_WHEN_MARKED_DYNAMIC_URL = message {
-	english { "The {2} annotation on the {1} function does not allow setting URL parameters, as the function has already been marked with the @DynamicUrl annotation." }
+	english { "The {2} annotation on the {1} function does not allow setting url parameters, as the function has already been marked with the @DynamicUrl annotation." }
 	chinese { "{1} 函数上的 {2} 注解不允许设置 url 参数，因为函数已经标记了 @DynamicUrl 注解" }
 }
 
@@ -104,7 +104,7 @@ internal val MESSAGE_FUNCTION_HAS_BEEN_WEBSOCKET_SO_RETURN_TYPE_MUST_BE_UNIT = m
 
 internal val MESSAGE_FUNCTION_NOT_ALLOW_RETURN_TYPE_RESULT_SET_NULLABLE_TYPE = message {
 	english { "The {1} function does not allow the return type of Result to be set as nullable." }
-	chinese { "{1} 函数不允许为 Result 返回类型设置为可空" }
+	chinese { "{1} 函数不允许为 Result 返回类型设置为可空类型" }
 }
 
 internal val MESSAGE_FUNCTION_NOT_ALLOW_RETURN_TYPE_UNIT_USE_NULLABLE_TYPE = message {
@@ -124,12 +124,12 @@ internal val MESSAGE_FUNCTION_ONLY_ALLOW_USE_ONE_REQUEST_TYPE_ANNOTATION = messa
 
 internal val MESSAGE_FUNCTION_NOT_USE_ROUTE_ANNOTATION = message {
 	english { "The {1} function does not add any route annotations." }
-	chinese { "{1} 函数未添加任何路由注解" }
+	chinese { "{1} 函数没有添加任何路由注解" }
 }
 
-internal val MESSAGE_FUNCTION_NOT_ALLOW_USE_PATH_PARAMETER = message {
-	english { "The {1} function does not support the use of @Path parameters." }
-	chinese { "{1} 函数不支持使用 @Path 参数" }
+internal val MESSAGE_FUNCTION_NOT_SUPPORT_PARAMETERS_ANNOTATED_WITH_PATH = message {
+	english { "The {1} function does not support parameters annotated with @Path." }
+	chinese { "{1} 函数不支持使用带 @Path 注解的参数" }
 }
 
 internal val MESSAGE_FUNCTION_USE_INCOMPATIBLE_ANNOTATIONS = message {
@@ -193,17 +193,17 @@ internal val MESSAGE_FUNCTION_FAILED_PARSE_FOLLOWING_PATH_PARAMETER = message {
 }
 
 internal val MESSAGE_FUNCTION_NOT_ALLOW_USE_ONE_PARAMETER_MARKED_DYNAMIC_URL_ANNOTATION = message {
-	english { "The {1} function only allows the use of one parameter marked with the @DynamicUrl annotation to dynamically set the URL parameter." }
+	english { "The {1} function only allows the use of one parameter marked with the @DynamicUrl annotation to dynamically set the url parameter." }
 	chinese { "{1} 函数只允许使用一个标注了 @DynamicUrl 注解的参数来动态设置 url 参数" }
 }
 
 internal val MESSAGE_PARAMETER_TYPE_NOT_MEET_SERIALIZATION_REQUIREMENTS = message {
 	english { "The type of the {2} parameter of the {1} function does not meet the serialization requirements. Please check if it complies with the rules of Kotlinx Serialization." }
-	chinese { "{1} 函数的 {2} 参数的类型不满足序列化要求，请检查是否符合 Kotlinx Serialization 规则" }
+	chinese { "{1} 函数的 {2} 参数的类型不满足序列化要求，请检查该类型是否符合 Kotlinx Serialization 规则" }
 }
 
 internal val MESSAGE_PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_FIELD = message {
-	english { "The {2} parameter of the {1} function can only be of the type Map<String, *> or List<Pair<String, *>> or their specificized subtypes or derived types." }
+	english { "The {2} parameter of the {1} function can only be of the type Map<String, *> or List<Pair<String, *>>, or their specialized subtypes or derived types." }
 	chinese { "{1} 函数的 {2} 参数只允许使用 Map<String, *> 或 List<Pair<String, *>> 类型或是它们的具体化子类型或是派生类型" }
 }
 
@@ -212,12 +212,12 @@ internal val MESSAGE_PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_PARTS = message {
 	chinese { "{1} 函数的 {2} 参数只允许使用 Map<String, Any> 或 List<Pair<String, Any>> 或 List<FormPart<*>> 类型或是它的具体化子类型或派生类型" }
 }
 
-internal val MESSAGE_PARAMETER_ONLY_ALLOW_UES_SUPPORTED_BY_QUERIES = message {
+internal val MESSAGE_PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_QUERIES = message {
 	english { "The {2} parameter of the {1} function can only be of the types Map<String, *> or List<Pair<String, *>>, or its specificized subtypes or derived types." }
 	chinese { "{1} 函数的 {2} 参数只允许使用 Map<String, *> 或 List<Pair<String, *>> 类型或是它的具体化子类型或派生类型" }
 }
 
-internal val MESSAGE_PARAMETER_ONLY_ALLOW_UES_SUPPORTED_BY_ATTRIBUTES = message {
+internal val MESSAGE_PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_ATTRIBUTES = message {
 	english { "The {2} parameter of the {1} function can only be of the types Map<String, Any> or List<Pair<String, Any>>, or its specificized subtypes or derived types." }
 	chinese { "{1} 函数的 {2} 参数只允许使用 Map<String, Any> 或 List<Pair<String, Any>> 类型或是它的具体化子类型或派生类型" }
 }
@@ -249,12 +249,12 @@ internal val MESSAGE_PARAMETER_DELAY_MUST_BE_GREATER_THAN_OR_EQUAL_TO_ZERO = mes
 
 internal val MESSAGE_PARAMETER_NOT_USE_ANY_FUNCTIONAL_ANNOTATIONS = message {
 	english { "The {2} parameter on the {1} function does not use any functional annotations." }
-	chinese { "{1} 函数上的 {2} 参数未使用任何功能注解" }
+	chinese { "{1} 函数上的 {2} 参数没有使用任何功能性注解" }
 }
 
 internal val MESSAGE_PARAMETER_NOT_ALLOW_USE_MORE_THAN_ONE_FUNCTIONALITY_ANNOTATION_AT_SAME_TIME = message {
 	english { "The {2} parameter on the {1} function is not allowed to use more than one {3} functionality annotation at the same time." }
-	chinese { "{1} 函数上的 {2} 参数不允许同时使用 {3} 多个功能注解" }
+	chinese { "{1} 函数上的 {2} 参数不允许同时使用 {3} 多个功能性注解" }
 }
 
 internal val MESSAGE_PARAMETER_NOT_FOLLOW_LOWERCASE_CAMEL_CASE_NAMING_CONVENTION = message {

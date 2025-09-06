@@ -28,17 +28,16 @@ internal val MESSAGE_FUNCTION_PARAMETER_NOT_ALLOW_USE_MULTIPLE_BODY = message {
 }
 
 internal val MESSAGE_FUNCTION_NOT_ALLOW_USE_UNIT_AND_NOTHING = message {
-	english { "The {1} function does not allow the use of Unit and Nothing as return types." }
-	chinese { "{1} 函数不允许使用 Unit 和 Nothing 返回类型" }
+	english { "The {1} function does not allow using Unit or Nothing as the return type." }
+	chinese { "{1} 函数不允许使用 Unit 或 Nothing 作为返回类型" }
 }
 
 internal val MESSAGE_FUNCTION_RETURN_TYPE_NOT_MEET_SERIALIZATION_REQUIREMENTS = message {
-	english { "The return type of the {1} function does not meet the serialization requirements. Please check if it complies with the rules of Kotlinx Serialization." }
-	chinese { "{1} 函数的返回类型不满足序列化要求，请检查是否符合 Kotlinx Serialization 规则" }
+	english { "The return type of the {1} function does not satisfy the serialization requirements.. Please check if it complies with the rules of Kotlinx Serialization." }
+	chinese { "{1} 函数的返回类型不满足序列化要求，请检查该类型是否符合 Kotlinx Serialization 规则" }
 }
 
-
-internal val MESSAGE_FUNCTION_IS_WEBSOCKET_TYPE_NOT_ALLOW_USE_UNIT = message {
+internal val MESSAGE_FUNCTION_IS_WEBSOCKET_TYPE_SO_RETURN_TYPE_ONLY_USE_UNIT_TYPE = message {
 	english { "The {1} function is annotated with the {2} annotation, so the return type can only be of the Unit type." }
 	chinese { "{1} 函数标注了 {2} 注解，因此返回类型只允许是 Unit 类型" }
 }
@@ -75,7 +74,7 @@ internal val MESSAGE_PARAMETER_REDUNDANTLY_PARSED_AS_THE_PATH_PARAMETER = messag
 
 internal val MESSAGE_PARAMETER_NOT_ALLOWED_NULLABLE = message {
 	english { "The {2} parameter of the {1} function is not allowed to be null." }
-	chinese { "{1} 函数的 {2} 参数不允许可空" }
+	chinese { "{1} 函数的 {2} 参数不允许为可空类型" }
 }
 
 internal val MESSAGE_PARAMETER_MUST_USE_ONE_OF_ANNOTATIONS = message {
@@ -94,7 +93,7 @@ internal val MESSAGE_PARAMETER_NULLABLE_ONLY_STRING = message {
 }
 
 internal val MESSAGE_PARAMETER_RETRIEVED_TWICE_WITH_PART_PARAMETER = message {
-	english { "The {2} parameter of the {1} function is  twice with the parameter {3}." }
+	english { "The {2} parameter of the {1} function is retrieved twice with the parameter {3}." }
 	chinese { "{1} 函数的 {2} 参数重复获取了 {3} 参数" }
 }
 
@@ -124,8 +123,8 @@ internal val MESSAGE_PARAMETER_ONLY_USE_BINARY_CHANNEL_ITEM = message {
 }
 
 internal val MESSAGE_PARAMETER_TYPE_NOT_MEET_SERIALIZATION_REQUIREMENTS = message {
-	english { "The type of the {2} parameter of the {1} function does not meet the serialization requirements. Please check if it complies with the rules of Kotlinx Serialization." }
-	chinese { "{1} 函数的 {2} 参数的类型不满足序列化要求，请检查是否符合 Kotlinx Serialization 规则" }
+	english { "The type of the {2} parameter of the {1} function does not satisfy serialization requirements. Please check if it complies with the rules of Kotlinx Serialization." }
+	chinese { "{1} 函数的 {2} 参数的类型不满足序列化要求，请检查该类型是否符合 Kotlinx Serialization 规则" }
 }
 
 internal val MESSAGE_ANNOTATION_NOT_ALLOW_USE_SAME_PATH_PARAMETER = message {

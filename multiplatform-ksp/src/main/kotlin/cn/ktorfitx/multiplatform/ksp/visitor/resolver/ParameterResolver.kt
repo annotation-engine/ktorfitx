@@ -31,7 +31,7 @@ internal fun KSFunctionDeclaration.getQueriesModels(): List<QueriesModel> {
 		val name = parameter.name!!.asString()
 		val type = parameter.type.resolve()
 		ktorfitxCheck(type.isMapOfStringToAny() || type.isListOfStringPair(), parameter) {
-			MESSAGE_PARAMETER_ONLY_ALLOW_UES_SUPPORTED_BY_QUERIES.getString(simpleName, name)
+			MESSAGE_PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_QUERIES.getString(simpleName, name)
 		}
 		QueriesModel(name)
 	}
@@ -89,7 +89,7 @@ internal fun KSFunctionDeclaration.getAttributesModels(): List<AttributesModel> 
 			else -> null
 		}
 		ktorfitxCheckNotNull(kind, parameter) {
-			MESSAGE_PARAMETER_ONLY_ALLOW_UES_SUPPORTED_BY_ATTRIBUTES.getString(simpleName, varName)
+			MESSAGE_PARAMETER_ONLY_ALLOW_USE_SUPPORTED_BY_ATTRIBUTES.getString(simpleName, varName)
 		}
 		AttributesModel(varName, type.isMarkedNullable, kind)
 	}
@@ -229,7 +229,7 @@ internal fun KSFunctionDeclaration.getPathModels(
 			val pathParameters = extractUrlPathParameters(url.url)
 			if (isWebSocket) {
 				ktorfitxCheck(pathParameters.isEmpty(), this) {
-					MESSAGE_FUNCTION_NOT_ALLOW_USE_PATH_PARAMETER.getString(simpleName)
+					MESSAGE_FUNCTION_NOT_SUPPORT_PARAMETERS_ANNOTATED_WITH_PATH.getString(simpleName)
 				}
 			}
 			val residuePathParameters = pathParameters.toMutableSet()
