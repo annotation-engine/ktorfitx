@@ -3,7 +3,7 @@ package cn.ktorfitx.multiplatform.sample.http.api
 import cn.ktorfitx.multiplatform.annotation.*
 import cn.ktorfitx.multiplatform.sample.http.mock.StringMockProvider
 
-@Api("http://{query}")
+@Api("query")
 interface QueryApi {
 	
 	@GET("test01")

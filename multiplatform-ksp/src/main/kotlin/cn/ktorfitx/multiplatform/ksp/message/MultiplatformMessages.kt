@@ -54,7 +54,7 @@ internal val MESSAGE_ANNOTATION_NOT_ALLOW_USE_PROTOCOL_FROM_STRINGS = message {
 
 internal val MESSAGE_ANNOTATION_NOT_ALLOW_USE_BRACE_SYMBOL = message {
 	english { "The @Api annotation on the xx interface does not allow the use of \"{\" and \"}\" characters." }
-	chinese { "{1} 接口上的 @Api 注解中不允许出现 \"{\" 和 \"}\" 支付" }
+	chinese { "{1} 接口上的 @Api 注解中不允许出现 \"{\" 和 \"}\" 字符" }
 }
 
 internal val MESSAGE_ANNOTATION_URL_PARAMETER_FORMAT_INCORRECT = message {
