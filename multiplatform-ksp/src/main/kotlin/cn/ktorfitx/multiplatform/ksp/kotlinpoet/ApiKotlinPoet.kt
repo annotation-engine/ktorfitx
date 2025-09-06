@@ -37,17 +37,21 @@ internal object ApiKotlinPoet {
 	private fun getTypeSpec(classModel: ClassModel): TypeSpec {
 		val primaryConstructorFunSpec = buildConstructorFunSpec {
 			addModifiers(KModifier.PRIVATE)
-			addParameter("config", TypeNames.KtorfitxConfig)
+			if (classModel.funModels.isNotEmpty()) {
+				addParameter("config", TypeNames.KtorfitxConfig)
+			}
 		}
 		return buildClassTypeSpec(classModel.className) {
 			addModifiers(KModifier.PRIVATE)
 			addSuperinterface(classModel.superinterface)
 			primaryConstructor(primaryConstructorFunSpec)
-			val ktorfitxConfigPropertySpec = buildPropertySpec("config", TypeNames.KtorfitxConfig, KModifier.PRIVATE) {
-				initializer("config")
-				mutable(false)
+			if (classModel.funModels.isNotEmpty()) {
+				val ktorfitxConfigPropertySpec = buildPropertySpec("config", TypeNames.KtorfitxConfig, KModifier.PRIVATE) {
+					initializer("config")
+					mutable(false)
+				}
+				addProperty(ktorfitxConfigPropertySpec)
 			}
-			addProperty(ktorfitxConfigPropertySpec)
 			addType(getCompanionObjectBuilder(classModel))
 			addFunctions(getFunSpecs(classModel))
 		}
@@ -89,13 +93,19 @@ internal object ApiKotlinPoet {
 				val funSpec = buildFunSpec("getInstanceBy$simpleName") {
 					addModifiers(classModel.kModifier)
 					returns(classModel.superinterface)
-					addParameter(
-						"ktorfitx",
-						TypeNames.Ktorfitx.parameterizedBy(model.className)
-					)
+					if (classModel.funModels.isNotEmpty()) {
+						addParameter(
+							"ktorfitx",
+							TypeNames.Ktorfitx.parameterizedBy(model.className)
+						)
+					}
 					val codeBlock = buildCodeBlock {
 						beginControlFlow("return %N ?: synchronized(%N)", instanceVarName, lockVarName)
-						addStatement("%N ?: %T(ktorfitx.config).also { %N = it }", instanceVarName, classModel.className, instanceVarName)
+						if (classModel.funModels.isEmpty()) {
+							addStatement("%N ?: %T().also { %N = it }", instanceVarName, classModel.className, instanceVarName)
+						} else {
+							addStatement("%N ?: %T(ktorfitx.config).also { %N = it }", instanceVarName, classModel.className, instanceVarName)
+						}
 						endControlFlow()
 					}
 					addCode(codeBlock)
@@ -117,7 +127,11 @@ internal object ApiKotlinPoet {
 			}
 			val getterFunSpec = buildGetterFunSpec {
 				addAnnotation(jvmNameAnnotationSpec)
-				addStatement("return %T.%N(this)", classModel.className, "getInstanceBy$simpleName")
+				if (classModel.funModels.isEmpty()) {
+					addStatement("return %T.%N()", classModel.className, "getInstanceBy$simpleName")
+				} else {
+					addStatement("return %T.%N(this)", classModel.className, "getInstanceBy$simpleName")
+				}
 			}
 			buildPropertySpec(expendPropertyName, classModel.superinterface, classModel.kModifier) {
 				receiver(TypeNames.Ktorfitx.parameterizedBy(model.className))
