@@ -9,7 +9,7 @@ enum class Language {
 	companion object {
 		private val current = ThreadLocal<Language>()
 		
-		fun get(): Language = current.get()
+		fun get(): Language = current.get()!!
 		
 		fun set(value: String) {
 			this.current.set(

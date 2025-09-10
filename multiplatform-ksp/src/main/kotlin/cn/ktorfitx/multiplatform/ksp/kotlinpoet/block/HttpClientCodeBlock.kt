@@ -1,7 +1,7 @@
 package cn.ktorfitx.multiplatform.ksp.kotlinpoet.block
 
 import cn.ktorfitx.common.ksp.util.builders.fileSpecBuilder
-import cn.ktorfitx.common.ksp.util.builders.toCodeBlock
+import cn.ktorfitx.common.ksp.util.builders.toMapCode
 import cn.ktorfitx.common.ksp.util.expends.asNotNullable
 import cn.ktorfitx.multiplatform.ksp.constants.PackageNames
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
@@ -41,7 +41,10 @@ internal class HttpClientCodeBlock(
 			else -> "body"
 		}
 		if (!isPrepareType) {
-			fileSpecBuilder.addImport(if (bodyFunName == "body") PackageNames.KTOR_CALL else PackageNames.KTOR_STATEMENT, bodyFunName)
+			fileSpecBuilder.addImport(
+				if (bodyFunName == "body") PackageNames.KTOR_CALL else PackageNames.KTOR_STATEMENT,
+				bodyFunName
+			)
 		}
 		if (returnModel.returnKind == ReturnKind.Any) {
 			if (isPrepareType) {
@@ -102,9 +105,21 @@ internal class HttpClientCodeBlock(
 		)
 		val apiUrl = if (jointApiUrl) "API_URL" else "null"
 		if (jointApiUrl) {
-			addStatement("this.url(%T.parseDynamicUrl(%N, %L%L))", TypeNames.UrlUtil, dynamicUrl.varName, apiUrl, argsCode)
+			addStatement(
+				"this.url(%T.parseDynamicUrl(%N, %L%L))",
+				TypeNames.UrlUtil,
+				dynamicUrl.varName,
+				apiUrl,
+				argsCode
+			)
 		} else {
-			addStatement("this.url(%T.parseDynamicUrl(%N, %L%L))", TypeNames.UrlUtil, dynamicUrl.varName, apiUrl, argsCode)
+			addStatement(
+				"this.url(%T.parseDynamicUrl(%N, %L%L))",
+				TypeNames.UrlUtil,
+				dynamicUrl.varName,
+				apiUrl,
+				argsCode
+			)
 		}
 	}
 	
@@ -210,13 +225,23 @@ internal class HttpClientCodeBlock(
 					addStatement("%N%L.forEach { this.append(it.key, it.value) }", it.varName, nullOperator)
 				
 				PartsKind.MAP if it.valueKind == PartsValueKind.FORM_PART ->
-					addStatement("%N%L.forEach { this.append(%T(it.key, it.value)) }", it.varName, nullOperator, TypeNames.FormPart)
+					addStatement(
+						"%N%L.forEach { this.append(%T(it.key, it.value)) }",
+						it.varName,
+						nullOperator,
+						TypeNames.FormPart
+					)
 				
 				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.KEY_VALUE ->
 					addStatement("%N%L.forEach { this.append(it.first, it.second) }", it.varName, nullOperator)
 				
 				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.FORM_PART ->
-					addStatement("%N%L.forEach { this.append(%T(it.first, it.second)) }", it.varName, nullOperator, TypeNames.FormPart)
+					addStatement(
+						"%N%L.forEach { this.append(%T(it.first, it.second)) }",
+						it.varName,
+						nullOperator,
+						TypeNames.FormPart
+					)
 				
 				PartsKind.LIST_FORM_PART -> addStatement("%N%L.forEach { this.append(it) }", it.varName, nullOperator)
 				
@@ -249,16 +274,39 @@ internal class HttpClientCodeBlock(
 				FieldsKind.LIST -> {
 					when {
 						it.valueIsString -> addStatement("%N%L.forEach { this += it }", it.varName, nullOperator)
-						it.valueIsNullable -> addStatement("%N%L.forEach { this += it.first to it.second?.toString() }", it.varName, nullOperator)
-						else -> addStatement("%N%L.forEach { this += it.first to it.second.toString() }", it.varName, nullOperator)
+						it.valueIsNullable -> addStatement(
+							"%N%L.forEach { this += it.first to it.second?.toString() }",
+							it.varName,
+							nullOperator
+						)
+						
+						else -> addStatement(
+							"%N%L.forEach { this += it.first to it.second.toString() }",
+							it.varName,
+							nullOperator
+						)
 					}
 				}
 				
 				FieldsKind.MAP -> {
 					when {
-						it.valueIsString -> addStatement("%N%L.forEach { this += it.key to it.value }", it.varName, nullOperator)
-						it.valueIsNullable -> addStatement("%N%L.forEach { this += it.key to it.value?.toString() }", it.varName, nullOperator)
-						else -> addStatement("%N%L.forEach { this += it.key to it.value.toString() }", it.varName, nullOperator)
+						it.valueIsString -> addStatement(
+							"%N%L.forEach { this += it.key to it.value }",
+							it.varName,
+							nullOperator
+						)
+						
+						it.valueIsNullable -> addStatement(
+							"%N%L.forEach { this += it.key to it.value?.toString() }",
+							it.varName,
+							nullOperator
+						)
+						
+						else -> addStatement(
+							"%N%L.forEach { this += it.key to it.value.toString() }",
+							it.varName,
+							nullOperator
+						)
 					}
 				}
 			}
@@ -286,7 +334,7 @@ internal class HttpClientCodeBlock(
 				model.path?.let { addStatement("path = %S,", it) }
 				model.secure?.let { addStatement("secure = %L,", it) }
 				model.httpOnly?.let { addStatement("httpOnly = %L,", it) }
-				model.extensions?.let { addStatement("extensions = %L", it.toCodeBlock()) }
+				model.extensions?.let { addStatement("extensions = %L", it.toMapCode()) }
 				unindent()
 				addStatement(")")
 			}
@@ -305,8 +353,19 @@ internal class HttpClientCodeBlock(
 		attributesModels.forEach {
 			val nullOperator = if (it.isNullable) "?" else ""
 			when (it.attributesKind) {
-				AttributesKind.MAP -> addStatement("%N%L.forEach { this[%T(it.key)] = it.value }", it.varName, nullOperator, TypeNames.AttributeKey)
-				AttributesKind.LIST -> addStatement("%N%L.forEach { this[%T(it.first)] = it.second }", it.varName, nullOperator, TypeNames.AttributeKey)
+				AttributesKind.MAP -> addStatement(
+					"%N%L.forEach { this[%T(it.key)] = it.value }",
+					it.varName,
+					nullOperator,
+					TypeNames.AttributeKey
+				)
+				
+				AttributesKind.LIST -> addStatement(
+					"%N%L.forEach { this[%T(it.first)] = it.second }",
+					it.varName,
+					nullOperator,
+					TypeNames.AttributeKey
+				)
 			}
 		}
 		endControlFlow()

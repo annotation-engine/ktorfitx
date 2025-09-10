@@ -47,42 +47,32 @@ fun String.replaceFirstToUppercase(): String {
 	return this.replaceFirstChar { it.uppercaseChar() }
 }
 
-private const val HTTP = "http://"
-private const val HTTPS = "https://"
-private const val WS = "ws://"
-private const val WSS = "wss://"
-
-private const val SCHEME_SEPARATOR = "://"
-
 /**
  * http or https
  */
 fun String.isHttpOrHttps(): Boolean {
-	return this.startsWith(HTTP) || this.startsWith(HTTPS)
+	return this.startsWith("http://") || this.startsWith("https://")
 }
 
 /**
  * ws or wss
  */
 fun String.isWSOrWSS(): Boolean {
-	return this.startsWith(WS) || this.startsWith(WSS)
+	return this.startsWith("ws://") || this.startsWith("wss://")
 }
 
 /**
  * 是否包含 "://" 字符串
  */
 fun String.isContainSchemeSeparator(): Boolean {
-	return SCHEME_SEPARATOR in this
+	return "://" in this
 }
-
-private const val LEFT_BRACE = "{"
-private const val RIGHT_BRACE = "}"
 
 /**
  * 是否包含 '{' 或 '}' 符号
  */
 fun String.isContainBraceSymbol(): Boolean {
-	return LEFT_BRACE in this || RIGHT_BRACE in this
+	return '{' in this || '}' in this
 }
 
 private val headerCaseRegex by lazy { "([a-z])([A-Z])".toRegex() }

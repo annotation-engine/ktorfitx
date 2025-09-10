@@ -15,7 +15,7 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 fun KSAnnotated.hasAnnotation(annotation: ClassName): Boolean {
 	return this.annotations.any {
 		it.shortName.getShortName() == annotation.simpleName &&
-			it.annotationType.resolve().declaration.qualifiedName?.asString() == annotation.canonicalName
+				it.annotationType.resolve().declaration.qualifiedName?.asString() == annotation.canonicalName
 	}
 }
 
@@ -25,7 +25,7 @@ fun KSAnnotated.hasAnnotation(annotation: ClassName): Boolean {
 fun KSAnnotated.getKSAnnotationByType(annotation: ClassName): KSAnnotation? {
 	return this.annotations.filter {
 		it.shortName.getShortName() == annotation.simpleName &&
-			it.annotationType.resolve().declaration.qualifiedName?.asString() == annotation.canonicalName
+				it.annotationType.resolve().declaration.qualifiedName?.asString() == annotation.canonicalName
 	}.firstOrNull()
 }
 

@@ -28,7 +28,7 @@ internal object TypeNames {
 	
 	val kotlinxSerializerTypeNames = listOf(
 		Pair,
-		ClassName("kotlin.collections", "Map", "Entry"),
+		MAP_ENTRY,
 		ClassName("kotlin", "Triple"),
 		CHAR,
 		CHAR_ARRAY,

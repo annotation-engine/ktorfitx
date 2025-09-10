@@ -1,7 +1,7 @@
 package cn.ktorfitx.multiplatform.ksp.kotlinpoet.block
 
 import cn.ktorfitx.common.ksp.util.builders.fileSpecBuilder
-import cn.ktorfitx.common.ksp.util.builders.toCodeBlock
+import cn.ktorfitx.common.ksp.util.builders.toMapCode
 import cn.ktorfitx.common.ksp.util.expends.replaceFirstToUppercase
 import cn.ktorfitx.multiplatform.ksp.constants.PackageNames
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
@@ -74,9 +74,21 @@ internal class MockClientCodeBlock(
 		)
 		val apiUrl = if (jointApiUrl) "API_URL" else "null"
 		if (jointApiUrl) {
-			addStatement("this.url(%T.parseDynamicUrl(%N, %L%L))", TypeNames.UrlUtil, dynamicUrl.varName, apiUrl, argsCode)
+			addStatement(
+				"this.url(%T.parseDynamicUrl(%N, %L%L))",
+				TypeNames.UrlUtil,
+				dynamicUrl.varName,
+				apiUrl,
+				argsCode
+			)
 		} else {
-			addStatement("this.url(%T.parseDynamicUrl(%N, %L%L))", TypeNames.UrlUtil, dynamicUrl.varName, apiUrl, argsCode)
+			addStatement(
+				"this.url(%T.parseDynamicUrl(%N, %L%L))",
+				TypeNames.UrlUtil,
+				dynamicUrl.varName,
+				apiUrl,
+				argsCode
+			)
 		}
 	}
 	
@@ -174,13 +186,23 @@ internal class MockClientCodeBlock(
 					addStatement("%N%L.forEach { this.append(it.key, it.value) }", it.varName, nullOperator)
 				
 				PartsKind.MAP if it.valueKind == PartsValueKind.FORM_PART ->
-					addStatement("%N%L.forEach { this.append(%T(it.key, it.value)) }", it.varName, nullOperator, TypeNames.FormPart)
+					addStatement(
+						"%N%L.forEach { this.append(%T(it.key, it.value)) }",
+						it.varName,
+						nullOperator,
+						TypeNames.FormPart
+					)
 				
 				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.KEY_VALUE ->
 					addStatement("%N%L.forEach { this.append(it.first, it.second) }", it.varName, nullOperator)
 				
 				PartsKind.LIST_PAIR if it.valueKind == PartsValueKind.FORM_PART ->
-					addStatement("%N%L.forEach { this.append(%T(it.first, it.second)) }", it.varName, nullOperator, TypeNames.FormPart)
+					addStatement(
+						"%N%L.forEach { this.append(%T(it.first, it.second)) }",
+						it.varName,
+						nullOperator,
+						TypeNames.FormPart
+					)
 				
 				PartsKind.LIST_FORM_PART ->
 					addStatement("%N%L.forEach { this.append(it) }", it.varName, nullOperator)
@@ -202,8 +224,17 @@ internal class MockClientCodeBlock(
 		fieldsModels.forEach {
 			val nullOperator = if (it.isNullable) "?" else ""
 			when (it.fieldsKind) {
-				FieldsKind.LIST -> addStatement("%N%L.forEach { this.append(it.first, it.second) }", it.varName, nullOperator)
-				FieldsKind.MAP -> addStatement("%N%L.forEach { this.append(it.key, it.value) }", it.varName, nullOperator)
+				FieldsKind.LIST -> addStatement(
+					"%N%L.forEach { this.append(it.first, it.second) }",
+					it.varName,
+					nullOperator
+				)
+				
+				FieldsKind.MAP -> addStatement(
+					"%N%L.forEach { this.append(it.key, it.value) }",
+					it.varName,
+					nullOperator
+				)
 			}
 		}
 		endControlFlow()
@@ -228,7 +259,7 @@ internal class MockClientCodeBlock(
 				model.path?.let { addStatement("path = %S,", it) }
 				model.secure?.let { addStatement("secure = %L,", it) }
 				model.httpOnly?.let { addStatement("httpOnly = %L,", it) }
-				model.extensions?.let { addStatement("extensions = %L,", it.toCodeBlock()) }
+				model.extensions?.let { addStatement("extensions = %L,", it.toMapCode()) }
 				unindent()
 				addStatement(")")
 			}
@@ -248,8 +279,17 @@ internal class MockClientCodeBlock(
 		attributesModels.forEach {
 			val nullOperator = if (it.isNullable) "?" else ""
 			when (it.attributesKind) {
-				AttributesKind.MAP -> addStatement("%N%L.forEach { this.append(it.key, it.value) }", it.varName, nullOperator)
-				AttributesKind.LIST -> addStatement("%N%L.forEach { this.append(it.first, it.second) }", it.varName, nullOperator)
+				AttributesKind.MAP -> addStatement(
+					"%N%L.forEach { this.append(it.key, it.value) }",
+					it.varName,
+					nullOperator
+				)
+				
+				AttributesKind.LIST -> addStatement(
+					"%N%L.forEach { this.append(it.first, it.second) }",
+					it.varName,
+					nullOperator
+				)
 			}
 		}
 		endControlFlow()

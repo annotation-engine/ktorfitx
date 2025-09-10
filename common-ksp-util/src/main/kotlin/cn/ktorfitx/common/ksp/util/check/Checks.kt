@@ -1,3 +1,6 @@
+@file:Suppress("NOTHING_TO_INLINE")
+@file:OptIn(ExperimentalContracts::class)
+
 package cn.ktorfitx.common.ksp.util.check
 
 import cn.ktorfitx.common.ksp.util.exception.KtorfitxCompilationErrorException
@@ -11,8 +14,6 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-@Suppress("NOTHING_TO_INLINE")
-@OptIn(ExperimentalContracts::class)
 @Throws(KtorfitxCompilationErrorException::class)
 inline fun ktorfitxCheck(
 	value: Boolean,
@@ -29,8 +30,6 @@ inline fun ktorfitxCheck(
 	}
 }
 
-@Suppress("NOTHING_TO_INLINE")
-@OptIn(ExperimentalContracts::class)
 @Throws(KtorfitxCompilationErrorException::class)
 inline fun <T : Any> ktorfitxCheckNotNull(
 	value: T?,
@@ -54,7 +53,8 @@ fun ktorfitxCompilationError(
 	message: String,
 ): Nothing {
 	val location = node.location as? FileLocation
-	val errorLocation = if (location != null) "${location.filePath}:${location.lineNumber}" else MESSAGE_UNKNOWN.getString()
+	val errorLocation =
+		if (location != null) "${location.filePath}:${location.lineNumber}" else MESSAGE_UNKNOWN.getString()
 	throw KtorfitxCompilationErrorException("$message\n${MESSAGE_ERROR_LOCATION.getString()}$errorLocation")
 }
 
