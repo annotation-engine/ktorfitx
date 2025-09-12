@@ -22,10 +22,6 @@ internal object TypeNames {
 	
 	val Serializable = ClassName("kotlinx.serialization", "Serializable")
 	
-	val Transient = ClassName("kotlinx.serialization", "Transient")
-	
-	val Contextual = ClassName("kotlinx.serialization", "Contextual")
-	
 	val kotlinxSerializerTypeNames = listOf(
 		Pair,
 		MAP_ENTRY,
