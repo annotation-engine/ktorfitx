@@ -81,7 +81,7 @@ fun App() {
 						)
 						Spacer(Modifier.width(12.dp))
 						Text(
-							text = "v3.2.3-3.1.0",
+							text = "v3.3.0-3.1.1",
 							fontSize = 14.sp,
 							fontWeight = FontWeight.Normal,
 							color = Color(0xFFB0BFD9),
@@ -110,9 +110,9 @@ fun App() {
 						.padding(16.dp),
 					verticalArrangement = Arrangement.spacedBy(12.dp)
 				) {
-					LibVersionRow("kotlin", "v2.2.10")
-					LibVersionRow("ktor", "v3.2.3")
-					LibVersionRow("ksp", "v2.2.10-2.0.2")
+					LibVersionRow("kotlin", "v2.2.20")
+					LibVersionRow("ktor", "v3.3.0")
+					LibVersionRow("ksp", "v2.2.20-2.0.3")
 				}
 				
 				Text(

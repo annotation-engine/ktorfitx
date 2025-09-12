@@ -2,14 +2,14 @@
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
-kotlin = "2.2.10"
-agp = "8.11.1"
-ktor = "3.2.3"
-ksp = "2.2.10-2.0.2"
+kotlin = "2.2.20"
+agp = "8.11.2"
+ktor = "3.3.0"
+ksp = "2.2.20-2.0.3"
 kotlinpoet-ksp = "2.2.0"
 maven-publish = "0.34.0"
 compose-plugin = "1.8.2"
-androidx-activity-compose = "1.10.1"
+androidx-activity-compose = "1.11.0"
 logback-classic = "1.5.18"
 
 [libraries]
@@ -52,65 +52,65 @@ ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 
 [bundles]
 common-ksp-util = [
-	'kotlin-reflect',
-	'symbol-processing',
-	'symbol-processing-api',
-	'kotlinpoet-ksp'
+    'kotlin-reflect',
+    'symbol-processing',
+    'symbol-processing-api',
+    'kotlinpoet-ksp'
 ]
 
 multiplatform-core = [
-	'ktor-client-core'
+    'ktor-client-core'
 ]
 
 multiplatform-mock = [
-	'ktor-client-core',
-	'ktor-client-logging',
-	'ktor-client-serialization'
+    'ktor-client-core',
+    'ktor-client-logging',
+    'ktor-client-serialization'
 ]
 
 multiplatform-ksp = [
-	'kotlin-reflect',
-	'symbol-processing',
-	'symbol-processing-api',
-	'kotlinpoet-ksp'
+    'kotlin-reflect',
+    'symbol-processing',
+    'symbol-processing-api',
+    'kotlinpoet-ksp'
 ]
 
 multiplatform-websockets = [
-	'ktor-client-websockets'
+    'ktor-client-websockets'
 ]
 
 multiplatform-sample = [
-	'ktor-client-core',
-	'ktor-client-logging',
-	'ktor-client-cio',
-	'ktor-client-websockets',
-	'ktor-client-serialization',
-	'ktor-client-content-negotiation',
-	'ktor-serialization-kotlinx-json'
+    'ktor-client-core',
+    'ktor-client-logging',
+    'ktor-client-cio',
+    'ktor-client-websockets',
+    'ktor-client-serialization',
+    'ktor-client-content-negotiation',
+    'ktor-serialization-kotlinx-json'
 ]
 
 server-core = [
-	'ktor-server-core'
+    'ktor-server-core'
 ]
 
 server-ksp = [
-	'kotlin-reflect',
-	'symbol-processing',
-	'symbol-processing-api',
-	'kotlinpoet-ksp'
+    'kotlin-reflect',
+    'symbol-processing',
+    'symbol-processing-api',
+    'kotlinpoet-ksp'
 ]
 
 server-auth = [
-	'ktor-server-auth'
+    'ktor-server-auth'
 ]
 
 server-sample = [
-	'ktor-server-core',
-	'ktor-server-auth',
-	'ktor-server-auth-jwt',
-	'ktor-server-websockets',
-	'ktor-server-netty',
-	'logback-classic',
-	'ktor-server-config-yaml',
-	'ktor-serialization-kotlinx-json',
+    'ktor-server-core',
+    'ktor-server-auth',
+    'ktor-server-auth-jwt',
+    'ktor-server-websockets',
+    'ktor-server-netty',
+    'logback-classic',
+    'ktor-server-config-yaml',
+    'ktor-serialization-kotlinx-json',
 ]

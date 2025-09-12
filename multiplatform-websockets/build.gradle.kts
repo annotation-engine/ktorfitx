@@ -17,7 +17,7 @@ version = ktorfitxVersion
 
 kotlin {
 	jvmToolchain(21)
-
+	
 	if ("android" in ktorfitxPlatforms) {
 		androidTarget {
 			compilerOptions {
@@ -25,7 +25,7 @@ kotlin {
 			}
 		}
 	}
-
+	
 	if ("desktop" in ktorfitxPlatforms) {
 		jvm("desktop") {
 			compilerOptions {
@@ -33,7 +33,7 @@ kotlin {
 			}
 		}
 	}
-
+	
 	if ("ios" in ktorfitxPlatforms) {
 		listOf(
 			iosX64(),
@@ -46,7 +46,7 @@ kotlin {
 			}
 		}
 	}
-
+	
 	if ("macos" in ktorfitxPlatforms) {
 		listOf(
 			macosX64(),
@@ -58,7 +58,7 @@ kotlin {
 			}
 		}
 	}
-
+	
 	if ("watchos" in ktorfitxPlatforms) {
 		listOf(
 			watchosX64(),
@@ -73,7 +73,7 @@ kotlin {
 			}
 		}
 	}
-
+	
 	if ("tvos" in ktorfitxPlatforms) {
 		listOf(
 			tvosX64(),
@@ -86,7 +86,7 @@ kotlin {
 			}
 		}
 	}
-
+	
 	if ("linux" in ktorfitxPlatforms) {
 		listOf(
 			linuxArm64(),
@@ -95,11 +95,11 @@ kotlin {
 			target.binaries.executable()
 		}
 	}
-
+	
 	if ("mingw" in ktorfitxPlatforms) {
 		mingwX64().binaries.executable()
 	}
-
+	
 	if ("js" in ktorfitxPlatforms) {
 		js(IR) {
 			outputModuleName = "ktorfitxWebSockets"
@@ -107,7 +107,7 @@ kotlin {
 			binaries.executable()
 		}
 	}
-
+	
 	if ("wasmJs" in ktorfitxPlatforms) {
 		@OptIn(ExperimentalWasmDsl::class)
 		wasmJs {
@@ -134,13 +134,13 @@ kotlin {
 android {
 	namespace = "cn.ktorfitx.multiplatform.websockets"
 	compileSdk = libs.versions.android.compileSdk.get().toInt()
-
+	
 	sourceSets["main"].apply {
 		manifest.srcFile("src/androidMain/AndroidManifest.xml")
 		res.srcDirs("src/androidMain/res")
 		resources.srcDirs("src/commonMain/resources")
 	}
-
+	
 	defaultConfig {
 		minSdk = libs.versions.android.minSdk.get().toInt()
 	}
