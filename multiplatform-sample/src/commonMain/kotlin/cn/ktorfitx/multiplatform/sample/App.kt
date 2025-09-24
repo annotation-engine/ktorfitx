@@ -32,22 +32,29 @@ fun App() {
 	BoxWithConstraints(
 		modifier = Modifier
 			.fillMaxSize()
-			.background(Color(0xFF0B0F1A)),
-		contentAlignment = Alignment.Center
+			.background(Color(0xFF0B0F1A))
 	) {
 		ParticleInteractiveBackground()
-		val scale by remember(this.maxWidth, this.maxHeight) {
+		
+		FpsCounter(
+			modifier = Modifier
+				.align(Alignment.TopEnd)
+				.padding(12.dp)
+		)
+		
+		val scale by remember(maxWidth, maxHeight) {
 			derivedStateOf {
-				val scale = this.maxWidth / this.maxHeight
+				val scale = maxWidth / maxHeight
 				if (scale > 350f / 500f) {
-					this.maxHeight / 500.dp
+					maxHeight / 500.dp
 				} else {
-					this.maxWidth / 350.dp
+					maxWidth / 350.dp
 				}
 			}
 		}
 		Box(
 			modifier = Modifier
+				.align(Alignment.Center)
 				.scale(scale)
 				.size(350.dp, 500.dp)
 				.padding(24.dp)
@@ -81,7 +88,7 @@ fun App() {
 						)
 						Spacer(Modifier.width(12.dp))
 						Text(
-							text = "v3.3.0-3.1.1",
+							text = "v3.3.0-3.1.2",
 							fontSize = 14.sp,
 							fontWeight = FontWeight.Normal,
 							color = Color(0xFFB0BFD9),
@@ -231,11 +238,9 @@ fun CanvasBackgroundLines() {
 fun ParticleInteractiveBackground() {
 	BoxWithConstraints {
 		val density = LocalDensity.current
-		val width = this.maxWidth
-		val height = this.maxHeight
-		val particles = remember(width, height) {
+		val particles = remember(maxWidth, maxHeight) {
 			with(density) {
-				generateHexagonalParticles(width.toPx(), height.toPx(), 8.dp.toPx())
+				generateHexagonalParticles(maxWidth.toPx(), maxHeight.toPx(), 8.dp.toPx())
 			}
 		}
 		var mousePosition by remember { mutableStateOf(Offset.Unspecified) }
@@ -253,13 +258,36 @@ fun ParticleInteractiveBackground() {
 				val influence = (1f - (distance / 150f).coerceIn(0f, 1f))
 				
 				drawCircle(
-					color = Color(0xFF3DA9FC).copy(alpha = 0.1f + influence * 0.9f),
+					color = Primary.copy(alpha = 0.1f + influence * 0.9f),
 					radius = 2f + influence * 4f,
 					center = particle.position
 				)
 			}
 		}
 	}
+}
+
+private val Primary = Color(0xFF3DA9FC)
+
+@Composable
+fun MouseTrackingBox(
+	onMove: (Offset) -> Unit
+) {
+	Box(
+		modifier = Modifier
+			.fillMaxSize()
+			.pointerInput(Unit) {
+				awaitPointerEventScope {
+					while (true) {
+						val event = awaitPointerEvent()
+						val position = event.changes.firstOrNull()?.position
+						if (position != null) {
+							onMove(position)
+						}
+					}
+				}
+			}
+	)
 }
 
 data class Particle(val position: Offset)
@@ -293,22 +321,29 @@ fun generateHexagonalParticles(
 }
 
 @Composable
-fun MouseTrackingBox(
-	onMove: (Offset) -> Unit
-) {
-	Box(
-		modifier = Modifier
-			.fillMaxSize()
-			.pointerInput(Unit) {
-				awaitPointerEventScope {
-					while (true) {
-						val event = awaitPointerEvent()
-						val position = event.changes.firstOrNull()?.position
-						if (position != null) {
-							onMove(position)
-						}
-					}
+fun FpsCounter(modifier: Modifier = Modifier) {
+	var fps by remember { mutableStateOf(0) }
+	var lastFrameTime by remember { mutableStateOf(0L) }
+	
+	LaunchedEffect(Unit) {
+		while (true) {
+			withFrameNanos { frameTime ->
+				if (lastFrameTime > 0) {
+					val delta = frameTime - lastFrameTime
+					fps = (1_000_000_000.0 / delta).toInt()
 				}
+				lastFrameTime = frameTime
 			}
+		}
+	}
+	
+	Text(
+		text = "FPS: $fps",
+		color = Color.White,
+		fontSize = 14.sp,
+		fontWeight = FontWeight.Normal,
+		modifier = modifier
+			.background(Color(0x66000000), shape = RoundedCornerShape(6.dp))
+			.padding(horizontal = 8.dp, vertical = 4.dp)
 	)
 }

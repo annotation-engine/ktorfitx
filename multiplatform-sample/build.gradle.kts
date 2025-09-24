@@ -18,7 +18,7 @@ plugins {
 }
 
 val ktorfitxSampleVersion = property("ktorfitx.sample.version").toString()
-val ktorfitxPlatforms = property("ktorfitx.platforms").toPlatforms()
+val ktorfitxPlatforms = property("ktorfitx.platforms").toString().toPlatforms()
 
 kotlin {
 	jvmToolchain(21)

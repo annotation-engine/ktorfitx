@@ -1,3 +1,4 @@
+
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.DpSize
@@ -11,7 +12,7 @@ import cn.ktorfitx.multiplatform.sample.App
 fun main() = application {
 	Window(
 		onCloseRequest = ::exitApplication,
-		title = "Ktorfitx Sample",
+		title = "",
 		state = rememberWindowState(
 			position = WindowPosition.Aligned(Alignment.Center),
 			size = DpSize(350.dp, 500.dp)

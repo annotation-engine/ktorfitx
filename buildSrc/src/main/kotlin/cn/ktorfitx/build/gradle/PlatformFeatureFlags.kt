@@ -5,8 +5,7 @@ fun configurePlatformFeatures(
 	targets: PlatformFeatureFlags.() -> Unit
 ) = PlatformFeatureFlags(platforms).apply(targets)
 
-fun Any?.toPlatforms(): List<Platform> {
-	if (this !is String) return emptyList()
+fun String.toPlatforms(): List<Platform> {
 	return this.split(",")
 		.filter { it.isNotBlank() }
 		.map { Platform.valueOf(it.toConstantCase()) }

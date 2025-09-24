@@ -12,7 +12,7 @@ plugins {
 
 val ktorfitxVersion = property("ktorfitx.version").toString()
 val ktorfitxAutomaticRelease = property("ktorfitx.automaticRelease").toString().toBoolean()
-val ktorfitxPlatforms = property("ktorfitx.platforms").toPlatforms()
+val ktorfitxPlatforms = property("ktorfitx.platforms").toString().toPlatforms()
 
 group = "cn.ktorfitx.multiplatform.core"
 version = ktorfitxVersion
@@ -98,7 +98,7 @@ kotlin {
 		if (jsEnabled) {
 			js(IR) {
 				outputModuleName = "ktorfitxCore"
-				nodejs()
+				browser()
 				useEsModules()
 				binaries.executable()
 			}
@@ -107,7 +107,7 @@ kotlin {
 			@OptIn(ExperimentalWasmDsl::class)
 			wasmJs {
 				outputModuleName = "ktorfitxCore"
-				nodejs()
+				browser()
 				useEsModules()
 				binaries.executable()
 			}
