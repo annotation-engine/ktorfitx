@@ -1,3 +1,6 @@
+import cn.ktorfitx.build.gradle.Platform
+import cn.ktorfitx.build.gradle.configurePlatformFeatures
+import cn.ktorfitx.build.gradle.toPlatforms
 import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxLanguage
 import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxMultiplatformMode
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
@@ -15,93 +18,92 @@ plugins {
 }
 
 val ktorfitxSampleVersion = property("ktorfitx.sample.version").toString()
-val ktorfitxPlatforms = property("ktorfitx.platforms").toString().split(",")
+val ktorfitxPlatforms = property("ktorfitx.platforms").toPlatforms()
 
 kotlin {
 	jvmToolchain(21)
 	
-	if ("android" in ktorfitxPlatforms) {
-		androidTarget {
-			compilerOptions {
-				jvmTarget = JvmTarget.JVM_21
-			}
-		}
-	}
-	
-	if ("desktop" in ktorfitxPlatforms) {
-		jvm("desktop") {
-			compilerOptions {
-				jvmTarget = JvmTarget.JVM_21
-			}
-		}
-	}
-	
-	if ("ios" in ktorfitxPlatforms) {
-		listOf(
-			iosX64(),
-			iosArm64(),
-			iosSimulatorArm64()
-		).forEach { target ->
-			target.binaries.framework {
-				baseName = "SampleApp"
-				isStatic = true
-			}
-		}
-	}
-	
-	if ("js" in ktorfitxPlatforms) {
-		js(IR) {
-			outputModuleName = "sampleApp"
-			browser {
-				commonWebpackConfig {
-					outputFileName = "sampleApp.js"
+	configurePlatformFeatures(ktorfitxPlatforms) {
+		if (androidEnabled) {
+			androidTarget {
+				compilerOptions {
+					jvmTarget = JvmTarget.JVM_21
 				}
 			}
-			binaries.executable()
-			useEsModules()
 		}
-	}
-	
-	if ("wasmJs" in ktorfitxPlatforms) {
-		@OptIn(ExperimentalWasmDsl::class)
-		wasmJs {
-			outputModuleName = "sampleApp"
-			browser {
-				val rootDirPath = project.rootDir.path
-				val projectDirPath = project.projectDir.path
-				commonWebpackConfig {
-					outputFileName = "sampleApp.js"
-					devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-						static = (static ?: mutableListOf()).apply {
-							add(rootDirPath)
-							add(projectDirPath)
+		if (desktopEnabled) {
+			jvm("desktop") {
+				compilerOptions {
+					jvmTarget = JvmTarget.JVM_21
+				}
+			}
+		}
+		if (iosEnabled) {
+			listOf(
+				iosX64(),
+				iosArm64(),
+				iosSimulatorArm64()
+			).forEach { target ->
+				target.binaries.framework {
+					baseName = "SampleApp"
+					isStatic = true
+				}
+			}
+		}
+		if (jsEnabled) {
+			js(IR) {
+				outputModuleName = "sampleApp"
+				browser {
+					commonWebpackConfig {
+						outputFileName = "sampleApp.js"
+					}
+				}
+				nodejs()
+				useEsModules()
+				binaries.executable()
+			}
+		}
+		if (wasmJsEnabled) {
+			@OptIn(ExperimentalWasmDsl::class)
+			wasmJs {
+				outputModuleName = "sampleApp"
+				browser {
+					val rootDirPath = project.rootDir.path
+					val projectDirPath = project.projectDir.path
+					commonWebpackConfig {
+						outputFileName = "sampleApp.js"
+						devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+							static = (static ?: mutableListOf()).apply {
+								add(rootDirPath)
+								add(projectDirPath)
+							}
 						}
 					}
 				}
+				nodejs()
+				useEsModules()
+				binaries.executable()
 			}
-			binaries.executable()
-			useEsModules()
 		}
 	}
 	
 	sourceSets {
-		commonMain {
-			dependencies {
-				implementation(libs.bundles.multiplatform.sample)
-				implementation(compose.runtime)
-				implementation(compose.foundation)
-				implementation(compose.material3)
-				implementation(compose.ui)
-				implementation(compose.components.resources)
-			}
+		commonMain.dependencies {
+			implementation(libs.bundles.multiplatform.sample)
+			implementation(compose.runtime)
+			implementation(compose.foundation)
+			implementation(compose.material3)
+			implementation(compose.ui)
+			implementation(compose.components.resources)
 		}
-		if ("android" in ktorfitxPlatforms) {
+		
+		if (Platform.ANDROID in ktorfitxPlatforms) {
 			androidMain.dependencies {
 				implementation(compose.preview)
 				implementation(libs.androidx.activity.compose)
 			}
 		}
-		if ("desktop" in ktorfitxPlatforms) {
+		if (Platform.DESKTOP in ktorfitxPlatforms) {
 			val desktopMain by getting
 			desktopMain.dependencies {
 				implementation(compose.desktop.currentOs)
@@ -113,6 +115,8 @@ kotlin {
 android {
 	namespace = "cn.ktorfitx.multiplatform.sample"
 	compileSdk = libs.versions.android.compileSdk.get().toInt()
+	buildToolsVersion = "36.1.0"
+	compileSdkVersion = "android-36.1"
 	
 	sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
 	sourceSets["main"].res.srcDirs("src/androidMain/res")

@@ -1,3 +1,5 @@
+import cn.ktorfitx.build.gradle.configurePlatformFeatures
+import cn.ktorfitx.build.gradle.toPlatforms
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
@@ -10,110 +12,105 @@ plugins {
 
 val ktorfitxVersion = property("ktorfitx.version").toString()
 val ktorfitxAutomaticRelease = property("ktorfitx.automaticRelease").toString().toBoolean()
-val ktorfitxPlatforms = property("ktorfitx.platforms").toString().split(",")
+val ktorfitxPlatforms = property("ktorfitx.platforms").toPlatforms()
 
 group = "cn.ktorfitx.multiplatform.mock"
 version = ktorfitxVersion
 
 kotlin {
 	jvmToolchain(21)
-
-	if ("android" in ktorfitxPlatforms) {
-		androidTarget {
-			compilerOptions {
-				jvmTarget = JvmTarget.JVM_21
+	
+	configurePlatformFeatures(ktorfitxPlatforms) {
+		if (androidEnabled) {
+			androidTarget {
+				compilerOptions {
+					jvmTarget = JvmTarget.JVM_21
+				}
 			}
 		}
-	}
-
-	if ("desktop" in ktorfitxPlatforms) {
-		jvm("desktop") {
-			compilerOptions {
-				jvmTarget = JvmTarget.JVM_21
+		if (desktopEnabled) {
+			jvm("desktop") {
+				compilerOptions {
+					jvmTarget = JvmTarget.JVM_21
+				}
 			}
 		}
-	}
-
-	if ("ios" in ktorfitxPlatforms) {
-		listOf(
-			iosX64(),
-			iosArm64(),
-			iosSimulatorArm64()
-		).forEach { target ->
-			target.binaries.framework {
-				baseName = "KtorfitxMock"
-				isStatic = true
+		if (iosEnabled) {
+			listOf(
+				iosX64(),
+				iosArm64(),
+				iosSimulatorArm64()
+			).forEach { target ->
+				target.binaries.framework {
+					baseName = "KtorfitxMock"
+					isStatic = true
+				}
 			}
 		}
-	}
-
-	if ("macos" in ktorfitxPlatforms) {
-		listOf(
-			macosX64(),
-			macosArm64(),
-		).forEach { target ->
-			target.binaries.framework {
-				baseName = "KtorfitxMock"
-				isStatic = true
+		if (macosEnabled) {
+			listOf(
+				macosX64(),
+				macosArm64()
+			).forEach { target ->
+				target.binaries.framework {
+					baseName = "KtorfitxMock"
+					isStatic = true
+				}
 			}
 		}
-	}
-
-	if ("watchos" in ktorfitxPlatforms) {
-		listOf(
-			watchosX64(),
-			watchosArm32(),
-			watchosArm64(),
-			watchosSimulatorArm64(),
-			watchosDeviceArm64(),
-		).forEach { target ->
-			target.binaries.framework {
-				baseName = "KtorfitxMock"
-				isStatic = true
+		if (watchosEnabled) {
+			listOf(
+				watchosX64(),
+				watchosArm32(),
+				watchosArm64(),
+				watchosSimulatorArm64(),
+				watchosDeviceArm64()
+			).forEach { target ->
+				target.binaries.framework {
+					baseName = "KtorfitxMock"
+					isStatic = true
+				}
 			}
 		}
-	}
-
-	if ("tvos" in ktorfitxPlatforms) {
-		listOf(
-			tvosX64(),
-			tvosArm64(),
-			tvosSimulatorArm64()
-		).forEach { target ->
-			target.binaries.framework {
-				baseName = "KtorfitxMock"
-				isStatic = true
+		if (tvosEnabled) {
+			listOf(
+				tvosX64(),
+				tvosArm64(),
+				tvosSimulatorArm64()
+			).forEach { target ->
+				target.binaries.framework {
+					baseName = "KtorfitxMock"
+					isStatic = true
+				}
 			}
 		}
-	}
-
-	if ("linux" in ktorfitxPlatforms) {
-		listOf(
-			linuxArm64(),
-			linuxX64()
-		).forEach { target ->
-			target.binaries.executable()
+		if (linuxEnabled) {
+			listOf(
+				linuxX64(),
+				linuxArm64()
+			).forEach { target ->
+				target.binaries.executable()
+			}
 		}
-	}
-
-	if ("mingw" in ktorfitxPlatforms) {
-		mingwX64().binaries.executable()
-	}
-
-	if ("js" in ktorfitxPlatforms) {
-		js(IR) {
-			outputModuleName = "ktorfitxMock"
-			nodejs()
-			binaries.executable()
+		if (mingwEnabled) {
+			mingwX64().binaries.executable()
 		}
-	}
-
-	if ("wasmJs" in ktorfitxPlatforms) {
-		@OptIn(ExperimentalWasmDsl::class)
-		wasmJs {
-			outputModuleName = "ktorfitxMock"
-			nodejs()
-			binaries.executable()
+		if (jsEnabled) {
+			js(IR) {
+				outputModuleName = "ktorfitxMock"
+				nodejs()
+				useEsModules()
+				binaries.executable()
+			}
+		}
+		if (wasmJsEnabled) {
+			@OptIn(ExperimentalWasmDsl::class)
+			wasmJs {
+				outputModuleName = "ktorfitxMock"
+				nodejs()
+				useEsModules()
+				binaries.executable()
+			}
 		}
 	}
 	
@@ -136,13 +133,15 @@ kotlin {
 android {
 	namespace = "cn.ktorfitx.multiplatform.mock"
 	compileSdk = libs.versions.android.compileSdk.get().toInt()
-
+	buildToolsVersion = "36.1.0"
+	compileSdkVersion = "android-36.1"
+	
 	sourceSets["main"].apply {
 		manifest.srcFile("src/androidMain/AndroidManifest.xml")
 		res.srcDirs("src/androidMain/res")
 		resources.srcDirs("src/commonMain/resources")
 	}
-
+	
 	defaultConfig {
 		minSdk = libs.versions.android.minSdk.get().toInt()
 	}
