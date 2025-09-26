@@ -1,12 +1,12 @@
 package cn.ktorfitx.multiplatform.core.config
 
 import cn.ktorfitx.multiplatform.core.Ktorfitx
-import cn.ktorfitx.multiplatform.core.annotation.KtorfitDsl
+import cn.ktorfitx.multiplatform.core.annotation.KtorfitxDsl
 import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.plugins.*
 
-@KtorfitDsl
+@KtorfitxDsl
 class KtorfitxConfig internal constructor() {
 	
 	var baseUrl: String? = null
