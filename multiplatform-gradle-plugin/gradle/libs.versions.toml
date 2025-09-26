@@ -2,11 +2,13 @@
 kotlin = "2.2.20"
 ksp = "2.2.20-2.0.3"
 maven-publish = "0.34.0"
+kotlinx-serialization-json = "1.9.0"
 
 [libraries]
 # Common
 ksp = { group = "com.google.devtools.ksp", name = "symbol-processing-gradle-plugin", version.ref = "ksp" }
 kotlin-multiplatform = { group = "org.jetbrains.kotlin.multiplatform", name = "org.jetbrains.kotlin.multiplatform.gradle.plugin", version.ref = "kotlin" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 
 [plugins]
 maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }
