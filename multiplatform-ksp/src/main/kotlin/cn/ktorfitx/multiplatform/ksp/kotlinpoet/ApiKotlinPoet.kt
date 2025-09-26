@@ -2,8 +2,6 @@ package cn.ktorfitx.multiplatform.ksp.kotlinpoet
 
 import cn.ktorfitx.common.ksp.util.builders.*
 import cn.ktorfitx.common.ksp.util.expends.asNullable
-import cn.ktorfitx.common.ksp.util.expends.replaceFirstToLowercase
-import cn.ktorfitx.common.ksp.util.expends.replaceFirstToUppercase
 import cn.ktorfitx.common.ksp.util.message.getString
 import cn.ktorfitx.multiplatform.ksp.constants.PackageNames
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
@@ -27,7 +25,7 @@ internal object ApiKotlinPoet {
 			addFileComment(FILE_COMMENT.getString(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 			indent("\t")
 			addType(getTypeSpec(classModel))
-			addProperties(getExpendPropertySpecs(classModel))
+			addProperty(getExpendPropertySpec(classModel))
 		}
 	}
 	
@@ -75,68 +73,57 @@ internal object ApiKotlinPoet {
 				}
 				addProperty(apiUrlPropertySpec)
 			}
-			classModel.apiScopeModels.forEach { model ->
-				val simpleName = model.className.simpleNames.joinToString("") { it.replaceFirstToUppercase() }
-				val varName = simpleName.replaceFirstToLowercase()
-				val instanceVarName = "${varName}Instance"
-				val instancePropertySpec = buildPropertySpec(instanceVarName, typeName, KModifier.PRIVATE) {
-					initializer("null")
-					mutable(true)
-				}
-				addProperty(instancePropertySpec)
-				val lockVarName = "${varName}SynchronizedObject"
-				val mutexPropertySpec = buildPropertySpec(lockVarName, TypeNames.SynchronizedObject, KModifier.PRIVATE) {
-					initializer("%T()", TypeNames.SynchronizedObject)
-					mutable(false)
-				}
-				addProperty(mutexPropertySpec)
-				val funSpec = buildFunSpec("getInstanceBy$simpleName") {
-					addModifiers(classModel.kModifier)
-					returns(classModel.superinterface)
-					if (classModel.funModels.isNotEmpty()) {
-						addParameter(
-							"ktorfitx",
-							TypeNames.Ktorfitx.parameterizedBy(model.className)
-						)
-					}
-					val codeBlock = buildCodeBlock {
-						beginControlFlow("return %N ?: synchronized(%N)", instanceVarName, lockVarName)
-						if (classModel.funModels.isEmpty()) {
-							addStatement("%N ?: %T().also { %N = it }", instanceVarName, classModel.className, instanceVarName)
-						} else {
-							addStatement("%N ?: %T(ktorfitx.config).also { %N = it }", instanceVarName, classModel.className, instanceVarName)
-						}
-						endControlFlow()
-					}
-					addCode(codeBlock)
-				}
-				addFunction(funSpec)
+			
+			val instancePropertySpec = buildPropertySpec("instances", TypeNames.MutableMap.parameterizedBy(TypeNames.Ktorfitx, typeName), KModifier.PRIVATE) {
+				initializer("mutableMapOf()")
+				mutable(false)
 			}
+			addProperty(instancePropertySpec)
+			val mutexPropertySpec = buildPropertySpec("lock", TypeNames.SynchronizedObject, KModifier.PRIVATE) {
+				initializer("%T()", TypeNames.SynchronizedObject)
+				mutable(false)
+			}
+			addProperty(mutexPropertySpec)
+			val funSpec = buildFunSpec("getInstance") {
+				addModifiers(classModel.kModifier)
+				returns(classModel.superinterface)
+				if (classModel.funModels.isNotEmpty()) {
+					addParameter(
+						"ktorfitx",
+						TypeNames.Ktorfitx
+					)
+				}
+				val codeBlock = buildCodeBlock {
+					beginControlFlow("return instances[ktorfitx] ?: synchronized(lock)")
+					if (classModel.funModels.isEmpty()) {
+						addStatement("instances[ktorfitx] ?: %T().also { instances[ktorfitx] = it }", classModel.className)
+					} else {
+						addStatement("instances[ktorfitx] ?: %T(ktorfitx.config).also { instances[ktorfitx] = it }", classModel.className)
+					}
+					endControlFlow()
+				}
+				addCode(codeBlock)
+			}
+			addFunction(funSpec)
 		}
 	}
 	
 	/**
 	 * 扩展函数
 	 */
-	private fun getExpendPropertySpecs(classModel: ClassModel): List<PropertySpec> {
+	private fun getExpendPropertySpec(classModel: ClassModel): PropertySpec {
 		val expendPropertyName = classModel.superinterface.simpleName.replaceFirstChar { it.lowercase() }
-		return classModel.apiScopeModels.map { model ->
-			val simpleName = model.className.simpleNames.joinToString(".")
-			val jvmNameAnnotationSpec = buildAnnotationSpec(JvmName::class) {
-				addMember("%S", "${expendPropertyName}By$simpleName")
+		
+		val getterFunSpec = buildGetterFunSpec {
+			if (classModel.funModels.isEmpty()) {
+				addStatement("return %T.%N()", classModel.className, "getInstance")
+			} else {
+				addStatement("return %T.%N(this)", classModel.className, "getInstance")
 			}
-			val getterFunSpec = buildGetterFunSpec {
-				addAnnotation(jvmNameAnnotationSpec)
-				if (classModel.funModels.isEmpty()) {
-					addStatement("return %T.%N()", classModel.className, "getInstanceBy$simpleName")
-				} else {
-					addStatement("return %T.%N(this)", classModel.className, "getInstanceBy$simpleName")
-				}
-			}
-			buildPropertySpec(expendPropertyName, classModel.superinterface, classModel.kModifier) {
-				receiver(TypeNames.Ktorfitx.parameterizedBy(model.className))
-				getter(getterFunSpec)
-			}
+		}
+		return buildPropertySpec(expendPropertyName, classModel.superinterface, classModel.kModifier) {
+			receiver(TypeNames.Ktorfitx)
+			getter(getterFunSpec)
 		}
 	}
 	

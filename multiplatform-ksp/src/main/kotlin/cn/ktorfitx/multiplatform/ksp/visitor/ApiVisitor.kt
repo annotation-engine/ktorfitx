@@ -1,7 +1,6 @@
 package cn.ktorfitx.multiplatform.ksp.visitor
 
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
-import cn.ktorfitx.common.ksp.util.check.ktorfitxCheckNotNull
 import cn.ktorfitx.common.ksp.util.expends.*
 import cn.ktorfitx.common.ksp.util.message.getString
 import cn.ktorfitx.common.ksp.util.resolver.isSerializableType
@@ -49,7 +48,6 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 			superinterface = superinterface,
 			kModifier = this.getVisibilityKModifier(),
 			apiUrl = this.getApiUrl(),
-			apiScopeModels = this.getApiScopeModels(),
 			funModels = getFunModel()
 		)
 	}
@@ -68,19 +66,6 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 			MESSAGE_ANNOTATION_URL_PARAMETER_FORMAT_INCORRECT.getString(simpleName)
 		}
 		return url
-	}
-	
-	private fun KSClassDeclaration.getApiScopeModels(): List<ApiScopeModel> {
-		val apiScopeAnnotation = getKSAnnotationByType(TypeNames.ApiScope) ?: return listOf(ApiScopeModel(TypeNames.DefaultApiScope))
-		val apiScopeClassNames = apiScopeAnnotation.getClassNamesOrNull("scopes")?.takeIf { it.isNotEmpty() }
-		ktorfitxCheckNotNull(apiScopeClassNames, apiScopeAnnotation) {
-			MESSAGE_ANNOTATION_SCOPES_PARAMETER_NOT_ALLOW_NULLABLE_TYPE.getString(simpleName)
-		}
-		val groupSize = apiScopeClassNames.groupBy { it.simpleNames.joinToString(".") }.size
-		ktorfitxCheck(apiScopeClassNames.size == groupSize, this) {
-			MESSAGE_ANNOTATION_SCOPES_NOT_ALLOWED_USE_SAME_CLASS_NAME_K_CLASS.getString(simpleName)
-		}
-		return apiScopeClassNames.map { ApiScopeModel(it) }
 	}
 	
 	/**

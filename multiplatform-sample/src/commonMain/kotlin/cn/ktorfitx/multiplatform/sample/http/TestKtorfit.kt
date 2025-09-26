@@ -32,9 +32,7 @@ val defaultKtorfitx = ktorfitx {
 	}
 }
 
-sealed interface TestApiScope
-
-val testApiKtorfitx = ktorfitx<TestApiScope> {
+val testApiKtorfitx = ktorfitx {
 	token { "<token>" }
 	baseUrl = "http://localhost:8080/api/"
 	httpClient(CIO) {

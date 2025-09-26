@@ -8,6 +8,5 @@ internal class ClassModel(
 	val superinterface: ClassName,
 	val kModifier: KModifier,
 	val apiUrl: String?,
-	val apiScopeModels: List<ApiScopeModel>,
 	val funModels: List<FunModel>,
 )

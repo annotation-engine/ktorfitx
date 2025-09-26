@@ -38,6 +38,8 @@ internal object TypeNames {
 	
 	val Unit = UNIT
 	
+	val MutableMap = MUTABLE_MAP
+	
 	val Nothing = NOTHING
 	
 	val Result = ClassName("kotlin", "Result")
@@ -74,10 +76,6 @@ internal object TypeNames {
 	val HttpMethod = ClassName("cn.ktorfitx.multiplatform.annotation", "HttpMethod")
 	
 	val Api = ClassName("cn.ktorfitx.multiplatform.annotation", "Api")
-	
-	val DefaultApiScope = ClassName("cn.ktorfitx.multiplatform.core.scope", "DefaultApiScope")
-	
-	val ApiScope = ClassName("cn.ktorfitx.multiplatform.annotation", "ApiScope")
 	
 	val WebSocket = ClassName("cn.ktorfitx.multiplatform.annotation", "WebSocket")
 	

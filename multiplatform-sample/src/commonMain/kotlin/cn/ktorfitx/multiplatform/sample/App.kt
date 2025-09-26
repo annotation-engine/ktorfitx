@@ -36,12 +36,6 @@ fun App() {
 	) {
 		ParticleInteractiveBackground()
 		
-		FpsCounter(
-			modifier = Modifier
-				.align(Alignment.TopEnd)
-				.padding(12.dp)
-		)
-		
 		val scale by remember(maxWidth, maxHeight) {
 			derivedStateOf {
 				val scale = maxWidth / maxHeight
@@ -59,6 +53,10 @@ fun App() {
 				.size(350.dp, 500.dp)
 				.padding(24.dp)
 		) {
+			FpsCounter(
+				modifier = Modifier
+					.align(Alignment.TopEnd)
+			)
 			CanvasBackgroundLines()
 			Column(
 				modifier = Modifier
@@ -108,7 +106,7 @@ fun App() {
 				Column(
 					modifier = Modifier
 						.fillMaxWidth()
-						.background(Color(0xBB171E2E), shape = RoundedCornerShape(12.dp))
+						.background(Color(0x66171E2E), shape = RoundedCornerShape(12.dp))
 						.border(
 							width = 1.dp,
 							color = Color(0xFF38425B),

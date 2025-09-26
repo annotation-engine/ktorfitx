@@ -23,6 +23,7 @@ import com.google.devtools.ksp.validate
 
 internal class KtorfitxMultiplatformSymbolProcessor(
 	private val codeGenerator: CodeGenerator,
+	private val isCommon: Boolean
 ) : SymbolProcessor {
 	
 	override fun process(resolver: Resolver): List<KSAnnotated> {
@@ -43,6 +44,11 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 		this.getSymbolsWithAnnotation(TypeNames.Api.canonicalName)
 			.filterIsInstance<KSClassDeclaration>()
 			.filter { it.validate() }
+			.filter {
+				if (isCommon) return@filter true
+				val filePath = it.containingFile?.filePath ?: return@filter false
+				"src/commonMain/kotlin" !in filePath
+			}
 			.forEach {
 				ktorfitxCheck(it.classKind == ClassKind.INTERFACE, it) {
 					MESSAGE_INTERFACE_MUST_BE_INTERFACE_BECAUSE_MARKED_API.getString(it.simpleName)

@@ -2,13 +2,12 @@ package cn.ktorfitx.multiplatform.gradle.plugin
 
 import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxMultiplatformMode.DEVELOPMENT
 import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxMultiplatformMode.RELEASE
+import com.google.devtools.ksp.gradle.KspAATask
 import com.google.devtools.ksp.gradle.KspExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
-import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -31,7 +30,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 		target.pluginManager.apply("org.jetbrains.kotlin.multiplatform")
 		target.pluginManager.apply("com.google.devtools.ksp")
 		target.afterEvaluate {
-			this.extensions.configure(KspExtension::class) {
+			extensions.configure(KspExtension::class) {
 				this.arg("ktorfitx.language", extension.language.get().name)
 				this.arg("ktorfitx.multiplatform.gradle.plugin.enabled", "true")
 			}
@@ -39,10 +38,14 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 				DEVELOPMENT -> onDevelopmentMode(extension)
 				RELEASE -> onReleaseMode(extension)
 			}
-			val taskName = "kspCommonMainKotlinMetadata"
-			target.tasks.withType<KotlinCompilationTask<*>>().configureEach {
-				if (this.name != taskName) {
-					dependsOn(taskName)
+			tasks.withType<KspAATask>().configureEach {
+				if (this.name != "kspCommonMainKotlinMetadata") {
+					dependsOn("kspCommonMainKotlinMetadata")
+				}
+			}
+			tasks.withType<KotlinCompilationTask<*>>().configureEach {
+				if (this.name != "kspCommonMainKotlinMetadata") {
+					dependsOn("kspCommonMainKotlinMetadata")
 				}
 			}
 		}
@@ -61,11 +64,11 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 						implementation(project(":multiplatform-mock"))
 					}
 				}
-				kotlin.srcDir(extension.ksp.kspCommonMainGeneratedDir.get())
+				kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
 			}
 		}
-		dependencies {
-			kspCommonMainMetadata(project(":multiplatform-ksp"))
+		configurations.matching { it.name.startsWith("ksp") }.forEach { config ->
+			dependencies.add(config.name, project(":multiplatform-ksp"))
 		}
 	}
 	
@@ -82,20 +85,14 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 						implementation("cn.ktorfitx", "multiplatform-mock")
 					}
 				}
-				kotlin.srcDir(extension.ksp.kspCommonMainGeneratedDir.get())
+				kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
 			}
 		}
-		dependencies {
-			kspCommonMainMetadata("cn.ktorfitx", "multiplatform-ksp")
+		configurations.matching { it.name.startsWith("ksp") }.forEach { config ->
+			dependencies.add(config.name, "$group:$name:$VERSION")
 		}
 	}
 	
 	private fun KotlinDependencyHandler.implementation(group: String, name: String): Dependency? =
 		implementation("$group:$name:$VERSION")
-	
-	private fun DependencyHandler.kspCommonMainMetadata(group: String, name: String): Dependency? =
-		add("kspCommonMainMetadata", "$group:$name:$VERSION")
-	
-	private fun DependencyHandler.kspCommonMainMetadata(project: Project): Dependency? =
-		add("kspCommonMainMetadata", project)
 }

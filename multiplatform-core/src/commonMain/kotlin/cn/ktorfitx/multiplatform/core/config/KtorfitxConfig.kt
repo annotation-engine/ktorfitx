@@ -33,7 +33,7 @@ class KtorfitxConfig internal constructor() {
 		this.token = token
 	}
 	
-	fun <AS : Any> build(): Ktorfitx<AS> {
+	fun build(): Ktorfitx {
 		val block: HttpClientConfig<*>.() -> Unit = {
 			defaultRequest {
 				if (baseUrl != null) {

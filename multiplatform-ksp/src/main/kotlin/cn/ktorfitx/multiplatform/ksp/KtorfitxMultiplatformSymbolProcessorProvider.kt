@@ -22,6 +22,9 @@ internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorPro
 		}
 		val language = environment.options[OPTION_LANGUAGE]!!
 		Language.set(language)
-		return KtorfitxMultiplatformSymbolProcessor(environment.codeGenerator)
+		return KtorfitxMultiplatformSymbolProcessor(
+			codeGenerator = environment.codeGenerator,
+			isCommon = environment.platforms.size > 1
+		)
 	}
 }
