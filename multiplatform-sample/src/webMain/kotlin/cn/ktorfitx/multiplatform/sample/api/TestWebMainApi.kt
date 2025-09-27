@@ -1,17 +1,17 @@
-package com.example.demo
+package cn.ktorfitx.multiplatform.sample.api
 
 import cn.ktorfitx.multiplatform.annotation.Api
 import cn.ktorfitx.multiplatform.annotation.GET
+import cn.ktorfitx.multiplatform.sample.api.impls.testWebMainApi
 import cn.ktorfitx.multiplatform.sample.http.defaultKtorfitx
-import com.example.demo.impls.testApi
 
 @Api
-interface TestApi {
+interface TestWebMainApi {
 	
 	@GET("test01")
 	suspend fun test01(): String
 }
 
-suspend fun a() {
-	defaultKtorfitx.testApi.test01()
+suspend fun testWebMainApi() {
+	defaultKtorfitx.testWebMainApi.test01()
 }

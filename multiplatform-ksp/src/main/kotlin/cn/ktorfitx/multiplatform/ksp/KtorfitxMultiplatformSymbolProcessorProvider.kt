@@ -29,8 +29,10 @@ internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorPro
 		val sourceSetsPaths = Json.parseToJsonElement(environment.options[OPTION_SOURCE_SETS_PATHS]!!)
 			.jsonObject.mapValues { it.value.jsonPrimitive.content }
 		return KtorfitxMultiplatformSymbolProcessor(
+			codeGenerator = environment.codeGenerator,
 			projectPath = environment.options[OPTION_PROJECT_PATH]!!,
-			sourceSetPaths = sourceSetsPaths
+			sourceSetPaths = sourceSetsPaths,
+			isCommon = environment.platforms.size > 1
 		)
 	}
 }
