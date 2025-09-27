@@ -11,11 +11,13 @@ maven-publish = "0.34.0"
 compose-plugin = "1.9.0"
 androidx-activity-compose = "1.11.0"
 logback-classic = "1.5.18"
+kotlinx-serialization-json = "1.9.0"
 
 [libraries]
 # Common
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 
 # Kotlin Multiplatform
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
@@ -72,7 +74,8 @@ multiplatform-ksp = [
     'kotlin-reflect',
     'symbol-processing',
     'symbol-processing-api',
-    'kotlinpoet-ksp'
+    'kotlinpoet-ksp',
+    'kotlinx-serialization-json'
 ]
 
 multiplatform-websockets = [

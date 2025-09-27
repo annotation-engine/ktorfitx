@@ -184,10 +184,6 @@ ktorfitx {
 	mock {
 		enabled = true  // 启用 Mock 功能，默认关闭
 	}
-	
-	ksp {
-		kspCommonMainGeneratedDir = "<custom>"  // 自定义生成目录，默认："build/generated/ksp/metadata/commonMain/kotlin"
-	}
 }
 ```
 

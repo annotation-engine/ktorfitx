@@ -25,6 +25,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 		private const val OPTION_MULTIPLATFORM_GRADLE_PLUGIN_ENABLED = "ktorfitx.multiplatform.gradle.plugin.enabled"
 		private const val OPTION_LANGUAGE = "ktorfitx.language"
 		private const val OPTION_SOURCE_SETS_PATHS = "ktorfitx.sourceSets.paths"
+		private const val OPTION_PROJECT_PATH = "ktorfitx.project.path"
 	}
 	
 	override fun apply(target: Project) = with(target) {
@@ -42,6 +43,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 			val kspExtension = extensions.getByType<KspExtension>()
 			kspExtension.arg(OPTION_LANGUAGE, extension.language.get().name)
 			kspExtension.arg(OPTION_MULTIPLATFORM_GRADLE_PLUGIN_ENABLED, "true")
+			kspExtension.arg(OPTION_PROJECT_PATH, this.projectDir.absolutePath)
 			extensions.getByType<KotlinMultiplatformExtension>().apply {
 				sourceSets.commonMain {
 					dependencies {
@@ -67,13 +69,18 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 					}
 					sourcePaths[this.name] = path
 					this.kotlin.srcDir(path)
+					val json = Json.encodeToString(sourcePaths)
+					kspExtension.arg(OPTION_SOURCE_SETS_PATHS, json)
 				}
-				val json = Json.encodeToString(sourcePaths)
-				kspExtension.arg(OPTION_SOURCE_SETS_PATHS, json)
 			}
 			dependencies {
-				configurations.matching { it.name.startsWith("ksp") }.configureEach {
-					add(this@configureEach.name, "multiplatform-ksp", mode)
+				configurations.matching { it.name.startsWith("ksp") && it.name != "ksp" }.configureEach {
+					add(this.name, "multiplatform-ksp", mode)
+				}
+			}
+			tasks.named { name -> name.startsWith("ksp") }.configureEach {
+				if (name != "kspCommonMainKotlinMetadata") {
+					dependsOn("kspCommonMainKotlinMetadata")
 				}
 			}
 			val isAndroid = gradle.startParameter.taskNames.any { "assemble" in it }
@@ -90,11 +97,6 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 							dependsOn(if (isDebug) "kspDebugKotlinAndroid" else "kspReleaseKotlinAndroid")
 						}
 					}
-				}
-			}
-			tasks.named { name -> name.startsWith("ksp") }.configureEach {
-				if (name != "kspCommonMainKotlinMetadata") {
-					dependsOn("kspCommonMainKotlinMetadata")
 				}
 			}
 		}

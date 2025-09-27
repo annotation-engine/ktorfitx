@@ -21,9 +21,7 @@ gradlePlugin {
 }
 
 dependencies {
-	implementation(libs.ksp)
-	implementation(libs.kotlin.multiplatform)
-	implementation(libs.kotlinx.serialization.json)
+	implementation(libs.bundles.gradle.plugin)
 }
 
 mavenPublishing {
