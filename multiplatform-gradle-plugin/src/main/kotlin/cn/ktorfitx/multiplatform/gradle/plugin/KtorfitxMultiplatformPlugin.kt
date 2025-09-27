@@ -20,7 +20,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 	
 	private companion object {
 		
-		private const val VERSION = "3.3.0-3.2.0"
+		private const val VERSION = "3.3.0-3.1.1"
 		private const val GROUP_NAME = "cn.ktorfitx"
 		
 		private const val OPTION_MULTIPLATFORM_GRADLE_PLUGIN_ENABLED = "ktorfitx.multiplatform.gradle.plugin.enabled"
