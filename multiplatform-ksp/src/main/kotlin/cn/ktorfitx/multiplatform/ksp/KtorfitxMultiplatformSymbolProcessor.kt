@@ -26,13 +26,9 @@ import java.io.OutputStream
 internal class KtorfitxMultiplatformSymbolProcessor(
 	private val codeGenerator: CodeGenerator,
 	private val projectPath: String,
-	private val sourceSetPaths: Map<String, String>,
+	private val sourceSetsVariants: Map<String, String>,
 	private val isCommon: Boolean
 ) : SymbolProcessor {
-	
-	private companion object {
-	
-	}
 	
 	override fun process(resolver: Resolver): List<KSAnnotated> {
 		safeResolver = resolver
@@ -52,6 +48,11 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 		this.getSymbolsWithAnnotation(TypeNames.Api.canonicalName)
 			.filterIsInstance<KSClassDeclaration>()
 			.filter { it.validate() }
+			.filter {
+				if (isCommon) return@filter true
+				val sourceSet = it.getSourceSet() ?: return@filter false
+				!sourceSet.startsWith("common")
+			}
 			.forEach {
 				ktorfitxCheck(it.classKind == ClassKind.INTERFACE, it) {
 					MESSAGE_INTERFACE_MUST_BE_INTERFACE_BECAUSE_MARKED_API.getString(it.simpleName)
@@ -65,28 +66,31 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 				val classModel = it.accept(ApiVisitor, customHttpMethodModels)
 				val fileSpec = ApiKotlinPoet.getFileSpec(classModel)
 				val className = classModel.className
-				val filePath = it.containingFile?.filePath ?: return@forEach
 				createNewFile(
-					filePath = filePath,
+					sourceSet = it.getSourceSet() ?: return@forEach,
 					packageName = className.packageName,
 					fileName = className.simpleName
 				)?.bufferedWriter()?.use(fileSpec::writeTo)
 			}
 	}
 	
-	private fun createNewFile(filePath: String, packageName: String, fileName: String): OutputStream? {
-		val sourceName = filePath.removePrefix("$projectPath/src/").split("/").firstOrNull() ?: return null
-		if ("common" in sourceName && !isCommon) return null
-		return if (isUseCodeGeneratorCreate(sourceName)) {
+	private fun KSClassDeclaration.getSourceSet(): String? {
+		val filePath = this.containingFile?.filePath ?: return null
+		return filePath.removePrefix("$projectPath/src/".replace('/', File.separatorChar))
+			.split(File.separatorChar)
+			.firstOrNull()
+	}
+	
+	private fun createNewFile(sourceSet: String, packageName: String, fileName: String): OutputStream? {
+		return if (isUseCodeGeneratorCreate(sourceSet)) {
 			codeGenerator.createNewFile(
 				dependencies = Dependencies.ALL_FILES,
 				packageName = packageName,
 				fileName = fileName
 			)
 		} else {
-			val sourceSetPath = this.sourceSetPaths[sourceName] ?: error("Can't find source set $sourceName")
-			val separator = File.separatorChar
-			val parent = "${projectPath}$separator$sourceSetPath$separator${packageName.replace('.', separator)}"
+			val variants = this.sourceSetsVariants[sourceSet] ?: error("Can't find source set $sourceSet")
+			val parent = "$projectPath/build/generated/ksp/$variants/$sourceSet/kotlin/${packageName.replace('.', '/')}".replace('/', File.separatorChar)
 			val parentDir = File(parent)
 			if (parentDir.exists() && !parentDir.isDirectory) {
 				parentDir.delete()

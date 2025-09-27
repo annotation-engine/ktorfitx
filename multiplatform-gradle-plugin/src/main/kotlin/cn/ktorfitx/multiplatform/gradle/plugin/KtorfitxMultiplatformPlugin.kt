@@ -13,6 +13,7 @@ import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.project
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
+import org.jetbrains.kotlin.konan.file.File
 
 @Suppress("unused")
 class KtorfitxMultiplatformPlugin : Plugin<Project> {
@@ -24,7 +25,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 		
 		private const val OPTION_MULTIPLATFORM_GRADLE_PLUGIN_ENABLED = "ktorfitx.multiplatform.gradle.plugin.enabled"
 		private const val OPTION_LANGUAGE = "ktorfitx.language"
-		private const val OPTION_SOURCE_SETS_PATHS = "ktorfitx.sourceSets.paths"
+		private const val OPTION_SOURCE_SETS_VARIANTS = "ktorfitx.sourceSets.variants"
 		private const val OPTION_PROJECT_PATH = "ktorfitx.project.path"
 	}
 	
@@ -41,9 +42,9 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 			val websocketsEnabled = extension.websockets.enabled.get()
 			val mockEnabled = extension.mock.enabled.get()
 			val kspExtension = extensions.getByType<KspExtension>()
-			kspExtension.arg(OPTION_LANGUAGE, extension.language.get().name)
-			kspExtension.arg(OPTION_MULTIPLATFORM_GRADLE_PLUGIN_ENABLED, "true")
-			kspExtension.arg(OPTION_PROJECT_PATH, this.projectDir.absolutePath)
+			kspExtension[OPTION_LANGUAGE] = extension.language.get().name
+			kspExtension[OPTION_MULTIPLATFORM_GRADLE_PLUGIN_ENABLED] = true
+			kspExtension[OPTION_PROJECT_PATH] = this.projectDir.absolutePath
 			extensions.getByType<KotlinMultiplatformExtension>().apply {
 				sourceSets.commonMain {
 					dependencies {
@@ -57,20 +58,16 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 						}
 					}
 				}
-				val sourcePaths = mutableMapOf<String, String>()
+				val sourceSetsVariants = mutableMapOf<String, String>()
 				sourceSets.configureEach {
-					val path = when {
-						"common" in this.name -> "build/generated/ksp/metadata/${this.name}/kotlin"
-						this.name.startsWith("android") -> "build/generated/ksp/android/${this.name}/kotlin"
-						else -> {
-							val name = this.name.removeSuffix("Test").removeSuffix("Main")
-							"build/generated/ksp/$name/${this.name}/kotlin"
-						}
+					val sourceSetsVariant = when {
+						this.name.startsWith("common") -> "metadata"
+						this.name.startsWith("android") -> "android"
+						else -> this.name.removeSuffix("Test").removeSuffix("Main")
 					}
-					sourcePaths[this.name] = path
-					this.kotlin.srcDir(path)
-					val json = Json.encodeToString(sourcePaths)
-					kspExtension.arg(OPTION_SOURCE_SETS_PATHS, json)
+					sourceSetsVariants[this.name] = sourceSetsVariant
+					this.kotlin.srcDir("build/generated/ksp/$sourceSetsVariant/${this.name}/kotlin".replace('/', File.separatorChar))
+					kspExtension[OPTION_SOURCE_SETS_VARIANTS] = Json.encodeToString(sourceSetsVariants)
 				}
 			}
 			dependencies {
@@ -100,6 +97,10 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 				}
 			}
 		}
+	}
+	
+	private inline operator fun <reified T : Any> KspExtension.set(key: String, value: T) {
+		this.arg(key, value.toString())
 	}
 	
 	private fun KotlinDependencyHandler.implementation(path: String, mode: KtorfitxMultiplatformMode): Dependency? {

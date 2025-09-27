@@ -16,7 +16,7 @@ internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorPro
 		
 		private const val OPTION_MULTIPLATFORM_GRADLE_PLUGIN_ENABLED = "ktorfitx.multiplatform.gradle.plugin.enabled"
 		private const val OPTION_LANGUAGE = "ktorfitx.language"
-		private const val OPTION_SOURCE_SETS_PATHS = "ktorfitx.sourceSets.paths"
+		private const val OPTION_SOURCE_SETS_VARIANTS = "ktorfitx.sourceSets.variants"
 		private const val OPTION_PROJECT_PATH = "ktorfitx.project.path"
 	}
 	
@@ -26,12 +26,12 @@ internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorPro
 		}
 		kspLogger = environment.logger
 		Language.set(environment.options[OPTION_LANGUAGE]!!)
-		val sourceSetsPaths = Json.parseToJsonElement(environment.options[OPTION_SOURCE_SETS_PATHS]!!)
+		val sourceSetsVariants = Json.parseToJsonElement(environment.options[OPTION_SOURCE_SETS_VARIANTS]!!)
 			.jsonObject.mapValues { it.value.jsonPrimitive.content }
 		return KtorfitxMultiplatformSymbolProcessor(
 			codeGenerator = environment.codeGenerator,
 			projectPath = environment.options[OPTION_PROJECT_PATH]!!,
-			sourceSetPaths = sourceSetsPaths,
+			sourceSetsVariants = sourceSetsVariants,
 			isCommon = environment.platforms.size > 1
 		)
 	}
