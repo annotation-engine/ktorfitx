@@ -1,10 +1,12 @@
 package cn.ktorfitx.server.gradle.plugin
 
+import cn.ktorfitx.server.gradle.plugin.KtorfitxServerMode.DEVELOPMENT
+import cn.ktorfitx.server.gradle.plugin.KtorfitxServerMode.RELEASE
 import com.google.devtools.ksp.gradle.KspExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
-import org.gradle.api.artifacts.ProjectDependency
+import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
@@ -16,6 +18,7 @@ class KtorfitxServerPlugin : Plugin<Project> {
 	private companion object {
 		
 		private const val VERSION = "3.3.0-3.1.1"
+		private const val GROUP_NAME = "cn.ktorfitx"
 		
 		private const val OPTION_SERVER_GRADLE_PLUGIN_ENABLED = "ktorfitx.server.gradle.plugin.enabled"
 		private const val OPTION_GENERATE_PACKAGE_NAME = "ktorfitx.generate.packageName"
@@ -24,13 +27,15 @@ class KtorfitxServerPlugin : Plugin<Project> {
 		private const val OPTION_LANGUAGE = "ktorfitx.language"
 	}
 	
-	override fun apply(target: Project) {
-		target.pluginManager.apply("com.google.devtools.ksp")
-		val extension = target.extensions.create("ktorfitx", KtorfitxServerExtension::class.java)
-		target.dependencies {
-			addServerKspProvider(extension)
+	override fun apply(target: Project) = with(target) {
+		if (!pluginManager.hasPlugin("com.google.devtools.ksp")) {
+			error("Please add the \"com.google.devtools.ksp\" Gradle Plugin.")
 		}
-		target.afterEvaluate {
+		val extension = extensions.create("ktorfitx", KtorfitxServerExtension::class.java)
+		dependencies {
+			ksp("server-ksp", extension.mode)
+		}
+		afterEvaluate {
 			this.extensions.configure(KspExtension::class) {
 				this.arg(OPTION_GENERATE_PACKAGE_NAME, extension.generate.packageName.getOrElse("$group.generated"))
 				this.arg(OPTION_GENERATE_FILE_NAME, extension.generate.fileName.get().removeSuffix(".kt"))
@@ -38,54 +43,38 @@ class KtorfitxServerPlugin : Plugin<Project> {
 				this.arg(OPTION_LANGUAGE, extension.language.get().name)
 				this.arg(OPTION_SERVER_GRADLE_PLUGIN_ENABLED, true.toString())
 			}
-			when (extension.mode.get()) {
-				KtorfitxServerMode.RELEASE -> onReleaseMode(extension)
-				KtorfitxServerMode.DEVELOPMENT -> onDevelopmentMode(extension)
+			val mode = extension.mode.get()
+			val authEnabled = extension.auth.enabled.get()
+			val websocketsEnabled = extension.websockets.enabled.get()
+			dependencies {
+				implementation("server-core", mode)
+				implementation("server-annotation", mode)
+				if (authEnabled) {
+					implementation("server-auth", mode)
+				}
+				if (websocketsEnabled) {
+					implementation("server-websockets", mode)
+				}
 			}
 		}
 	}
 	
-	private fun Project.onReleaseMode(
-		extension: KtorfitxServerExtension,
-	) {
-		dependencies {
-			implementation("cn.ktorfitx", "server-core")
-			implementation("cn.ktorfitx", "server-annotation")
-			if (extension.auth.enabled.get()) {
-				implementation("cn.ktorfitx", "server-auth")
-			}
-			if (extension.websockets.enabled.get()) {
-				implementation("cn.ktorfitx", "server-websockets")
-			}
+	private operator fun <T : Any> KspExtension.set(key: String, value: T) {
+		this.arg(key, value.toString())
+	}
+	
+	private fun DependencyHandlerScope.implementation(path: String, mode: KtorfitxServerMode): Dependency? {
+		return when (mode) {
+			DEVELOPMENT -> this.add("implementation", project(":$path"))
+			RELEASE -> this.add("implementation", "$GROUP_NAME:$path:$VERSION")
 		}
 	}
 	
-	private fun Project.onDevelopmentMode(
-		extension: KtorfitxServerExtension,
-	) {
-		dependencies {
-			implementation(project(":server-core"))
-			implementation(project(":server-annotation"))
-			if (extension.auth.enabled.get()) {
-				implementation(project(":server-auth"))
-			}
-			if (extension.websockets.enabled.get()) {
-				implementation(project(":server-websockets"))
-			}
-		}
-	}
-	
-	private fun DependencyHandlerScope.implementation(group: String, name: String): Dependency? =
-		add("implementation", "$group:$name:$VERSION")
-	
-	private fun DependencyHandlerScope.implementation(project: ProjectDependency): Dependency? =
-		add("implementation", project)
-	
-	private fun DependencyHandlerScope.addServerKspProvider(extension: KtorfitxServerExtension) {
-		addProvider("ksp", extension.mode.map {
+	private fun DependencyHandlerScope.ksp(path: String, mode: Property<KtorfitxServerMode>) {
+		this.addProvider("ksp", mode.map {
 			when (it) {
-				KtorfitxServerMode.DEVELOPMENT -> project(":server-ksp")
-				KtorfitxServerMode.RELEASE -> "cn.ktorfitx:server-ksp:$VERSION"
+				DEVELOPMENT -> project(":$path")
+				RELEASE -> "$GROUP_NAME:$path:$VERSION"
 			}
 		})
 	}

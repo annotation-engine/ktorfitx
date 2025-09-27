@@ -14,6 +14,7 @@ plugins {
 	alias(libs.plugins.jetbrains.compose)
 	alias(libs.plugins.compose.compiler)
 	alias(libs.plugins.kotlin.serialization)
+	alias(libs.plugins.ksp)
 	id("cn.ktorfitx.multiplatform")
 }
 
@@ -58,7 +59,6 @@ kotlin {
 						outputFileName = "sampleApp.js"
 					}
 				}
-				nodejs()
 				useEsModules()
 				binaries.executable()
 			}
@@ -80,7 +80,6 @@ kotlin {
 						}
 					}
 				}
-				nodejs()
 				useEsModules()
 				binaries.executable()
 			}
@@ -99,7 +98,6 @@ kotlin {
 		
 		if (Platform.ANDROID in ktorfitxPlatforms) {
 			androidMain.dependencies {
-				implementation(compose.preview)
 				implementation(libs.androidx.activity.compose)
 			}
 		}
@@ -135,7 +133,7 @@ android {
 		}
 	}
 	buildTypes {
-		getByName("release") {
+		release {
 			isMinifyEnabled = false
 		}
 	}

@@ -1,0 +1,18 @@
+[versions]
+kotlin = "2.2.20"
+ksp = "2.2.20-2.0.3"
+maven-publish = "0.34.0"
+agp = "8.12.3"
+
+[libraries]
+ksp = { group = "com.google.devtools.ksp", name = "symbol-processing-gradle-plugin", version.ref = "ksp" }
+android-gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+
+[plugins]
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }
+
+[bundles]
+gradle-plugin = [
+    'ksp',
+    'android-gradle'
+]

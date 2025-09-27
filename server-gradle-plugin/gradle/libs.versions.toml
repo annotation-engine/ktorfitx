@@ -3,7 +3,6 @@ ksp = "2.2.20-2.0.3"
 maven-publish = "0.34.0"
 
 [libraries]
-# Common
 ksp = { group = "com.google.devtools.ksp", name = "symbol-processing-gradle-plugin", version.ref = "ksp" }
 
 [plugins]

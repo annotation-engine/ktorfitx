@@ -26,8 +26,7 @@ import java.io.OutputStream
 internal class KtorfitxMultiplatformSymbolProcessor(
 	private val codeGenerator: CodeGenerator,
 	private val projectPath: String,
-	private val sourceSetsVariants: Map<String, String>,
-	private val isCommon: Boolean
+	private val model: KtorfitxModel
 ) : SymbolProcessor {
 	
 	override fun process(resolver: Resolver): List<KSAnnotated> {
@@ -49,7 +48,9 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 			.filterIsInstance<KSClassDeclaration>()
 			.filter { it.validate() }
 			.filter {
-				if (isCommon) return@filter true
+				if (model is OnlyAndroidModel) return@filter true
+				model as KotlinMultiplatformModel
+				if (model.isCommon) return@filter true
 				val sourceSet = it.getSourceSet() ?: return@filter false
 				!sourceSet.startsWith("common")
 			}
@@ -82,15 +83,17 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 	}
 	
 	private fun createNewFile(sourceSet: String, packageName: String, fileName: String): OutputStream? {
-		return if (isUseCodeGeneratorCreate(sourceSet)) {
+		return if (model is OnlyAndroidModel || isUseCodeGeneratorCreate(sourceSet)) {
 			codeGenerator.createNewFile(
 				dependencies = Dependencies.ALL_FILES,
 				packageName = packageName,
 				fileName = fileName
 			)
 		} else {
-			val variants = this.sourceSetsVariants[sourceSet] ?: error("Can't find source set $sourceSet")
-			val parent = "$projectPath/build/generated/ksp/$variants/$sourceSet/kotlin/${packageName.replace('.', '/')}".replace('/', File.separatorChar)
+			model as KotlinMultiplatformModel
+			val variants = model.sourceSetsVariants[sourceSet] ?: error("Can't find source set $sourceSet")
+			val parent = "$projectPath/build/generated/ksp/$variants/$sourceSet/kotlin/".replace('/', File.separatorChar) +
+					packageName.replace('.', File.separatorChar)
 			val parentDir = File(parent)
 			if (parentDir.exists() && !parentDir.isDirectory) {
 				parentDir.delete()
@@ -107,7 +110,7 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 		}
 	}
 	
-	private val targetKeywords = listOf("common", "X64", "Arm", "js", "wasmJs", "android")
+	private val targetKeywords = arrayOf("common", "X64", "Arm", "js", "wasmJs", "android", "desktop")
 	
 	private fun isUseCodeGeneratorCreate(sourceName: String): Boolean {
 		return targetKeywords.any { it in sourceName }

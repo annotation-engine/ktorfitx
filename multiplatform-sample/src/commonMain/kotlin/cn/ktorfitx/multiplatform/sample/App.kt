@@ -18,40 +18,43 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import cn.ktorfitx.multiplatform.sample.generated.resources.Res
 import cn.ktorfitx.multiplatform.sample.generated.resources.logo
 import org.jetbrains.compose.resources.painterResource
+import kotlin.math.pow
+import kotlin.math.round
 import kotlin.math.sqrt
 
 @Composable
 fun App() {
-	BoxWithConstraints(
+	var scale by remember { mutableFloatStateOf(1f) }
+	val density = LocalDensity.current
+	Box(
 		modifier = Modifier
 			.fillMaxSize()
 			.background(Color(0xFF0B0F1A))
-	) {
-		ParticleInteractiveBackground()
-		
-		val scale by remember(maxWidth, maxHeight) {
-			derivedStateOf {
-				val scale = maxWidth / maxHeight
-				if (scale > 350f / 500f) {
-					maxHeight / 500.dp
+			.onGloballyPositioned {
+				val size = it.size.toSize()
+				scale = if (size.width / size.height > 350f / 500f) {
+					size.height / with(density) { 500.dp.toPx() }
 				} else {
-					maxWidth / 350.dp
+					size.width / with(density) { 350.dp.toPx() }
 				}
 			}
-		}
+	) {
+		ParticleInteractiveBackground()
 		Box(
 			modifier = Modifier
 				.align(Alignment.Center)
 				.scale(scale)
 				.size(350.dp, 500.dp)
-				.padding(24.dp)
+				.padding(16.dp)
 		) {
 			FpsCounter(
 				modifier = Modifier
@@ -61,7 +64,7 @@ fun App() {
 			Column(
 				modifier = Modifier
 					.fillMaxSize()
-					.padding(top = 24.dp, bottom = 12.dp),
+					.padding(12.dp),
 				verticalArrangement = Arrangement.SpaceBetween
 			) {
 				Column(
@@ -86,7 +89,7 @@ fun App() {
 						)
 						Spacer(Modifier.width(12.dp))
 						Text(
-							text = "v3.3.0-3.1.2",
+							text = "v3.3.0-3.2.0",
 							fontSize = 14.sp,
 							fontWeight = FontWeight.Normal,
 							color = Color(0xFFB0BFD9),
@@ -120,18 +123,38 @@ fun App() {
 					LibVersionRow("ksp", "v2.2.20-2.0.3")
 				}
 				
-				Text(
-					text = "Apache License 2.0",
-					fontSize = 11.sp,
-					color = Color(0xFF7A87A4)
-				)
+				Row(
+					modifier = Modifier
+						.fillMaxWidth(),
+					verticalAlignment = Alignment.CenterVertically
+				) {
+					Text(
+						text = "• Apache License 2.0",
+						fontSize = 12.sp,
+						color = Color(0xFF7A87A4)
+					)
+					Spacer(Modifier.weight(1f))
+					Text(
+						text = "Kotlin Multiplatform",
+						modifier = Modifier
+							.background(Color(0x66171E2E), shape = RoundedCornerShape(12.dp))
+							.border(
+								width = 1.dp,
+								color = Color(0xFF38425B),
+								shape = RoundedCornerShape(6.dp)
+							)
+							.padding(horizontal = 8.dp, vertical = 4.dp),
+						fontSize = 12.sp,
+						color = Color(0xFF7A87A4)
+					)
+				}
 			}
 		}
 	}
 }
 
 @Composable
-fun LibVersionRow(name: String, version: String) {
+private fun LibVersionRow(name: String, version: String) {
 	Row(
 		modifier = Modifier.fillMaxWidth(),
 		verticalAlignment = Alignment.CenterVertically
@@ -153,7 +176,7 @@ fun LibVersionRow(name: String, version: String) {
 }
 
 @Composable
-fun CanvasBackgroundLines() {
+private fun CanvasBackgroundLines() {
 	Canvas(modifier = Modifier.fillMaxSize()) {
 		val strokeColor = Color(0x992B3A52)
 		val strokeWidth = 1.dp.toPx()
@@ -233,7 +256,7 @@ fun CanvasBackgroundLines() {
 }
 
 @Composable
-fun ParticleInteractiveBackground() {
+private fun ParticleInteractiveBackground() {
 	BoxWithConstraints {
 		val density = LocalDensity.current
 		val particles = remember(maxWidth, maxHeight) {
@@ -268,7 +291,7 @@ fun ParticleInteractiveBackground() {
 private val Primary = Color(0xFF3DA9FC)
 
 @Composable
-fun MouseTrackingBox(
+private fun MouseTrackingBox(
 	onMove: (Offset) -> Unit
 ) {
 	Box(
@@ -288,9 +311,9 @@ fun MouseTrackingBox(
 	)
 }
 
-data class Particle(val position: Offset)
+private data class Particle(val position: Offset)
 
-fun generateHexagonalParticles(
+private fun generateHexagonalParticles(
 	width: Float,
 	height: Float,
 	radius: Float,
@@ -318,30 +341,54 @@ fun generateHexagonalParticles(
 	return particles
 }
 
+private val frameDurations = ArrayDeque<Long>()
+private var lastFrameTime = -1L
+private var lastRefreshFps = -1L
 @Composable
-fun FpsCounter(modifier: Modifier = Modifier) {
-	var fps by remember { mutableStateOf(0) }
-	var lastFrameTime by remember { mutableStateOf(0L) }
-	
+private fun FpsCounter(modifier: Modifier = Modifier) {
+	var fps by remember { mutableStateOf("0") }
 	LaunchedEffect(Unit) {
 		while (true) {
 			withFrameNanos { frameTime ->
-				if (lastFrameTime > 0) {
-					val delta = frameTime - lastFrameTime
-					fps = (1_000_000_000.0 / delta).toInt()
+				if (lastFrameTime == -1L) {
+					lastFrameTime = frameTime
+					return@withFrameNanos
 				}
+				val duration = frameTime - lastFrameTime
 				lastFrameTime = frameTime
+				frameDurations += duration
+				if (frameDurations.size > 30) {
+					frameDurations.removeFirst()
+				}
+				val avgDuration = frameDurations.average()
+				if (lastRefreshFps == -1L) {
+					lastRefreshFps = frameTime
+					return@withFrameNanos
+				}
+				if (frameTime - lastRefreshFps > 250_000_000) {
+					fps = (if (avgDuration > 0) 1_000_000_000.0 / avgDuration else 0.0).format(1)
+					lastRefreshFps = frameTime
+				}
 			}
 		}
 	}
-	
 	Text(
 		text = "FPS: $fps",
-		color = Color.White,
-		fontSize = 14.sp,
-		fontWeight = FontWeight.Normal,
 		modifier = modifier
-			.background(Color(0x66000000), shape = RoundedCornerShape(6.dp))
-			.padding(horizontal = 8.dp, vertical = 4.dp)
+			.background(Color(0x66171E2E), shape = RoundedCornerShape(12.dp))
+			.border(
+				width = 1.dp,
+				color = Color(0xFF38425B),
+				shape = RoundedCornerShape(8.dp)
+			)
+			.padding(horizontal = 8.dp, vertical = 6.dp),
+		color = Color.White,
+		fontSize = 13.sp,
+		fontWeight = FontWeight.Normal,
 	)
+}
+
+private fun Double.format(digits: Int): String {
+	val factor = 10.0.pow(digits)
+	return (round(this * factor) / factor).toString()
 }

@@ -165,6 +165,7 @@ KSP `2.2.20-2.0.3`
 ### Kotlin Multiplatform
 
 - 请在 Kotlin Multiplatform 模块中的 build.gradle.kts 配置一下内容，请按照实际情况编写
+- 注意：此处不包含 ktor 的依赖，请自行添加
 
 ```kotlin
 plugins {

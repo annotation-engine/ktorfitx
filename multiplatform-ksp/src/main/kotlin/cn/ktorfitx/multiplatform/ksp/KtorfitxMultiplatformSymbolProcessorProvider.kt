@@ -14,25 +14,42 @@ internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorPro
 	
 	private companion object {
 		
-		private const val OPTION_MULTIPLATFORM_GRADLE_PLUGIN_ENABLED = "ktorfitx.multiplatform.gradle.plugin.enabled"
+		private const val OPTION_IS_MULTIPLATFORM = "ktorfitx.isMultiplatform"
 		private const val OPTION_LANGUAGE = "ktorfitx.language"
 		private const val OPTION_SOURCE_SETS_VARIANTS = "ktorfitx.sourceSets.variants"
 		private const val OPTION_PROJECT_PATH = "ktorfitx.project.path"
 	}
 	
 	override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-		if (!environment.options[OPTION_MULTIPLATFORM_GRADLE_PLUGIN_ENABLED].toBoolean()) {
-			ktorfitxConfigError("Please add the \"cn.ktorfitx.multiplatform\" Gradle plugin.")
-		}
+		val isMultiplatform = environment.options[OPTION_IS_MULTIPLATFORM]?.toBoolean()
+			?: ktorfitxConfigError("Please add the \"cn.ktorfitx.multiplatform\" or \"cn.ktorfitx.android\" Gradle plugin.")
 		kspLogger = environment.logger
 		Language.set(environment.options[OPTION_LANGUAGE]!!)
-		val sourceSetsVariants = Json.parseToJsonElement(environment.options[OPTION_SOURCE_SETS_VARIANTS]!!)
-			.jsonObject.mapValues { it.value.jsonPrimitive.content }
+		val model = when (isMultiplatform) {
+			true -> {
+				val sourceSetsVariants = Json.parseToJsonElement(environment.options[OPTION_SOURCE_SETS_VARIANTS]!!)
+					.jsonObject.mapValues { it.value.jsonPrimitive.content }
+				KotlinMultiplatformModel(
+					sourceSetsVariants = sourceSetsVariants,
+					isCommon = environment.platforms.size > 1
+				)
+			}
+			
+			false -> OnlyAndroidModel
+		}
 		return KtorfitxMultiplatformSymbolProcessor(
 			codeGenerator = environment.codeGenerator,
 			projectPath = environment.options[OPTION_PROJECT_PATH]!!,
-			sourceSetsVariants = sourceSetsVariants,
-			isCommon = environment.platforms.size > 1
+			model = model
 		)
 	}
 }
+
+internal sealed interface KtorfitxModel
+
+internal class KotlinMultiplatformModel(
+	val sourceSetsVariants: Map<String, String>,
+	val isCommon: Boolean
+) : KtorfitxModel
+
+internal object OnlyAndroidModel : KtorfitxModel

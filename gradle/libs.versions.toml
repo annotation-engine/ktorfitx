@@ -9,9 +9,12 @@ ksp = "2.2.20-2.0.3"
 kotlinpoet-ksp = "2.2.0"
 maven-publish = "0.34.0"
 compose-plugin = "1.9.0"
-androidx-activity-compose = "1.11.0"
 logback-classic = "1.5.18"
 kotlinx-serialization-json = "1.9.0"
+androidx-activity-compose = "1.11.0"
+androidx-compose = "1.9.2"
+androidx-material3 = "1.4.0"
+
 
 [libraries]
 # Common
@@ -29,7 +32,13 @@ ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-conte
 symbol-processing-api = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
 symbol-processing = { group = "com.google.devtools.ksp", name = "symbol-processing", version.ref = "ksp" }
 kotlinpoet-ksp = { group = "com.squareup", name = "kotlinpoet-ksp", version.ref = "kotlinpoet-ksp" }
+
+# Android
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity-compose" }
+androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "androidx-compose" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "androidx-compose" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "androidx-material3" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "androidx-compose" }
 
 # Ktor Server
 ktor-server-core = { group = "io.ktor", name = "ktor-server-core-jvm", version.ref = "ktor" }
@@ -51,6 +60,7 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 
 [bundles]
 common-ksp-util = [
@@ -58,6 +68,21 @@ common-ksp-util = [
     'symbol-processing',
     'symbol-processing-api',
     'kotlinpoet-ksp'
+]
+
+android-sample = [
+    'androidx-activity-compose',
+    'androidx-compose-runtime',
+    'androidx-compose-ui',
+    'androidx-compose-foundation',
+    'androidx-compose-material3',
+    'ktor-client-core',
+    'ktor-client-logging',
+    'ktor-client-cio',
+    'ktor-client-websockets',
+    'ktor-client-serialization',
+    'ktor-client-content-negotiation',
+    'ktor-serialization-kotlinx-json'
 ]
 
 multiplatform-core = [

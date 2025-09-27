@@ -23,7 +23,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 		private const val VERSION = "3.3.0-3.1.1"
 		private const val GROUP_NAME = "cn.ktorfitx"
 		
-		private const val OPTION_MULTIPLATFORM_GRADLE_PLUGIN_ENABLED = "ktorfitx.multiplatform.gradle.plugin.enabled"
+		private const val OPTION_IS_MULTIPLATFORM = "ktorfitx.isMultiplatform"
 		private const val OPTION_LANGUAGE = "ktorfitx.language"
 		private const val OPTION_SOURCE_SETS_VARIANTS = "ktorfitx.sourceSets.variants"
 		private const val OPTION_PROJECT_PATH = "ktorfitx.project.path"
@@ -32,10 +32,10 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 	override fun apply(target: Project) = with(target) {
 		val extension = target.extensions.create("ktorfitx", KtorfitxMultiplatformExtension::class.java)
 		if (!pluginManager.hasPlugin("org.jetbrains.kotlin.multiplatform")) {
-			pluginManager.apply("org.jetbrains.kotlin.multiplatform")
+			error("Please add the \"org.jetbrains.kotlin.multiplatform\" Gradle Plugin.")
 		}
 		if (!pluginManager.hasPlugin("com.google.devtools.ksp")) {
-			pluginManager.apply("com.google.devtools.ksp")
+			error("Please add the \"com.google.devtools.ksp\" Gradle Plugin.")
 		}
 		afterEvaluate {
 			val mode = extension.mode.get()
@@ -43,7 +43,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 			val mockEnabled = extension.mock.enabled.get()
 			val kspExtension = extensions.getByType<KspExtension>()
 			kspExtension[OPTION_LANGUAGE] = extension.language.get().name
-			kspExtension[OPTION_MULTIPLATFORM_GRADLE_PLUGIN_ENABLED] = true
+			kspExtension[OPTION_IS_MULTIPLATFORM] = true
 			kspExtension[OPTION_PROJECT_PATH] = this.projectDir.absolutePath
 			extensions.getByType<KotlinMultiplatformExtension>().apply {
 				sourceSets.commonMain {

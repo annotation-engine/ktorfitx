@@ -47,7 +47,7 @@ mavenPublishing {
 	
 	pom {
 		name.set("multiplatform-ksp")
-		description.set("Ktorfitx 基于 KSP2 的代码生成框架，在 Kotlin Multiplatform 中是 RESTful API 框架，在 Ktor Server 中是 路由以及参数解析框架")
+		description.set("Ktorfitx 是一款专为 Ktor 设计的代码生成框架，致力于减少样板代码，为 Ktor Client 和 Ktor Server 提供代码生成服务，支持 Kotlin Multiplatform")
 		inceptionYear.set("2025")
 		url.set("https://github.com/annotation-engine/ktorfitx")
 		licenses {
