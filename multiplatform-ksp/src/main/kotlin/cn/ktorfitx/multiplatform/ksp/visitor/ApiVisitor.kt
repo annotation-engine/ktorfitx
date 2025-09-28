@@ -120,8 +120,7 @@ internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassMo
 		val classNames = availableRoutes.filter { hasAnnotation(it) }
 		ktorfitxCheck(classNames.size <= 1, this) {
 			val useAnnotations = classNames.joinToString { "@${it.simpleName}" }
-			MESSAGE_FUNCTION_ONLY_ALLOW_USE_ONE_REQUEST_TYPE_ANNOTATION
-				(simpleName, useAnnotations, if (classNames.size > 1) "s" else "")
+			MESSAGE_FUNCTION_ONLY_ALLOW_USE_ONE_REQUEST_TYPE_ANNOTATION(simpleName, useAnnotations, if (classNames.size > 1) "s" else "")
 		}
 		ktorfitxCheck(classNames.size == 1, this) {
 			MESSAGE_FUNCTION_NOT_USE_ROUTE_ANNOTATION(simpleName)
