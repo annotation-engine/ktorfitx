@@ -11,7 +11,7 @@ internal class KtorfitxServerSymbolProcessorProvider : SymbolProcessorProvider {
 	
 	private companion object {
 		
-		private const val OPTION_SERVER_GRADLE_PLUGIN_ENABLED = "ktorfitx.server.gradle.plugin.enabled"
+		private const val OPTION_IS_SERVER = "ktorfitx.isServer"
 		private const val OPTION_GENERATE_PACKAGE_NAME = "ktorfitx.generate.packageName"
 		private const val OPTION_GENERATE_FILE_NAME = "ktorfitx.generate.fileName"
 		private const val OPTION_GENERATE_FUN_NAME = "ktorfitx.generate.funName"
@@ -19,7 +19,7 @@ internal class KtorfitxServerSymbolProcessorProvider : SymbolProcessorProvider {
 	}
 	
 	override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-		if (!environment.options[OPTION_SERVER_GRADLE_PLUGIN_ENABLED].toBoolean()) {
+		if (!environment.options[OPTION_IS_SERVER].toBoolean()) {
 			ktorfitxConfigError("Please add the \"cn.ktorfitx.server\" Gradle Plugin.")
 		}
 		kspLogger = environment.logger

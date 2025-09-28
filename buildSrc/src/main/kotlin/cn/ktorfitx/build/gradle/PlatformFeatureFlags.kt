@@ -19,6 +19,7 @@ private fun String.toConstantCase(): String =
 
 enum class Platform {
 	ANDROID,
+	ANDROID_NATIVE,
 	IOS,
 	DESKTOP,
 	MACOS,
@@ -34,6 +35,7 @@ class PlatformFeatureFlags internal constructor(
 	private val platforms: List<Platform>
 ) {
 	val androidEnabled get() = Platform.ANDROID in platforms
+	val androidNativeEnabled get() = Platform.ANDROID_NATIVE in platforms
 	val iosEnabled get() = Platform.IOS in platforms
 	val desktopEnabled get() = Platform.DESKTOP in platforms
 	val macosEnabled get() = Platform.MACOS in platforms

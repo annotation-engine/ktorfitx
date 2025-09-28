@@ -8,8 +8,8 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.DependencyHandlerScope
-import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.project
 
 @Suppress("unused")
@@ -18,9 +18,12 @@ class KtorfitxServerPlugin : Plugin<Project> {
 	private companion object {
 		
 		private const val VERSION = "3.3.0-3.1.1"
+		private const val KTOR_VERSION = "3.3.0"
+		private const val KSP_VERSION = "2.2.20-2.0.3"
+		
 		private const val GROUP_NAME = "cn.ktorfitx"
 		
-		private const val OPTION_SERVER_GRADLE_PLUGIN_ENABLED = "ktorfitx.server.gradle.plugin.enabled"
+		private const val OPTION_IS_SERVER = "ktorfitx.isServer"
 		private const val OPTION_GENERATE_PACKAGE_NAME = "ktorfitx.generate.packageName"
 		private const val OPTION_GENERATE_FILE_NAME = "ktorfitx.generate.fileName"
 		private const val OPTION_GENERATE_FUN_NAME = "ktorfitx.generate.funName"
@@ -28,20 +31,37 @@ class KtorfitxServerPlugin : Plugin<Project> {
 	}
 	
 	override fun apply(target: Project) = with(target) {
-		if (!pluginManager.hasPlugin("com.google.devtools.ksp")) {
-			error("Please add the \"com.google.devtools.ksp\" Gradle Plugin.")
-		}
 		val extension = extensions.create("ktorfitx", KtorfitxServerExtension::class.java)
 		dependencies {
 			ksp("server-ksp", extension.mode)
 		}
 		afterEvaluate {
-			this.extensions.configure(KspExtension::class) {
-				this.arg(OPTION_GENERATE_PACKAGE_NAME, extension.generate.packageName.getOrElse("$group.generated"))
-				this.arg(OPTION_GENERATE_FILE_NAME, extension.generate.fileName.get().removeSuffix(".kt"))
-				this.arg(OPTION_GENERATE_FUN_NAME, extension.generate.funName.get())
-				this.arg(OPTION_LANGUAGE, extension.language.get().name)
-				this.arg(OPTION_SERVER_GRADLE_PLUGIN_ENABLED, true.toString())
+			val language = extension.language.get()
+			languageLocal.set(language)
+			
+			if (!pluginManager.hasPlugin("com.google.devtools.ksp")) {
+				error(MISSING_GRADLE_PLUGIN("com.google.devtools.ksp"))
+			}
+			
+			val hasKtorServerCore = configurations.any {
+				val dependency = it.dependencies.find { it.group == "io.ktor" && it.name.startsWith("ktor-server-core") }
+				if (dependency != null) {
+					if (dependency.version != KTOR_VERSION) {
+						VERSION_NOT_MATCH("${dependency.group}:${dependency.name}", dependency.version, KTOR_VERSION)
+					}
+					true
+				} else false
+			}
+			if (!hasKtorServerCore) {
+				error(MISSING_DEPENDENCIES("io.ktor:ktor-server-core", KTOR_VERSION))
+			}
+			
+			extensions.getByType<KspExtension>().apply {
+				this[OPTION_GENERATE_PACKAGE_NAME] = extension.generate.packageName.getOrElse("$group.generated")
+				this[OPTION_GENERATE_FILE_NAME] = extension.generate.fileName.get().removeSuffix(".kt")
+				this[OPTION_GENERATE_FUN_NAME] = extension.generate.funName.get()
+				this[OPTION_LANGUAGE] = language.name
+				this[OPTION_IS_SERVER] = true
 			}
 			val mode = extension.mode.get()
 			val authEnabled = extension.auth.enabled.get()

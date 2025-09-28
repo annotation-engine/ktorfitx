@@ -21,6 +21,8 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 	private companion object {
 		
 		private const val VERSION = "3.3.0-3.1.1"
+		private const val KTOR_VERSION = "3.3.0"
+		
 		private const val GROUP_NAME = "cn.ktorfitx"
 		
 		private const val OPTION_IS_MULTIPLATFORM = "ktorfitx.isMultiplatform"
@@ -31,20 +33,38 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 	
 	override fun apply(target: Project) = with(target) {
 		val extension = target.extensions.create("ktorfitx", KtorfitxMultiplatformExtension::class.java)
-		if (!pluginManager.hasPlugin("org.jetbrains.kotlin.multiplatform")) {
-			error("Please add the \"org.jetbrains.kotlin.multiplatform\" Gradle Plugin.")
-		}
-		if (!pluginManager.hasPlugin("com.google.devtools.ksp")) {
-			error("Please add the \"com.google.devtools.ksp\" Gradle Plugin.")
-		}
 		afterEvaluate {
+			val language = extension.language.get()
+			languageLocal.set(language)
+			
+			if (!pluginManager.hasPlugin("org.jetbrains.kotlin.multiplatform")) {
+				error(MISSING_GRADLE_PLUGIN("org.jetbrains.kotlin.multiplatform"))
+			}
+			if (!pluginManager.hasPlugin("com.google.devtools.ksp")) {
+				error(MISSING_GRADLE_PLUGIN("com.google.devtools.ksp"))
+			}
+			
+			val hasKtorClientCore = configurations.any {
+				val dependency = it.dependencies.find { it.group == "io.ktor" && it.name.startsWith("ktor-client-core") }
+				if (dependency != null) {
+					if (dependency.version != KTOR_VERSION) {
+						VERSION_NOT_MATCH("${dependency.group}:${dependency.name}", dependency.version, KTOR_VERSION)
+					}
+					true
+				} else false
+			}
+			if (!hasKtorClientCore) {
+				error(MISSING_DEPENDENCIES("io.ktor:ktor-client-core", KTOR_VERSION))
+			}
+			
 			val mode = extension.mode.get()
 			val websocketsEnabled = extension.websockets.enabled.get()
 			val mockEnabled = extension.mock.enabled.get()
-			val kspExtension = extensions.getByType<KspExtension>()
-			kspExtension[OPTION_LANGUAGE] = extension.language.get().name
-			kspExtension[OPTION_IS_MULTIPLATFORM] = true
-			kspExtension[OPTION_PROJECT_PATH] = this.projectDir.absolutePath
+			val kspExtension = extensions.getByType<KspExtension>().apply {
+				this[OPTION_LANGUAGE] = language.name
+				this[OPTION_IS_MULTIPLATFORM] = true
+				this[OPTION_PROJECT_PATH] = projectDir.absolutePath
+			}
 			extensions.getByType<KotlinMultiplatformExtension>().apply {
 				sourceSets.commonMain {
 					dependencies {

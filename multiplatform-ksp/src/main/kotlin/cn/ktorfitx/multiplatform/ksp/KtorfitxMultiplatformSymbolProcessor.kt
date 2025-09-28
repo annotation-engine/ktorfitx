@@ -110,6 +110,15 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 		}
 	}
 	
+//	private val codeGeneratorSourceNames = listOf(
+//		"commonMain", "commonTest",
+//		"androidMain", ""
+//	)
+//
+//	private fun isUseCodeGenerator(sourceName: String): Boolean {
+//
+//	}
+	
 	private val targetKeywords = arrayOf("common", "X64", "Arm", "js", "wasmJs", "android", "desktop")
 	
 	private fun isUseCodeGeneratorCreate(sourceName: String): Boolean {

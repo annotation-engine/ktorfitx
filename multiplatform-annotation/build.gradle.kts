@@ -28,6 +28,12 @@ kotlin {
 				}
 			}
 		}
+		if (androidNativeEnabled) {
+			androidNativeX86()
+			androidNativeX64()
+			androidNativeArm32()
+			androidNativeArm64()
+		}
 		if (desktopEnabled) {
 			jvm("desktop") {
 				compilerOptions {
