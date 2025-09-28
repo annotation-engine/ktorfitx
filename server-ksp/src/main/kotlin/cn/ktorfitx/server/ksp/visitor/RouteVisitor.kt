@@ -2,7 +2,7 @@ package cn.ktorfitx.server.ksp.visitor
 
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
 import cn.ktorfitx.common.ksp.util.expends.*
-import cn.ktorfitx.common.ksp.util.message.getString
+import cn.ktorfitx.common.ksp.util.message.invoke
 import cn.ktorfitx.common.ksp.util.resolver.isSerializableType
 import cn.ktorfitx.server.ksp.constants.TypeNames
 import cn.ktorfitx.server.ksp.message.*
@@ -22,7 +22,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		data: List<CustomHttpMethodModel>
 	): FunModel {
 		ktorfitxCheck(!function.isGeneric(), function) {
-			MESSAGE_FUNCTION_NOT_ALLOWED_TO_CONTAIN_GENERICS.getString(function.simpleName)
+			MESSAGE_FUNCTION_NOT_ALLOWED_TO_CONTAIN_GENERICS(function.simpleName)
 		}
 		val routeModel = function.getRouteModel(data)
 		val isReturnNullable = function.getReturnNullableAndCheck(routeModel)
@@ -61,14 +61,14 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		val typeName = returnType.toTypeName()
 		if (routeModel is HttpRequestModel) {
 			ktorfitxCheck(typeName != TypeNames.Unit && typeName != TypeNames.Nothing, returnType) {
-				MESSAGE_FUNCTION_NOT_ALLOW_USE_UNIT_AND_NOTHING.getString(simpleName)
+				MESSAGE_FUNCTION_NOT_ALLOW_USE_UNIT_AND_NOTHING(simpleName)
 			}
 			ktorfitxCheck(typeName.isSerializableType(), returnType) {
-				MESSAGE_FUNCTION_RETURN_TYPE_NOT_MEET_SERIALIZATION_REQUIREMENTS.getString(simpleName)
+				MESSAGE_FUNCTION_RETURN_TYPE_NOT_MEET_SERIALIZATION_REQUIREMENTS(simpleName)
 			}
 		} else {
 			ktorfitxCheck(typeName == TypeNames.Unit, this) {
-				MESSAGE_FUNCTION_IS_WEBSOCKET_TYPE_SO_RETURN_TYPE_ONLY_USE_UNIT_TYPE.getString(simpleName, routeModel.annotation)
+				MESSAGE_FUNCTION_IS_WEBSOCKET_TYPE_SO_RETURN_TYPE_ONLY_USE_UNIT_TYPE(simpleName, routeModel.annotation)
 			}
 		}
 		return type.isMarkedNullable
@@ -88,7 +88,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		val dataList = (TypeNames.routeAnnotationTypes + customHttpMethodClassNames)
 			.mapNotNull { this.getKSAnnotationByType(it)?.let(it::to) }
 		ktorfitxCheck(dataList.size == 1, this) {
-			MESSAGE_FUNCTION_NOT_ALLOW_ADDING_MULTIPLE_REQUEST_TYPES_SIMULTANEOUSLY.getString(simpleName)
+			MESSAGE_FUNCTION_NOT_ALLOW_ADDING_MULTIPLE_REQUEST_TYPES_SIMULTANEOUSLY(simpleName)
 		}
 		val data = dataList.single()
 		val className = data.first
@@ -101,7 +101,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 				if (isExtension) {
 					val valid = this.isExtension(TypeNames.DefaultWebSocketServerSession)
 					ktorfitxCheck(valid, this) {
-						MESSAGE_FUNCTION_ONLY_ALLOW_CREATION_OF_EXTENSION_METHODS_FOR_DEFAULT_WEB_SOCKET_SERVER_SESSION.getString(simpleName)
+						MESSAGE_FUNCTION_ONLY_ALLOW_CREATION_OF_EXTENSION_METHODS_FOR_DEFAULT_WEB_SOCKET_SERVER_SESSION(simpleName)
 					}
 				}
 				WebSocketModel(path, protocol, annotation)
@@ -113,7 +113,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 				if (isExtension) {
 					val valid = this.isExtension(TypeNames.WebSocketServerSession)
 					ktorfitxCheck(valid, this) {
-						MESSAGE_FUNCTION_ONLY_ALLOW_CREATION_OF_EXTENSION_METHODS_FOR_WEB_SOCKET_SERVER_SESSION.getString(simpleName)
+						MESSAGE_FUNCTION_ONLY_ALLOW_CREATION_OF_EXTENSION_METHODS_FOR_WEB_SOCKET_SERVER_SESSION(simpleName)
 					}
 				}
 				WebSocketRawModel(path, protocol, negotiateExtensions, annotation)
@@ -122,7 +122,7 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 			else -> {
 				if (isExtension) {
 					ktorfitxCheck(this.isExtension(TypeNames.RoutingContext), this) {
-						MESSAGE_FUNCTION_ONLY_ALLOW_CREATION_OF_EXTENSION_METHODS_FOR_ROUTING_CONTEXT.getString(simpleName)
+						MESSAGE_FUNCTION_ONLY_ALLOW_CREATION_OF_EXTENSION_METHODS_FOR_ROUTING_CONTEXT(simpleName)
 					}
 				}
 				if (className in TypeNames.httpMethodAnnotationTypes) {
@@ -155,12 +155,12 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 		val annotation = this.getKSAnnotationByType(TypeNames.Regex) ?: return null
 		val routeAnnotation = routeModel.annotation
 		ktorfitxCheck(routeModel is HttpRequestModel, annotation) {
-			MESSAGE_ANNOTATION_NOT_ALLOW_USE_REGEX_WHEN_WEBSOCKET_HAS_BEEN_MARKED.getString(simpleName, routeAnnotation)
+			MESSAGE_ANNOTATION_NOT_ALLOW_USE_REGEX_WHEN_WEBSOCKET_HAS_BEEN_MARKED(simpleName, routeAnnotation)
 		}
 		val classNames = annotation.getClassNamesOrNull("options")?.toSet() ?: emptySet()
 		val options = classNames.map { RegexOption.valueOf(it.simpleName) }.toSet()
 		ktorfitxCheck(routeModel.path.isValidRegex(options), routeAnnotation) {
-			MESSAGE_ANNOTATION_PATH_PARAMETER_NOT_VALID_REGULAR_EXPRESSION.getString(simpleName, routeAnnotation)
+			MESSAGE_ANNOTATION_PATH_PARAMETER_NOT_VALID_REGULAR_EXPRESSION(simpleName, routeAnnotation)
 		}
 		return RegexModel(classNames)
 	}
@@ -170,12 +170,12 @@ internal class RouteVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, FunMod
 	): TimeoutModel? {
 		val annotation = this.getKSAnnotationByType(TypeNames.Timeout) ?: return null
 		ktorfitxCheck(routeModel is HttpRequestModel, annotation) {
-			MESSAGE_ANNOTATION_NOT_ALLOW_USE_TIMEOUT_WHEN_WEBSOCKET_HAS_BEEN_MARKED.getString(simpleName, routeModel.annotation)
+			MESSAGE_ANNOTATION_NOT_ALLOW_USE_TIMEOUT_WHEN_WEBSOCKET_HAS_BEEN_MARKED(simpleName, routeModel.annotation)
 		}
 		val value = annotation.getValue<Long>("value")
 		val unit = annotation.getClassNameOrNull("unit")?.simpleName?.lowercase() ?: "milliseconds"
 		ktorfitxCheck(value > 0L, annotation) {
-			MESSAGE_ANNOTATION_VALUE_PARAMETER_MUST_BE_GREATER_THAN_ZERO.getString(simpleName, annotation)
+			MESSAGE_ANNOTATION_VALUE_PARAMETER_MUST_BE_GREATER_THAN_ZERO(simpleName, annotation)
 		}
 		return TimeoutModel(value, unit)
 	}

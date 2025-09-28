@@ -7,7 +7,7 @@ import cn.ktorfitx.common.ksp.util.exception.KtorfitxCompilationErrorException
 import cn.ktorfitx.common.ksp.util.exception.KtorfitxConfigErrorException
 import cn.ktorfitx.common.ksp.util.message.MESSAGE_ERROR_LOCATION
 import cn.ktorfitx.common.ksp.util.message.MESSAGE_UNKNOWN
-import cn.ktorfitx.common.ksp.util.message.getString
+import cn.ktorfitx.common.ksp.util.message.invoke
 import com.google.devtools.ksp.symbol.FileLocation
 import com.google.devtools.ksp.symbol.KSNode
 import kotlin.contracts.ExperimentalContracts
@@ -54,8 +54,8 @@ fun ktorfitxCompilationError(
 ): Nothing {
 	val location = node.location as? FileLocation
 	val errorLocation =
-		if (location != null) "${location.filePath}:${location.lineNumber}" else MESSAGE_UNKNOWN.getString()
-	throw KtorfitxCompilationErrorException("$message\n${MESSAGE_ERROR_LOCATION.getString()}$errorLocation")
+		if (location != null) "${location.filePath}:${location.lineNumber}" else MESSAGE_UNKNOWN()
+	throw KtorfitxCompilationErrorException("$message\n${MESSAGE_ERROR_LOCATION()}$errorLocation")
 }
 
 @Throws(KtorfitxConfigErrorException::class)

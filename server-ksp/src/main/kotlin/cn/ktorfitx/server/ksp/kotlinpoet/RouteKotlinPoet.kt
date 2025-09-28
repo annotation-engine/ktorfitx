@@ -3,7 +3,7 @@ package cn.ktorfitx.server.ksp.kotlinpoet
 import cn.ktorfitx.common.ksp.util.builders.buildFileSpec
 import cn.ktorfitx.common.ksp.util.builders.buildFunSpec
 import cn.ktorfitx.common.ksp.util.builders.fileSpecBuilder
-import cn.ktorfitx.common.ksp.util.message.getString
+import cn.ktorfitx.common.ksp.util.message.invoke
 import cn.ktorfitx.server.ksp.constants.PackageNames
 import cn.ktorfitx.server.ksp.constants.TypeNames
 import cn.ktorfitx.server.ksp.message.FILE_COMMENT
@@ -21,7 +21,7 @@ internal class RouteKotlinPoet {
 		funName: String
 	): FileSpec = buildFileSpec(packageName, fileName) {
 		fileSpecBuilder = this
-		addFileComment(FILE_COMMENT.getString(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+		addFileComment(FILE_COMMENT(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 		indent("\t")
 		val funSpec = getFunctionSpec(funName, funModels)
 		addFunction(funSpec)

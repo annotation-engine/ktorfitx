@@ -2,7 +2,7 @@ package cn.ktorfitx.multiplatform.ksp.kotlinpoet
 
 import cn.ktorfitx.common.ksp.util.builders.*
 import cn.ktorfitx.common.ksp.util.expends.asNullable
-import cn.ktorfitx.common.ksp.util.message.getString
+import cn.ktorfitx.common.ksp.util.message.invoke
 import cn.ktorfitx.multiplatform.ksp.constants.PackageNames
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
 import cn.ktorfitx.multiplatform.ksp.kotlinpoet.block.HttpCodeBlockBuilder
@@ -22,7 +22,7 @@ internal object ApiKotlinPoet {
 	fun getFileSpec(classModel: ClassModel): FileSpec {
 		return buildFileSpec(classModel.className) {
 			fileSpecBuilder = this
-			addFileComment(FILE_COMMENT.getString(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
+			addFileComment(FILE_COMMENT(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))))
 			indent("\t")
 			addType(getTypeSpec(classModel))
 			addProperty(getExpendPropertySpec(classModel))

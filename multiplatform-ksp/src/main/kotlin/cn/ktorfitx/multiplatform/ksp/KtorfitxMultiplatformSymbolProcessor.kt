@@ -1,7 +1,7 @@
 package cn.ktorfitx.multiplatform.ksp
 
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
-import cn.ktorfitx.common.ksp.util.message.getString
+import cn.ktorfitx.common.ksp.util.message.invoke
 import cn.ktorfitx.common.ksp.util.resolver.getCustomHttpMethodModels
 import cn.ktorfitx.common.ksp.util.resolver.safeResolver
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
@@ -56,13 +56,13 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 			}
 			.forEach {
 				ktorfitxCheck(it.classKind == ClassKind.INTERFACE, it) {
-					MESSAGE_INTERFACE_MUST_BE_INTERFACE_BECAUSE_MARKED_API.getString(it.simpleName)
+					MESSAGE_INTERFACE_MUST_BE_INTERFACE_BECAUSE_MARKED_API(it.simpleName)
 				}
 				ktorfitxCheck(Modifier.SEALED !in it.modifiers, it) {
-					MESSAGE_INTERFACE_NOT_SUPPORT_SEALED_MODIFIER.getString(it.simpleName)
+					MESSAGE_INTERFACE_NOT_SUPPORT_SEALED_MODIFIER(it.simpleName)
 				}
 				ktorfitxCheck(it.parentDeclaration == null, it) {
-					MESSAGE_INTERFACE_MUST_BE_PLACED_FILE_TOP_LEVEL.getString(it.simpleName)
+					MESSAGE_INTERFACE_MUST_BE_PLACED_FILE_TOP_LEVEL(it.simpleName)
 				}
 				val classModel = it.accept(ApiVisitor, customHttpMethodModels)
 				val fileSpec = ApiKotlinPoet.getFileSpec(classModel)

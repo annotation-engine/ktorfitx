@@ -4,7 +4,7 @@ import com.google.devtools.ksp.symbol.KSName
 
 typealias MessageConfig = Message.() -> Unit
 
-fun MessageConfig.getString(vararg args: Any?): String {
+operator fun MessageConfig.invoke(vararg args: Any?): String {
 	val config = Message().apply(this)
 	val message = when (Language.get()) {
 		Language.CHINESE -> config.chinese ?: config.english

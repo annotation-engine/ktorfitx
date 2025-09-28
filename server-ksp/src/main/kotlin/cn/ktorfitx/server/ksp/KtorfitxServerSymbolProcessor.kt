@@ -1,7 +1,7 @@
 package cn.ktorfitx.server.ksp
 
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
-import cn.ktorfitx.common.ksp.util.message.getString
+import cn.ktorfitx.common.ksp.util.message.invoke
 import cn.ktorfitx.common.ksp.util.resolver.getCustomHttpMethodModels
 import cn.ktorfitx.common.ksp.util.resolver.safeResolver
 import cn.ktorfitx.server.ksp.constants.TypeNames
@@ -49,7 +49,7 @@ internal class KtorfitxServerSymbolProcessor(
 			.map {
 				val parent = it.parent
 				ktorfitxCheck(parent != null && (parent is KSFile || (parent is KSClassDeclaration && parent.classKind == ClassKind.OBJECT)), it) {
-					MESSAGE_FUNCTION_TOP_LEVEL_OR_OBJECT_ONLY.getString(it.simpleName)
+					MESSAGE_FUNCTION_TOP_LEVEL_OR_OBJECT_ONLY(it.simpleName)
 				}
 				val visitor = RouteVisitor()
 				it.accept(visitor, customHttpMethodModels)
