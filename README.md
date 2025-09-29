@@ -1,4 +1,4 @@
-# KtorfitX 3.3.0-3.1.1
+# KtorfitX 3.3.0-3.2.0-Beta1
 
 [![Maven](https://img.shields.io/badge/Maven-Central-download.svg)](https://central.sonatype.com/search?q=cn.ktorfitx:multiplatform-core)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://annotation-engine.github.io/ktorfitx-document/index_md.html)
@@ -28,13 +28,18 @@ KSP `2.2.20-2.0.3`
 
 ### Kotlin Multiplatform
 
+> 以下为支持的源集名
+
 - android
-- ios: x86, arm64, simulatorArm64
-- watchos: x64, arm32, arm64, simulatorArm64, deviceArm64
-- tvos: x64, arm64, simulatorArm64
-- linux: x64, arm64
-- window: mingwX64
-- web: js, wasmJs
+- androidNativeArm32, androidNativeArm64, androidNativeX86, androidNativeX64
+- desktop (JVM)
+- iosArm64, iosSimulatorArm64, iosX64
+- watchosArm32, watchosArm64, watchosSimulatorArm64, watchosSimulatorDeviceArm64, watchosX64
+- tvosArm64, tvosSimulatorArm64, tvosX64
+- linuxArm32HfpMain, linuxArm64, linuxX64
+- mingwX64
+- macosArm64, macosX64
+- js, wasmJs
 
 ### Ktor Server
 
@@ -51,6 +56,7 @@ KSP `2.2.20-2.0.3`
     - cn.ktorfitx:multiplatform-mock
     - cn.ktorfitx:multiplatform-ksp
     - cn.ktorfitx:multiplatform-gradle-plugin
+    - cn.ktorfitx:android-gradle-plugin (Android Only)
 
 - Ktor Server
     - cn.ktorfitx:server-core
@@ -146,21 +152,35 @@ KSP `2.2.20-2.0.3`
 - `@Attribute` attribute 参数
 - `@Cookie` cookie 参数
 
-## 迁移 从 2.x 迁移至 3.x
-
-- 修改了依赖包名
-
-请将依赖包改为 `cn.ktorfitx` 下的 GroupId，旧的 `cn.vividcode.multiplatform` GroupId 现在已弃用
-
-- ktorfitx-api 模块拆分为 multiplatform-core 和 multiplatform-mock 模块
-
-- 支持服务端
-
-添加 Ktor Server 端支持，标注注解，符号处理器会自动生成对应的路由解析函数，包含参数解析授权等行为
-
 ## Gradle 配置
 
 - 在模块级 build.gradle.kts 中配置
+
+### Android
+
+- 请在 Android 模块中的 build.gradle.kts 配置一下内容，请按照实际情况编写
+- 注意：此处不包含 ktor 的依赖，请自行添加
+
+```kotlin
+plugins {
+	// 省略其他...
+	// 在这里使用 Gradle 插件
+	id("cn.ktorfitx.android") version "<latest>"
+}
+
+ktorfitx {
+	// 将所有提示文本改为中文，默认：ENGLISH，支持：ENGLISH, CHINESE
+	language = KtorfitxLanguage.CHINESE
+	
+	websockets {
+		enabled = true  // 启用 WebSockets 功能，默认关闭
+	}
+	
+	mock {
+		enabled = true  // 启用 Mock 功能，默认关闭
+	}
+}
+```
 
 ### Kotlin Multiplatform
 
@@ -210,7 +230,7 @@ ktorfitx {
 	}
 	
 	generate {
-		this.packageName = "<package name>" // 生成文件目录，默认：当前模块包 + .generated
+		this.packageName = "<package name>" // 生成文件目录，默认：<package>.generated
 		this.funName = "<function name>"    // 生成方法名，默认：generateRoutes
 		this.fileName = "<filename>"        // 生成文件名，默认：GenerateRoutes，可以不加 .kt 后缀
 	}

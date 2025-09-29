@@ -131,7 +131,7 @@ fun App() {
 					)
 					Spacer(Modifier.weight(1f))
 					Text(
-						text = "Only Android",
+						text = "Android Only",
 						modifier = Modifier
 							.background(Color(0x66171E2E), shape = RoundedCornerShape(12.dp))
 							.border(

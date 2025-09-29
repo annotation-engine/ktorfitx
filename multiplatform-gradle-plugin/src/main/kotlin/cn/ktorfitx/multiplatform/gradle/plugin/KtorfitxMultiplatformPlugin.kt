@@ -23,7 +23,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 	
 	private companion object {
 		
-		private const val VERSION = "3.3.0-3.1.1"
+		private const val VERSION = "3.3.0-3.2.0-Beta1"
 		private const val KTOR_VERSION = "3.3.0"
 		
 		private const val GROUP_NAME = "cn.ktorfitx"
@@ -135,29 +135,29 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 	}
 	
 	private val sourceSetRelationMap = mapOf(
-		"macosX64" to "macos",
 		"macosArm64" to "macos",
-		"iosX64" to "ios",
+		"macosX64" to "macos",
 		"iosArm64" to "ios",
 		"iosSimulatorArm64" to "ios",
-		"tvosX64" to "tvos",
+		"iosX64" to "ios",
 		"tvosArm64" to "tvos",
 		"tvosSimulatorArm64" to "tvos",
-		"watchosArm64" to "watchos",
+		"tvosX64" to "tvos",
 		"watchosArm32" to "watchos",
-		"watchosX64" to "watchos",
+		"watchosArm64" to "watchos",
 		"watchosSimulatorArm64" to "watchos",
 		"watchosSimulatorDeviceArm64" to "watchos",
-		"linuxX64" to "linux",
-		"linuxArm64" to "linux",
+		"watchosX64" to "watchos",
 		"linuxArm32HfpMain" to "linux",
+		"linuxArm64" to "linux",
+		"linuxX64" to "linux",
 		"mingwX64" to "mingw",
 		"androidNativeArm32" to "androidNative",
 		"androidNativeArm64" to "androidNative",
-		"androidNativeX64" to "androidNative",
 		"androidNativeX86" to "androidNative",
-		"wasmJs" to "web",
+		"androidNativeX64" to "androidNative",
 		"js" to "web",
+		"wasmJs" to "web",
 		"macos" to "apple",
 		"ios" to "apple",
 		"tvos" to "apple",
