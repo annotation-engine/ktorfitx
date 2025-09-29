@@ -2,6 +2,7 @@ package cn.ktorfitx.multiplatform.gradle.plugin
 
 import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxMultiplatformMode.DEVELOPMENT
 import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxMultiplatformMode.RELEASE
+import com.google.devtools.ksp.gradle.KspAATask
 import com.google.devtools.ksp.gradle.KspExtension
 import com.google.devtools.ksp.gradle.KspTask
 import kotlinx.serialization.json.Json
@@ -99,10 +100,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 				configurations.matching {
 					it.name.startsWith("ksp") &&
 							it.name != "ksp" &&
-							it.name != "kspDebug" &&
-							it.name != "kspRelease" &&
-							"Test" !in it.name &&
-							"Classpath" !in it.name
+							"Test" !in it.name
 				}.configureEach {
 					add(this.name, "multiplatform-ksp", mode)
 				}
@@ -112,7 +110,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 					writeSharedSourceSetsNames(projectDir.absolutePath, this.name)
 				}
 			}
-			tasks.named { name -> name.startsWith("ksp") }.configureEach {
+			tasks.withType<KspAATask>().configureEach {
 				if (name != "kspCommonMainKotlinMetadata") {
 					dependsOn("kspCommonMainKotlinMetadata")
 				}
