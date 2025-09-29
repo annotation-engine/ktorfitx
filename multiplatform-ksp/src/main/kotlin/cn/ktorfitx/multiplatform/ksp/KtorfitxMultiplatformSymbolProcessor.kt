@@ -89,7 +89,7 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 	
 	private fun KSClassDeclaration.getSourceSet(): String? {
 		val filePath = this.containingFile?.filePath ?: return null
-		sourceSetModel as MultiplatformSourceSetModel
+		if (sourceSetModel !is MultiplatformSourceSetModel) return null
 		return filePath.removePrefix("${sourceSetModel.projectPath}/src/".replace('/', File.separatorChar))
 			.split(File.separatorChar)
 			.firstOrNull()

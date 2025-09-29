@@ -1,5 +1,6 @@
 import cn.ktorfitx.android.gradle.plugin.KtorfitxAndroidMode
 import cn.ktorfitx.android.gradle.plugin.KtorfitxLanguage
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
 	alias(libs.plugins.android.application)
@@ -37,6 +38,13 @@ android {
 	}
 	buildFeatures {
 		compose = true
+	}
+}
+
+kotlin {
+	compilerOptions {
+		apiVersion = KotlinVersion.KOTLIN_2_2
+		languageVersion = KotlinVersion.KOTLIN_2_2
 	}
 }
 
