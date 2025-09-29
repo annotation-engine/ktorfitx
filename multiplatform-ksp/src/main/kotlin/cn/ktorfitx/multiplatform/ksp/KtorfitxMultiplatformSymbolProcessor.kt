@@ -111,7 +111,6 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 				file.delete()
 			}
 			file.createNewFile()
-			println(file.absolutePath)
 			file.outputStream()
 		} else {
 			codeGenerator.createNewFile(
