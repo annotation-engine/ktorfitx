@@ -3,9 +3,11 @@ import cn.ktorfitx.build.gradle.configurePlatformFeatures
 import cn.ktorfitx.build.gradle.toPlatforms
 import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxLanguage
 import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxMultiplatformMode
+import com.google.devtools.ksp.gradle.KspAATask
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
@@ -86,6 +88,11 @@ kotlin {
 		}
 	}
 	
+	compilerOptions {
+		languageVersion = KotlinVersion.KOTLIN_2_2
+		apiVersion = KotlinVersion.KOTLIN_2_2
+	}
+	
 	sourceSets {
 		commonMain.dependencies {
 			implementation(libs.bundles.multiplatform.sample)
@@ -101,6 +108,7 @@ kotlin {
 				implementation(libs.androidx.activity.compose)
 			}
 		}
+		
 		if (Platform.DESKTOP in ktorfitxPlatforms) {
 			val desktopMain by getting
 			desktopMain.dependencies {
@@ -108,6 +116,10 @@ kotlin {
 			}
 		}
 	}
+}
+
+tasks.withType<KspAATask>().configureEach {
+	group = "ksp"
 }
 
 android {

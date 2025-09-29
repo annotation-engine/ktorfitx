@@ -2,6 +2,11 @@ package cn.ktorfitx.server.ksp.message
 
 import cn.ktorfitx.common.ksp.util.message.message
 
+internal val MESSAGE_MISSING_GRADLE_PLUGIN = message {
+	english { "Please add id(\"cn.ktorfitx.server\") to build.gradle.kts" }
+	chinese { "请在 build.gradle.kts 中添加 id(\"cn.ktorfitx.server\")" }
+}
+
 internal val MESSAGE_FUNCTION_TOP_LEVEL_OR_OBJECT_ONLY = message {
 	english { "The {1} function can only be declared at the top level of a file or within an object class." }
 	chinese { "{1} 函数只允许声明在 文件顶层 或 object 类中" }

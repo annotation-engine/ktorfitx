@@ -1,5 +1,6 @@
 import cn.ktorfitx.build.gradle.configurePlatformFeatures
 import cn.ktorfitx.build.gradle.toPlatforms
+import com.google.devtools.ksp.gradle.KspAATask
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
@@ -8,6 +9,7 @@ plugins {
 	alias(libs.plugins.kotlin.multiplatform)
 	alias(libs.plugins.android.library)
 	alias(libs.plugins.maven.publish)
+	alias(libs.plugins.ksp)
 }
 
 val ktorfitxVersion = property("ktorfitx.version").toString()
@@ -133,6 +135,10 @@ kotlin {
 			}
 		}
 	}
+}
+
+tasks.withType<KspAATask>().configureEach {
+	group = "ksp"
 }
 
 android {

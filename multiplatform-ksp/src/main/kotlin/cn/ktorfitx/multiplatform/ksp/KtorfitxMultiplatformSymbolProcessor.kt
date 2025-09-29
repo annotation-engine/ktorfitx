@@ -25,8 +25,7 @@ import java.io.OutputStream
 
 internal class KtorfitxMultiplatformSymbolProcessor(
 	private val codeGenerator: CodeGenerator,
-	private val projectPath: String,
-	private val model: KtorfitxModel
+	private val sourceSetModel: SourceSetModel
 ) : SymbolProcessor {
 	
 	override fun process(resolver: Resolver): List<KSAnnotated> {
@@ -37,62 +36,68 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 			parameterName = "url",
 			transform = ::CustomHttpMethodModel
 		)
-		resolver.generateApiImpls(customHttpMethods)
+		resolver.getSymbolsWithAnnotation(TypeNames.Api.canonicalName)
+			.filterIsInstance<KSClassDeclaration>()
+			.filter { it.validate() }
+			.deleteSharedSourceSetsDirs()
+			.forEach { it.dispose(customHttpMethods) }
+		
 		return emptyList()
 	}
 	
-	private fun Resolver.generateApiImpls(
-		customHttpMethodModels: List<CustomHttpMethodModel>
-	) {
-		this.getSymbolsWithAnnotation(TypeNames.Api.canonicalName)
-			.filterIsInstance<KSClassDeclaration>()
-			.filter { it.validate() }
-			.filter {
-				if (model is OnlyAndroidModel) return@filter true
-				model as KotlinMultiplatformModel
-				if (model.isCommon) return@filter true
-				val sourceSet = it.getSourceSet() ?: return@filter false
-				!sourceSet.startsWith("common")
+	private fun Sequence<KSClassDeclaration>.deleteSharedSourceSetsDirs(): Sequence<KSClassDeclaration> {
+		if (sourceSetModel is MultiplatformSourceSetModel) {
+			sourceSetModel.sharedSourceSets.forEach {
+				val parent = "${sourceSetModel.projectPath}/build/generated/ksp/metadata/$it".replace('/', File.separatorChar)
+				val parentDir = File(parent)
+				deleteDirectory(parentDir)
 			}
-			.forEach {
-				ktorfitxCheck(it.classKind == ClassKind.INTERFACE, it) {
-					MESSAGE_INTERFACE_MUST_BE_INTERFACE_BECAUSE_MARKED_API(it.simpleName)
-				}
-				ktorfitxCheck(Modifier.SEALED !in it.modifiers, it) {
-					MESSAGE_INTERFACE_NOT_SUPPORT_SEALED_MODIFIER(it.simpleName)
-				}
-				ktorfitxCheck(it.parentDeclaration == null, it) {
-					MESSAGE_INTERFACE_MUST_BE_PLACED_FILE_TOP_LEVEL(it.simpleName)
-				}
-				val classModel = it.accept(ApiVisitor, customHttpMethodModels)
-				val fileSpec = ApiKotlinPoet.getFileSpec(classModel)
-				val className = classModel.className
-				createNewFile(
-					sourceSet = it.getSourceSet() ?: return@forEach,
-					packageName = className.packageName,
-					fileName = className.simpleName
-				)?.bufferedWriter()?.use(fileSpec::writeTo)
+		}
+		return this
+	}
+	
+	private fun deleteDirectory(file: File) {
+		if (!file.exists()) return
+		
+		if (file.isDirectory) {
+			file.listFiles()?.forEach { child ->
+				deleteDirectory(child)
 			}
+		}
+		file.delete()
+	}
+	
+	private fun KSClassDeclaration.dispose(customHttpMethodModels: List<CustomHttpMethodModel>) {
+		ktorfitxCheck(this.classKind == ClassKind.INTERFACE, this) {
+			MESSAGE_INTERFACE_MUST_BE_INTERFACE_BECAUSE_MARKED_API(this.simpleName)
+		}
+		ktorfitxCheck(Modifier.SEALED !in this.modifiers, this) {
+			MESSAGE_INTERFACE_NOT_SUPPORT_SEALED_MODIFIER(this.simpleName)
+		}
+		ktorfitxCheck(this.parentDeclaration == null, this) {
+			MESSAGE_INTERFACE_MUST_BE_PLACED_FILE_TOP_LEVEL(this.simpleName)
+		}
+		val classModel = this.accept(ApiVisitor, customHttpMethodModels)
+		val fileSpec = ApiKotlinPoet.getFileSpec(classModel)
+		val className = classModel.className
+		createNewFile(
+			sourceSet = this.getSourceSet() ?: return,
+			packageName = className.packageName,
+			fileName = className.simpleName
+		)?.bufferedWriter()?.use(fileSpec::writeTo)
 	}
 	
 	private fun KSClassDeclaration.getSourceSet(): String? {
 		val filePath = this.containingFile?.filePath ?: return null
-		return filePath.removePrefix("$projectPath/src/".replace('/', File.separatorChar))
+		sourceSetModel as MultiplatformSourceSetModel
+		return filePath.removePrefix("${sourceSetModel.projectPath}/src/".replace('/', File.separatorChar))
 			.split(File.separatorChar)
 			.firstOrNull()
 	}
 	
 	private fun createNewFile(sourceSet: String, packageName: String, fileName: String): OutputStream? {
-		return if (model is OnlyAndroidModel || isUseCodeGeneratorCreate(sourceSet)) {
-			codeGenerator.createNewFile(
-				dependencies = Dependencies.ALL_FILES,
-				packageName = packageName,
-				fileName = fileName
-			)
-		} else {
-			model as KotlinMultiplatformModel
-			val variants = model.sourceSetsVariants[sourceSet] ?: error("Can't find source set $sourceSet")
-			val parent = "$projectPath/build/generated/ksp/$variants/$sourceSet/kotlin/".replace('/', File.separatorChar) +
+		return if (sourceSetModel is MultiplatformSourceSetModel && sourceSet !in sourceSetModel.nonSharedSourceSets) {
+			val parent = "${sourceSetModel.projectPath}/build/generated/ksp/metadata/$sourceSet/kotlin/".replace('/', File.separatorChar) +
 					packageName.replace('.', File.separatorChar)
 			val parentDir = File(parent)
 			if (parentDir.exists() && !parentDir.isDirectory) {
@@ -106,22 +111,14 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 				file.delete()
 			}
 			file.createNewFile()
+			println(file.absolutePath)
 			file.outputStream()
+		} else {
+			codeGenerator.createNewFile(
+				dependencies = Dependencies.ALL_FILES,
+				packageName = packageName,
+				fileName = fileName
+			)
 		}
-	}
-	
-//	private val codeGeneratorSourceNames = listOf(
-//		"commonMain", "commonTest",
-//		"androidMain", ""
-//	)
-//
-//	private fun isUseCodeGenerator(sourceName: String): Boolean {
-//
-//	}
-	
-	private val targetKeywords = arrayOf("common", "X64", "Arm", "js", "wasmJs", "android", "desktop")
-	
-	private fun isUseCodeGeneratorCreate(sourceName: String): Boolean {
-		return targetKeywords.any { it in sourceName }
 	}
 }

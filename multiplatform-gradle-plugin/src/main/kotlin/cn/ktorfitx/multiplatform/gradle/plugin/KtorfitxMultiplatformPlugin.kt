@@ -3,6 +3,7 @@ package cn.ktorfitx.multiplatform.gradle.plugin
 import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxMultiplatformMode.DEVELOPMENT
 import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxMultiplatformMode.RELEASE
 import com.google.devtools.ksp.gradle.KspExtension
+import com.google.devtools.ksp.gradle.KspTask
 import kotlinx.serialization.json.Json
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -11,9 +12,10 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.project
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
-import org.jetbrains.kotlin.konan.file.File
+import java.io.File
 
 @Suppress("unused")
 class KtorfitxMultiplatformPlugin : Plugin<Project> {
@@ -27,8 +29,10 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 		
 		private const val OPTION_IS_MULTIPLATFORM = "ktorfitx.isMultiplatform"
 		private const val OPTION_LANGUAGE = "ktorfitx.language"
-		private const val OPTION_SOURCE_SETS_VARIANTS = "ktorfitx.sourceSets.variants"
+		private const val OPTION_SOURCE_SETS_NON_SHARED_NAMES = "ktorfitx.sourceSets.nonSharedNames"
 		private const val OPTION_PROJECT_PATH = "ktorfitx.project.path"
+		
+		private const val PATH_BUILD_KTORFITX = "/build/ktorfitx"
 	}
 	
 	override fun apply(target: Project) = with(target) {
@@ -78,21 +82,34 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 						}
 					}
 				}
-				val sourceSetsVariants = mutableMapOf<String, String>()
+				
+				val nonSharedNames = sourceSets.mapNotNull {
+					it.name.takeIf { "Test" !in it && it != "commonMain" }
+				}
+				kspExtension[OPTION_SOURCE_SETS_NON_SHARED_NAMES] = Json.encodeToString(nonSharedNames)
+				
 				sourceSets.configureEach {
-					val sourceSetsVariant = when {
-						this.name.startsWith("common") -> "metadata"
-						this.name.startsWith("android") -> "android"
-						else -> this.name.removeSuffix("Test").removeSuffix("Main")
-					}
-					sourceSetsVariants[this.name] = sourceSetsVariant
-					this.kotlin.srcDir("build/generated/ksp/$sourceSetsVariant/${this.name}/kotlin".replace('/', File.separatorChar))
-					kspExtension[OPTION_SOURCE_SETS_VARIANTS] = Json.encodeToString(sourceSetsVariants)
+					if ("Test" in name) return@configureEach
+					if (name in nonSharedNames) return@configureEach
+					val srcPath = "build/generated/ksp/metadata/$name/kotlin".replace('/', File.separatorChar)
+					this.kotlin.srcDir(srcPath)
 				}
 			}
 			dependencies {
-				configurations.matching { it.name.startsWith("ksp") && it.name != "ksp" }.configureEach {
+				configurations.matching {
+					it.name.startsWith("ksp") &&
+							it.name != "ksp" &&
+							it.name != "kspDebug" &&
+							it.name != "kspRelease" &&
+							"Test" !in it.name &&
+							"Classpath" !in it.name
+				}.configureEach {
 					add(this.name, "multiplatform-ksp", mode)
+				}
+			}
+			tasks.withType<KspTask>().configureEach {
+				this.doFirst {
+					writeSharedSourceSetsNames(projectDir.absolutePath, this.name)
 				}
 			}
 			tasks.named { name -> name.startsWith("ksp") }.configureEach {
@@ -117,6 +134,75 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 				}
 			}
 		}
+	}
+	
+	private val sourceSetRelationMap = mapOf(
+		"macosX64" to "macos",
+		"macosArm64" to "macos",
+		"iosX64" to "ios",
+		"iosArm64" to "ios",
+		"iosSimulatorArm64" to "ios",
+		"tvosX64" to "tvos",
+		"tvosArm64" to "tvos",
+		"tvosSimulatorArm64" to "tvos",
+		"watchosArm64" to "watchos",
+		"watchosArm32" to "watchos",
+		"watchosX64" to "watchos",
+		"watchosSimulatorArm64" to "watchos",
+		"watchosSimulatorDeviceArm64" to "watchos",
+		"linuxX64" to "linux",
+		"linuxArm64" to "linux",
+		"linuxArm32HfpMain" to "linux",
+		"mingwX64" to "mingw",
+		"androidNativeArm32" to "androidNative",
+		"androidNativeArm64" to "androidNative",
+		"androidNativeX64" to "androidNative",
+		"androidNativeX86" to "androidNative",
+		"wasmJs" to "web",
+		"js" to "web",
+		"macos" to "apple",
+		"ios" to "apple",
+		"tvos" to "apple",
+		"watchos" to "apple",
+		"apple" to "native",
+		"linux" to "native",
+		"mingw" to "native",
+		"androidNative" to "native",
+		"native" to "common",
+		"android" to "common",
+		"jvm" to "common",
+		"desktop" to "common",
+		"web" to "common"
+	)
+	
+	private fun writeSharedSourceSetsNames(projectPath: String, taskName: String) {
+		if ("Test" in taskName) {
+			write(projectPath, emptySet())
+			return
+		}
+		var currentSourceSet = when {
+			taskName in listOf("kspDebugKotlinAndroid", "kspReleaseKotlinAndroid") -> "androidMain"
+			else -> taskName.removePrefix("kspKotlin").replaceFirstChar { it.lowercaseChar() }
+		}
+		val sharedSourceSets = mutableSetOf<String>()
+		while (currentSourceSet in sourceSetRelationMap) {
+			currentSourceSet = sourceSetRelationMap[currentSourceSet]!!
+			sharedSourceSets += "${currentSourceSet}Main"
+		}
+		write(projectPath, sharedSourceSets)
+	}
+	
+	private fun write(projectPath: String, sharedSourceSets: Set<String>) {
+		val parent = File("$projectPath$PATH_BUILD_KTORFITX".replace('/', File.separatorChar))
+		if (!parent.exists()) {
+			parent.mkdirs()
+		}
+		val file = File(parent, "sharedSourceSets.json")
+		if (!file.exists()) {
+			file.createNewFile()
+		}
+		val json = Json.encodeToString(sharedSourceSets)
+		file.writeText(json)
 	}
 	
 	private inline operator fun <reified T : Any> KspExtension.set(key: String, value: T) {

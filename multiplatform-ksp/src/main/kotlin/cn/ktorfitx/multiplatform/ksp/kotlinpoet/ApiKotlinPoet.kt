@@ -1,7 +1,7 @@
 package cn.ktorfitx.multiplatform.ksp.kotlinpoet
 
 import cn.ktorfitx.common.ksp.util.builders.*
-import cn.ktorfitx.common.ksp.util.expends.asNullable
+import cn.ktorfitx.common.ksp.util.expends.asNotNullable
 import cn.ktorfitx.common.ksp.util.message.invoke
 import cn.ktorfitx.multiplatform.ksp.constants.PackageNames
 import cn.ktorfitx.multiplatform.ksp.constants.TypeNames
@@ -59,7 +59,7 @@ internal object ApiKotlinPoet {
 	 * 伴生对象
 	 */
 	private fun getCompanionObjectBuilder(classModel: ClassModel): TypeSpec {
-		val typeName = classModel.superinterface.asNullable()
+		val typeName = classModel.superinterface.asNotNullable()
 		fileSpecBuilder.addImport(PackageNames.KTOR_UTILS_IO_LOCKS, "synchronized")
 		return buildCompanionObjectTypeSpec {
 			addModifiers(classModel.kModifier)

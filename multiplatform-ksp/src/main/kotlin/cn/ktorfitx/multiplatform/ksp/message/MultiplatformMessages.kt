@@ -2,6 +2,11 @@ package cn.ktorfitx.multiplatform.ksp.message
 
 import cn.ktorfitx.common.ksp.util.message.message
 
+internal val MESSAGE_MISSING_GRADLE_PLUGIN = message {
+	english { "Please add id(\"cn.ktorfitx.multiplatform\") or id(\"cn.ktorfitx.android\") to build.gradle.kts" }
+	chinese { "请在 build.gradle.kts 中添加 id(\"cn.ktorfitx.multiplatform\") 或 id(\"cn.ktorfitx.android\")" }
+}
+
 internal val MESSAGE_CLASS_MUST_USE_OBJECT_TYPE = message {
 	english { "The {1} class must be of the object type." }
 	chinese { "{1} 类必须是 object 类型的" }
