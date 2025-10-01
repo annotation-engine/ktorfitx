@@ -1,4 +1,4 @@
-# KtorfitX 3.3.0-3.2.0-Beta1
+# KtorfitX 3.3.0-3.2.0-RC1
 
 [![Maven](https://img.shields.io/badge/Maven-Central-download.svg)](https://central.sonatype.com/search?q=cn.ktorfitx:multiplatform-core)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://annotation-engine.github.io/ktorfitx-document/index_md.html)
