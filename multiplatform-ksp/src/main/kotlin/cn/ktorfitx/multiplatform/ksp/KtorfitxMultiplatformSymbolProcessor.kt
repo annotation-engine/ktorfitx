@@ -80,44 +80,51 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 		val classModel = this.accept(ApiVisitor, customHttpMethodModels)
 		val fileSpec = ApiKotlinPoet.getFileSpec(classModel)
 		val className = classModel.className
+		
 		createNewFile(
-			sourceSet = this.getSourceSet() ?: return,
 			packageName = className.packageName,
 			fileName = className.simpleName
 		)?.bufferedWriter()?.use(fileSpec::writeTo)
 	}
 	
-	private fun KSClassDeclaration.getSourceSet(): String? {
-		val filePath = this.containingFile?.filePath ?: return null
-		if (sourceSetModel !is MultiplatformSourceSetModel) return null
-		return filePath.removePrefix("${sourceSetModel.projectPath}/src/".replace('/', File.separatorChar))
-			.split(File.separatorChar)
-			.firstOrNull()
-	}
-	
-	private fun createNewFile(sourceSet: String, packageName: String, fileName: String): OutputStream? {
-		return if (sourceSetModel is MultiplatformSourceSetModel && sourceSet !in sourceSetModel.nonSharedSourceSets) {
-			val parent = "${sourceSetModel.projectPath}/build/generated/ksp/metadata/$sourceSet/kotlin/".replace('/', File.separatorChar) +
-					packageName.replace('.', File.separatorChar)
-			val parentDir = File(parent)
-			if (parentDir.exists() && !parentDir.isDirectory) {
-				parentDir.delete()
-			}
-			if (!parentDir.exists()) {
-				parentDir.mkdirs()
-			}
-			val file = File(parentDir, "$fileName.kt")
-			if (file.exists()) {
-				file.delete()
-			}
-			file.createNewFile()
-			file.outputStream()
-		} else {
+	private fun KSClassDeclaration.createNewFile(packageName: String, fileName: String): OutputStream? {
+		val getCodeGeneratorCreateNewFile = {
 			codeGenerator.createNewFile(
 				dependencies = Dependencies.ALL_FILES,
 				packageName = packageName,
 				fileName = fileName
 			)
 		}
+		if (sourceSetModel is AndroidOnlySourceSetModel) {
+			return getCodeGeneratorCreateNewFile()
+		}
+		sourceSetModel as MultiplatformSourceSetModel
+		val sourceSet = getSourceSet()
+		if (sourceSet in sourceSetModel.nonSharedSourceSets) {
+			return getCodeGeneratorCreateNewFile()
+		}
+		val parent = "${sourceSetModel.projectPath}/build/generated/ksp/metadata/$sourceSet/kotlin/".replace('/', File.separatorChar) +
+				packageName.replace('.', File.separatorChar)
+		val parentDir = File(parent)
+		if (parentDir.exists() && !parentDir.isDirectory) {
+			parentDir.delete()
+		}
+		if (!parentDir.exists()) {
+			parentDir.mkdirs()
+		}
+		val file = File(parentDir, "$fileName.kt")
+		if (file.exists()) {
+			file.delete()
+		}
+		file.createNewFile()
+		return file.outputStream()
+	}
+	
+	private fun KSClassDeclaration.getSourceSet(): String? {
+		val filePath = this.containingFile?.filePath ?: return null
+		sourceSetModel as MultiplatformSourceSetModel
+		return filePath.removePrefix("${sourceSetModel.projectPath}/src/".replace('/', File.separatorChar))
+			.split(File.separatorChar)
+			.firstOrNull()
 	}
 }

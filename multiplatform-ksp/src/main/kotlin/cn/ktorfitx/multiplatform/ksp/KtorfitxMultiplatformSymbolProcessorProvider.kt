@@ -35,16 +35,13 @@ internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorPro
 		kspLogger = environment.logger
 		Language.set(environment.options[OPTION_LANGUAGE]!!)
 		
-		val sourceSetModel = when (isMultiplatform) {
-			true -> {
-				val projectPath = environment.options[OPTION_PROJECT_PATH]!!
-				val sharedSourceSets = getSharedSourceSets(projectPath)
-				val nonSharedSourceSets = Json.decodeFromString<Set<String>>(environment.options[OPTION_SOURCE_SETS_NON_SHARED_NAMES]!!)
-				MultiplatformSourceSetModel(projectPath, sharedSourceSets, nonSharedSourceSets)
-			}
-			
-			false -> AndroidOnlySourceSetModel
-		}
+		val sourceSetModel = if (isMultiplatform) {
+			val projectPath = environment.options[OPTION_PROJECT_PATH]!!
+			val sharedSourceSets = getSharedSourceSets(projectPath)
+			val nonSharedSourceSets = Json.decodeFromString<Set<String>>(environment.options[OPTION_SOURCE_SETS_NON_SHARED_NAMES]!!)
+			MultiplatformSourceSetModel(projectPath, sharedSourceSets, nonSharedSourceSets)
+		} else AndroidOnlySourceSetModel
+		
 		return KtorfitxMultiplatformSymbolProcessor(
 			codeGenerator = environment.codeGenerator,
 			sourceSetModel = sourceSetModel

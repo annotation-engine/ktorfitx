@@ -87,8 +87,8 @@ class KtorfitxAndroidPlugin : Plugin<Project> {
 		}
 	}
 	
-	private fun DependencyHandlerScope.ksp(path: String, mode: Property<Boolean>) {
-		this.addProvider("ksp", mode.map {
+	private fun DependencyHandlerScope.ksp(path: String, isDevelopmentMode: Property<Boolean>) {
+		this.addProvider("ksp", isDevelopmentMode.map {
 			if (it) project(":$path") else "$GROUP_NAME:$path:$VERSION"
 		})
 	}
