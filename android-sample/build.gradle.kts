@@ -1,4 +1,3 @@
-import cn.ktorfitx.android.gradle.plugin.KtorfitxAndroidMode
 import cn.ktorfitx.android.gradle.plugin.KtorfitxLanguage
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
@@ -53,7 +52,7 @@ dependencies {
 }
 
 ktorfitx {
-	mode = KtorfitxAndroidMode.DEVELOPMENT
+	isDevelopmentMode = true
 	language = KtorfitxLanguage.CHINESE
 	websockets {
 		enabled = true

@@ -1,5 +1,5 @@
+
 import cn.ktorfitx.server.gradle.plugin.KtorfitxLanguage
-import cn.ktorfitx.server.gradle.plugin.KtorfitxServerMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
@@ -35,7 +35,7 @@ dependencies {
 }
 
 ktorfitx {
-	mode = KtorfitxServerMode.DEVELOPMENT
+	isDevelopmentMode = true
 	auth.enabled = true
 	websockets.enabled = true
 	language = KtorfitxLanguage.CHINESE

@@ -2,7 +2,6 @@ import cn.ktorfitx.build.gradle.Platform
 import cn.ktorfitx.build.gradle.configurePlatformFeatures
 import cn.ktorfitx.build.gradle.toPlatforms
 import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxLanguage
-import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxMultiplatformMode
 import com.google.devtools.ksp.gradle.KspAATask
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -176,7 +175,7 @@ compose.desktop {
 }
 
 ktorfitx {
-	mode = KtorfitxMultiplatformMode.DEVELOPMENT
+	isDevelopmentMode = true
 	language = KtorfitxLanguage.CHINESE
 	websockets {
 		enabled = true

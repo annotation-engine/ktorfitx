@@ -9,7 +9,7 @@ open class KtorfitxAndroidExtension @Inject constructor(
 	objects: ObjectFactory
 ) {
 	
-	val mode = objects.property<KtorfitxAndroidMode>().convention(KtorfitxAndroidMode.RELEASE)
+	val isDevelopmentMode = objects.property<Boolean>().convention(false)
 	val websockets = objects.newInstance<WebsocketsConfig>()
 	val mock = objects.newInstance<MockConfig>()
 	val language = objects.property<KtorfitxLanguage>().convention(KtorfitxLanguage.ENGLISH)
@@ -21,11 +21,6 @@ open class KtorfitxAndroidExtension @Inject constructor(
 	fun mock(action: MockConfig.() -> Unit) {
 		mock.action()
 	}
-}
-
-enum class KtorfitxAndroidMode {
-	DEVELOPMENT,
-	RELEASE
 }
 
 open class WebsocketsConfig @Inject constructor(objects: ObjectFactory) {

@@ -9,7 +9,7 @@ open class KtorfitxServerExtension @Inject constructor(
 	objects: ObjectFactory
 ) {
 	
-	val mode = objects.property<KtorfitxServerMode>().convention(KtorfitxServerMode.RELEASE)
+	val isDevelopmentMode = objects.property<Boolean>().convention(false)
 	
 	val websockets = objects.newInstance<WebsocketsConfig>()
 	
@@ -30,11 +30,6 @@ open class KtorfitxServerExtension @Inject constructor(
 	fun generate(action: GenerateConfig.() -> Unit) {
 		generate.action()
 	}
-}
-
-enum class KtorfitxServerMode {
-	DEVELOPMENT,
-	RELEASE
 }
 
 enum class KtorfitxLanguage {

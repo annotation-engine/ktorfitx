@@ -1,7 +1,5 @@
 package cn.ktorfitx.multiplatform.gradle.plugin
 
-import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxMultiplatformMode.DEVELOPMENT
-import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxMultiplatformMode.RELEASE
 import com.google.devtools.ksp.gradle.KspAATask
 import com.google.devtools.ksp.gradle.KspExtension
 import com.google.devtools.ksp.gradle.KspTask
@@ -10,6 +8,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
+import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.project
@@ -49,20 +48,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 				error(MISSING_GRADLE_PLUGIN("com.google.devtools.ksp"))
 			}
 			
-			val hasKtorClientCore = configurations.any {
-				val dependency = it.dependencies.find { it.group == "io.ktor" && it.name.startsWith("ktor-client-core") }
-				if (dependency != null) {
-					if (dependency.version != KTOR_VERSION) {
-						VERSION_NOT_MATCH("${dependency.group}:${dependency.name}", dependency.version, KTOR_VERSION)
-					}
-					true
-				} else false
-			}
-			if (!hasKtorClientCore) {
-				error(MISSING_DEPENDENCIES("io.ktor:ktor-client-core", KTOR_VERSION))
-			}
-			
-			val mode = extension.mode.get()
+			val isDevelopmentMode = extension.isDevelopmentMode
 			val websocketsEnabled = extension.websockets.enabled.get()
 			val mockEnabled = extension.mock.enabled.get()
 			val kspExtension = extensions.getByType<KspExtension>().apply {
@@ -73,13 +59,15 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 			extensions.getByType<KotlinMultiplatformExtension>().apply {
 				sourceSets.commonMain {
 					dependencies {
-						implementation("multiplatform-annotation", mode)
-						implementation("multiplatform-core", mode)
+						checkDependency("io.ktor", "ktor-client-core")
+						implementation("multiplatform-annotation", isDevelopmentMode)
+						implementation("multiplatform-core", isDevelopmentMode)
 						if (websocketsEnabled) {
-							implementation("multiplatform-websockets", mode)
+							checkDependency("io.ktor", "ktor-client-websockets")
+							implementation("multiplatform-websockets", isDevelopmentMode)
 						}
 						if (mockEnabled) {
-							implementation("multiplatform-mock", mode)
+							implementation("multiplatform-mock", isDevelopmentMode)
 						}
 					}
 				}
@@ -102,7 +90,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 							it.name != "ksp" &&
 							"Test" !in it.name
 				}.configureEach {
-					add(this.name, "multiplatform-ksp", mode)
+					add(this.name, "multiplatform-ksp", isDevelopmentMode)
 				}
 			}
 			tasks.withType<KspTask>().configureEach {
@@ -203,21 +191,38 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 		file.writeText(json)
 	}
 	
+	private fun Project.checkDependency(group: String, name: String) {
+		val contains = this.configurations.any {
+			val dependency = it.dependencies.find { it.group == group && it.name.startsWith(name) }
+			if (dependency != null) {
+				if (dependency.version != KTOR_VERSION) {
+					error(VERSION_NOT_MATCH(dependency.group, dependency.name, dependency.version, KTOR_VERSION))
+				}
+				true
+			} else false
+		}
+		if (!contains) {
+			error(MISSING_DEPENDENCIES(group, name, KTOR_VERSION))
+		}
+	}
+	
 	private inline operator fun <reified T : Any> KspExtension.set(key: String, value: T) {
 		this.arg(key, value.toString())
 	}
 	
-	private fun KotlinDependencyHandler.implementation(path: String, mode: KtorfitxMultiplatformMode): Dependency? {
-		return when (mode) {
-			DEVELOPMENT -> this.implementation(project(":$path"))
-			RELEASE -> this.implementation("$GROUP_NAME:$path:$VERSION")
+	private fun KotlinDependencyHandler.implementation(path: String, isDevelopmentMode: Property<Boolean>): Dependency? {
+		return if (isDevelopmentMode.get()) {
+			this.implementation(project(":$path"))
+		} else {
+			this.implementation("$GROUP_NAME:$path:$VERSION")
 		}
 	}
 	
-	private fun DependencyHandler.add(configurationName: String, path: String, mode: KtorfitxMultiplatformMode): Dependency? {
-		return when (mode) {
-			DEVELOPMENT -> this.add(configurationName, project(":$path"))
-			RELEASE -> this.add(configurationName, "$GROUP_NAME:$path:$VERSION")
+	private fun DependencyHandler.add(configurationName: String, path: String, isDevelopmentMode: Property<Boolean>): Dependency? {
+		return if (isDevelopmentMode.get()) {
+			this.add(configurationName, project(":$path"))
+		} else {
+			this.add(configurationName, "$GROUP_NAME:$path:$VERSION")
 		}
 	}
 }

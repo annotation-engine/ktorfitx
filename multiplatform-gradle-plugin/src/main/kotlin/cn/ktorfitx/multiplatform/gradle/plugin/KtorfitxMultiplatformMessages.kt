@@ -37,8 +37,8 @@ internal class Message internal constructor() {
 private fun message(config: MessageConfig): MessageConfig = config
 
 internal val MISSING_DEPENDENCIES = message {
-	english { "Please add implementation(\"{1}:{2}\") to build.gradle.kts" }
-	chinese { "请在 build.gradle.kts 中添加 implementation(\"{1}:{2}\")" }
+	english { "Please add implementation(\"{1}:{2}:{2}\") to build.gradle.kts" }
+	chinese { "请在 build.gradle.kts 中添加 implementation(\"{1}:{2}:{3}\")" }
 }
 
 internal val MISSING_GRADLE_PLUGIN = message {
@@ -47,6 +47,6 @@ internal val MISSING_GRADLE_PLUGIN = message {
 }
 
 internal val VERSION_NOT_MATCH = message {
-	english { "The version of dependency \"{1}\" is \"{2}\", but the required version is \"{3}\"." }
-	chinese { "依赖项 \"{1}\" 的版本是 \"{2}\"，但是需要 \"{3}\" 版本" }
+	english { "The version of dependency \"{1}:{2}\" is \"{3}\", but the required version is \"{4}\"." }
+	chinese { "依赖项 \"{1}:{2}\" 的版本是 \"{3}\"，但是需要 \"{4}\" 版本" }
 }

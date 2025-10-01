@@ -1,7 +1,5 @@
 package cn.ktorfitx.server.gradle.plugin
 
-import cn.ktorfitx.server.gradle.plugin.KtorfitxServerMode.DEVELOPMENT
-import cn.ktorfitx.server.gradle.plugin.KtorfitxServerMode.RELEASE
 import com.google.devtools.ksp.gradle.KspExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -32,8 +30,9 @@ class KtorfitxServerPlugin : Plugin<Project> {
 	
 	override fun apply(target: Project) = with(target) {
 		val extension = extensions.create("ktorfitx", KtorfitxServerExtension::class.java)
+		val isDevelopmentMode = extension.isDevelopmentMode
 		dependencies {
-			ksp("server-ksp", extension.mode)
+			ksp("server-ksp", isDevelopmentMode)
 		}
 		afterEvaluate {
 			val language = extension.language.get()
@@ -43,19 +42,6 @@ class KtorfitxServerPlugin : Plugin<Project> {
 				error(MISSING_GRADLE_PLUGIN("com.google.devtools.ksp"))
 			}
 			
-			val hasKtorServerCore = configurations.any {
-				val dependency = it.dependencies.find { it.group == "io.ktor" && it.name.startsWith("ktor-server-core") }
-				if (dependency != null) {
-					if (dependency.version != KTOR_VERSION) {
-						VERSION_NOT_MATCH("${dependency.group}:${dependency.name}", dependency.version, KTOR_VERSION)
-					}
-					true
-				} else false
-			}
-			if (!hasKtorServerCore) {
-				error(MISSING_DEPENDENCIES("io.ktor:ktor-server-core", KTOR_VERSION))
-			}
-			
 			extensions.getByType<KspExtension>().apply {
 				this[OPTION_GENERATE_PACKAGE_NAME] = extension.generate.packageName.getOrElse("$group.generated")
 				this[OPTION_GENERATE_FILE_NAME] = extension.generate.fileName.get().removeSuffix(".kt")
@@ -63,19 +49,37 @@ class KtorfitxServerPlugin : Plugin<Project> {
 				this[OPTION_LANGUAGE] = language.name
 				this[OPTION_IS_SERVER] = true
 			}
-			val mode = extension.mode.get()
+			
 			val authEnabled = extension.auth.enabled.get()
 			val websocketsEnabled = extension.websockets.enabled.get()
 			dependencies {
-				implementation("server-core", mode)
-				implementation("server-annotation", mode)
+				checkDependency("io.ktor", "ktor-server-core")
+				implementation("server-core", isDevelopmentMode)
+				implementation("server-annotation", isDevelopmentMode)
 				if (authEnabled) {
-					implementation("server-auth", mode)
+					checkDependency("io.ktor", "ktor-server-auth")
+					implementation("server-auth", isDevelopmentMode)
 				}
 				if (websocketsEnabled) {
-					implementation("server-websockets", mode)
+					checkDependency("io.ktor", "ktor-server-websockets")
+					implementation("server-websockets", isDevelopmentMode)
 				}
 			}
+		}
+	}
+	
+	private fun Project.checkDependency(group: String, name: String) {
+		val contains = this.configurations.any {
+			val dependency = it.dependencies.find { it.group == group && it.name.startsWith(name) }
+			if (dependency != null) {
+				if (dependency.version != KTOR_VERSION) {
+					error(VERSION_NOT_MATCH("${dependency.group}:${dependency.name}", dependency.version, KTOR_VERSION))
+				}
+				true
+			} else false
+		}
+		if (!contains) {
+			error(MISSING_DEPENDENCIES(group, name, KTOR_VERSION))
 		}
 	}
 	
@@ -83,19 +87,17 @@ class KtorfitxServerPlugin : Plugin<Project> {
 		this.arg(key, value.toString())
 	}
 	
-	private fun DependencyHandlerScope.implementation(path: String, mode: KtorfitxServerMode): Dependency? {
-		return when (mode) {
-			DEVELOPMENT -> this.add("implementation", project(":$path"))
-			RELEASE -> this.add("implementation", "$GROUP_NAME:$path:$VERSION")
+	private fun DependencyHandlerScope.implementation(path: String, isDevelopmentMode: Property<Boolean>): Dependency? {
+		return if (isDevelopmentMode.get()) {
+			this.add("implementation", project(":$path"))
+		} else {
+			this.add("implementation", "$GROUP_NAME:$path:$VERSION")
 		}
 	}
 	
-	private fun DependencyHandlerScope.ksp(path: String, mode: Property<KtorfitxServerMode>) {
-		this.addProvider("ksp", mode.map {
-			when (it) {
-				DEVELOPMENT -> project(":$path")
-				RELEASE -> "$GROUP_NAME:$path:$VERSION"
-			}
+	private fun DependencyHandlerScope.ksp(path: String, isDevelopmentMode: Property<Boolean>) {
+		this.addProvider("ksp", isDevelopmentMode.map {
+			if (it) project(":$path") else "$GROUP_NAME:$path:$VERSION"
 		})
 	}
 }

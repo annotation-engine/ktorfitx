@@ -9,7 +9,7 @@ open class KtorfitxMultiplatformExtension @Inject constructor(
 	objects: ObjectFactory
 ) {
 	
-	val mode = objects.property<KtorfitxMultiplatformMode>().convention(KtorfitxMultiplatformMode.RELEASE)
+	val isDevelopmentMode = objects.property<Boolean>().convention(false)
 	val websockets = objects.newInstance<WebsocketsConfig>()
 	val mock = objects.newInstance<MockConfig>()
 	val language = objects.property<KtorfitxLanguage>().convention(KtorfitxLanguage.ENGLISH)
@@ -21,11 +21,6 @@ open class KtorfitxMultiplatformExtension @Inject constructor(
 	fun mock(action: MockConfig.() -> Unit) {
 		mock.action()
 	}
-}
-
-enum class KtorfitxMultiplatformMode {
-	DEVELOPMENT,
-	RELEASE
 }
 
 open class WebsocketsConfig @Inject constructor(objects: ObjectFactory) {
