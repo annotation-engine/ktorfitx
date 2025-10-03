@@ -21,11 +21,13 @@ class KtorfitxServerPlugin : Plugin<Project> {
 		
 		private const val GROUP_NAME = "cn.ktorfitx"
 		
-		private const val OPTION_IS_SERVER = "ktorfitx.isServer"
+		private const val OPTION_TYPE = "ktorfitx.type"
 		private const val OPTION_GENERATE_PACKAGE_NAME = "ktorfitx.generate.packageName"
 		private const val OPTION_GENERATE_FILE_NAME = "ktorfitx.generate.fileName"
 		private const val OPTION_GENERATE_FUN_NAME = "ktorfitx.generate.funName"
 		private const val OPTION_LANGUAGE = "ktorfitx.language"
+		
+		private const val TYPE_KTOR_SERVER = "KTOR_SERVER"
 	}
 	
 	override fun apply(target: Project) = with(target) {
@@ -47,7 +49,7 @@ class KtorfitxServerPlugin : Plugin<Project> {
 				this[OPTION_GENERATE_FILE_NAME] = extension.generate.fileName.get().removeSuffix(".kt")
 				this[OPTION_GENERATE_FUN_NAME] = extension.generate.funName.get()
 				this[OPTION_LANGUAGE] = language.name
-				this[OPTION_IS_SERVER] = true
+				this[OPTION_TYPE] = TYPE_KTOR_SERVER
 			}
 			
 			val authEnabled = extension.auth.enabled.get()

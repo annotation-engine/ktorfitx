@@ -27,12 +27,14 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 		
 		private const val GROUP_NAME = "cn.ktorfitx"
 		
-		private const val OPTION_IS_MULTIPLATFORM = "ktorfitx.isMultiplatform"
+		private const val OPTION_TYPE = "ktorfitx.type"
 		private const val OPTION_LANGUAGE = "ktorfitx.language"
 		private const val OPTION_SOURCE_SETS_NON_SHARED_NAMES = "ktorfitx.sourceSets.nonSharedNames"
 		private const val OPTION_PROJECT_PATH = "ktorfitx.project.path"
 		
-		private const val PATH_BUILD_KTORFITX = "/build/ktorfitx"
+		private const val PATH_BUILD_KTORFITX = "build/ktorfitx"
+		
+		private const val TYPE_KOTLIN_MULTIPLATFORM = "KOTLIN_MULTIPLATFORM"
 	}
 	
 	override fun apply(target: Project) = with(target) {
@@ -53,7 +55,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 			val mockEnabled = extension.mock.enabled.get()
 			val kspExtension = extensions.getByType<KspExtension>().apply {
 				this[OPTION_LANGUAGE] = language.name
-				this[OPTION_IS_MULTIPLATFORM] = true
+				this[OPTION_TYPE] = TYPE_KOTLIN_MULTIPLATFORM
 				this[OPTION_PROJECT_PATH] = projectDir.absolutePath
 			}
 			extensions.getByType<KotlinMultiplatformExtension>().apply {
@@ -74,7 +76,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 				
 				val nonSharedNames = sourceSets.mapNotNull {
 					it.name.takeIf { "Test" !in it && it != "commonMain" }
-				}
+				}.toSet()
 				kspExtension[OPTION_SOURCE_SETS_NON_SHARED_NAMES] = Json.encodeToString(nonSharedNames)
 				
 				sourceSets.configureEach {
@@ -174,7 +176,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 	}
 	
 	private fun write(projectPath: String, sharedSourceSets: Set<String>) {
-		val parent = File("$projectPath$PATH_BUILD_KTORFITX".replace('/', File.separatorChar))
+		val parent = File("$projectPath/$PATH_BUILD_KTORFITX".replace('/', File.separatorChar))
 		if (!parent.exists()) {
 			parent.mkdirs()
 		}

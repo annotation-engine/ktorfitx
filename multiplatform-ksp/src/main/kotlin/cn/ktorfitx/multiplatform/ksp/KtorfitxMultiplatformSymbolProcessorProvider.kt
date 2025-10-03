@@ -17,25 +17,31 @@ internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorPro
 	
 	private companion object {
 		
-		private const val OPTION_IS_MULTIPLATFORM = "ktorfitx.isMultiplatform"
+		private const val OPTION_TYPE = "ktorfitx.type"
 		private const val OPTION_LANGUAGE = "ktorfitx.language"
 		private const val OPTION_SOURCE_SETS_NON_SHARED_NAMES = "ktorfitx.sourceSets.nonSharedNames"
 		private const val OPTION_PROJECT_PATH = "ktorfitx.project.path"
 		
-		private const val PATH_BUILD_KTORFITX = "/build/ktorfitx"
+		private const val PATH_BUILD_KTORFITX = "build/ktorfitx"
+		
+		private const val TYPE_KOTLIN_MULTIPLATFORM = "KOTLIN_MULTIPLATFORM"
+		
+		private const val TYPE_ANDROID = "ANDROID"
 	}
 	
 	override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
+		val type = environment.options[OPTION_TYPE]?.takeIf {
+			it == TYPE_ANDROID || it == TYPE_KOTLIN_MULTIPLATFORM
+		} ?: ktorfitxConfigError(MESSAGE_MISSING_GRADLE_PLUGIN())
+		
 		if (environment.platforms.size > 1) {
 			return EmptySymbolProcessor
 		}
-		val isMultiplatform = environment.options[OPTION_IS_MULTIPLATFORM]?.toBoolean()
-			?: ktorfitxConfigError(MESSAGE_MISSING_GRADLE_PLUGIN())
 		
 		kspLogger = environment.logger
 		Language.set(environment.options[OPTION_LANGUAGE]!!)
 		
-		val sourceSetModel = if (isMultiplatform) {
+		val sourceSetModel = if (type == TYPE_KOTLIN_MULTIPLATFORM) {
 			val projectPath = environment.options[OPTION_PROJECT_PATH]!!
 			val sharedSourceSets = getSharedSourceSets(projectPath)
 			val nonSharedSourceSets = Json.decodeFromString<Set<String>>(environment.options[OPTION_SOURCE_SETS_NON_SHARED_NAMES]!!)
@@ -49,13 +55,11 @@ internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorPro
 	}
 	
 	private object EmptySymbolProcessor : SymbolProcessor {
-		override fun process(resolver: Resolver): List<KSAnnotated> {
-			return emptyList()
-		}
+		override fun process(resolver: Resolver): List<KSAnnotated> = emptyList()
 	}
 	
 	private fun getSharedSourceSets(projectPath: String): Set<String> {
-		val file = File("$projectPath$PATH_BUILD_KTORFITX".replace('/', File.separatorChar), "sharedSourceSets.json")
+		val file = File("$projectPath/$PATH_BUILD_KTORFITX".replace('/', File.separatorChar), "sharedSourceSets.json")
 		if (!file.exists()) return emptySet()
 		return try {
 			Json.decodeFromString<Set<String>>(file.readText())

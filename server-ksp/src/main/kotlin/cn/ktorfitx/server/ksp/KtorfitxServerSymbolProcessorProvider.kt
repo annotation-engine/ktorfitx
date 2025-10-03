@@ -13,15 +13,17 @@ internal class KtorfitxServerSymbolProcessorProvider : SymbolProcessorProvider {
 	
 	private companion object {
 		
-		private const val OPTION_IS_SERVER = "ktorfitx.isServer"
+		private const val OPTION_TYPE = "ktorfitx.type"
 		private const val OPTION_GENERATE_PACKAGE_NAME = "ktorfitx.generate.packageName"
 		private const val OPTION_GENERATE_FILE_NAME = "ktorfitx.generate.fileName"
 		private const val OPTION_GENERATE_FUN_NAME = "ktorfitx.generate.funName"
 		private const val OPTION_LANGUAGE = "ktorfitx.language"
+		
+		private const val TYPE_KTOR_SERVER = "KTOR_SERVER"
 	}
 	
 	override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-		if (!environment.options[OPTION_IS_SERVER].toBoolean()) {
+		if (environment.options[OPTION_TYPE] != TYPE_KTOR_SERVER) {
 			ktorfitxConfigError(MESSAGE_MISSING_GRADLE_PLUGIN())
 		}
 		kspLogger = environment.logger

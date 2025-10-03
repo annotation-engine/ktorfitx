@@ -1,4 +1,3 @@
-
 import cn.ktorfitx.server.gradle.plugin.KtorfitxLanguage
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion

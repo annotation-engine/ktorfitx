@@ -16,9 +16,11 @@ class KtorfitxAndroidPlugin : Plugin<Project> {
 		
 		private const val GROUP_NAME = "cn.ktorfitx"
 		
-		private const val OPTION_IS_MULTIPLATFORM = "ktorfitx.isMultiplatform"
+		private const val OPTION_TYPE = "ktorfitx.type"
 		private const val OPTION_LANGUAGE = "ktorfitx.language"
 		private const val OPTION_PROJECT_PATH = "ktorfitx.project.path"
+		
+		private const val TYPE_ANDROID = "ANDROID"
 	}
 	
 	override fun apply(target: Project) = with(target) {
@@ -42,7 +44,7 @@ class KtorfitxAndroidPlugin : Plugin<Project> {
 			val mockEnabled = extension.mock.enabled.get()
 			extensions.getByType<KspExtension>().apply {
 				this[OPTION_LANGUAGE] = language.name
-				this[OPTION_IS_MULTIPLATFORM] = false
+				this[OPTION_TYPE] = TYPE_ANDROID
 				this[OPTION_PROJECT_PATH] = projectDir.absolutePath
 			}
 			dependencies {
