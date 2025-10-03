@@ -25,7 +25,6 @@ internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorPro
 		private const val PATH_BUILD_KTORFITX = "build/ktorfitx"
 		
 		private const val TYPE_KOTLIN_MULTIPLATFORM = "KOTLIN_MULTIPLATFORM"
-		
 		private const val TYPE_ANDROID = "ANDROID"
 	}
 	
@@ -41,16 +40,18 @@ internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorPro
 		kspLogger = environment.logger
 		Language.set(environment.options[OPTION_LANGUAGE]!!)
 		
+		val projectPath = environment.options[OPTION_PROJECT_PATH]!!
+		
 		val sourceSetModel = if (type == TYPE_KOTLIN_MULTIPLATFORM) {
-			val projectPath = environment.options[OPTION_PROJECT_PATH]!!
 			val sharedSourceSets = getSharedSourceSets(projectPath)
 			val nonSharedSourceSets = Json.decodeFromString<Set<String>>(environment.options[OPTION_SOURCE_SETS_NON_SHARED_NAMES]!!)
-			MultiplatformSourceSetModel(projectPath, sharedSourceSets, nonSharedSourceSets)
+			MultiplatformSourceSetModel(sharedSourceSets, nonSharedSourceSets)
 		} else AndroidOnlySourceSetModel
 		
 		return KtorfitxMultiplatformSymbolProcessor(
 			codeGenerator = environment.codeGenerator,
-			sourceSetModel = sourceSetModel
+			sourceSetModel = sourceSetModel,
+			projectPath = projectPath
 		)
 	}
 	
@@ -59,7 +60,7 @@ internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorPro
 	}
 	
 	private fun getSharedSourceSets(projectPath: String): Set<String> {
-		val file = File("$projectPath/$PATH_BUILD_KTORFITX".replace('/', File.separatorChar), "sharedSourceSets.json")
+		val file = File("$projectPath/$PATH_BUILD_KTORFITX", "sharedSourceSets.json")
 		if (!file.exists()) return emptySet()
 		return try {
 			Json.decodeFromString<Set<String>>(file.readText())
@@ -72,7 +73,6 @@ internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorPro
 internal sealed interface SourceSetModel
 
 internal class MultiplatformSourceSetModel(
-	val projectPath: String,
 	val sharedSourceSets: Set<String>,
 	val nonSharedSourceSets: Set<String>
 ) : SourceSetModel

@@ -82,8 +82,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 				sourceSets.configureEach {
 					if ("Test" in name) return@configureEach
 					if (name in nonSharedNames) return@configureEach
-					val srcPath = "build/generated/ksp/metadata/$name/kotlin".replace('/', File.separatorChar)
-					this.kotlin.srcDir(srcPath)
+					this.kotlin.srcDir("build/generated/ksp/metadata/$name/kotlin")
 				}
 			}
 			dependencies {
@@ -105,14 +104,30 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 					dependsOn("kspCommonMainKotlinMetadata")
 				}
 			}
-			listOf(
-				"generateResourceAccessorsForAndroidDebug",
-				"generateResourceAccessorsForAndroidMain",
-				"generateResourceAccessorsForAndroidRelease"
-			).forEach { name ->
-				if (name in tasks.names) {
-					tasks.named(name).configure {
-						dependsOn("kspDebugKotlinAndroid", "kspReleaseKotlinAndroid")
+			val isAndroid = gradle.startParameter.taskNames.any { "assemble" in it }
+			if (isAndroid) {
+				val isRelease = gradle.startParameter.taskNames.any { "assembleRelease" in it }
+				if (isRelease) {
+					listOf(
+						"generateResourceAccessorsForAndroidRelease",
+						"generateResourceAccessorsForAndroidMain"
+					).forEach { name ->
+						if (name in tasks.names) {
+							tasks.named(name).configure {
+								this.dependsOn("kspReleaseKotlinAndroid")
+							}
+						}
+					}
+				} else {
+					listOf(
+						"generateResourceAccessorsForAndroidDebug",
+						"generateResourceAccessorsForAndroidMain"
+					).forEach { name ->
+						if (name in tasks.names) {
+							tasks.named(name).configure {
+								this.dependsOn("kspDebugKotlinAndroid")
+							}
+						}
 					}
 				}
 			}
@@ -176,7 +191,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 	}
 	
 	private fun write(projectPath: String, sharedSourceSets: Set<String>) {
-		val parent = File("$projectPath/$PATH_BUILD_KTORFITX".replace('/', File.separatorChar))
+		val parent = File("$projectPath/$PATH_BUILD_KTORFITX")
 		if (!parent.exists()) {
 			parent.mkdirs()
 		}

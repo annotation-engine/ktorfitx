@@ -8,8 +8,3 @@ ksp = { group = "com.google.devtools.ksp", name = "symbol-processing-gradle-plug
 
 [plugins]
 maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }
-
-[bundles]
-gradle-plugin = [
-    'ksp'
-]

@@ -47,6 +47,7 @@ class KtorfitxAndroidPlugin : Plugin<Project> {
 				this[OPTION_TYPE] = TYPE_ANDROID
 				this[OPTION_PROJECT_PATH] = projectDir.absolutePath
 			}
+			
 			dependencies {
 				checkDependency("io.ktor", "ktor-client-core")
 				implementation("multiplatform-annotation", isDevelopmentMode)

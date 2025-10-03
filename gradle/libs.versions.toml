@@ -15,7 +15,6 @@ androidx-activity-compose = "1.11.0"
 androidx-compose = "1.9.2"
 androidx-material3 = "1.4.0"
 
-
 [libraries]
 # Common
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }

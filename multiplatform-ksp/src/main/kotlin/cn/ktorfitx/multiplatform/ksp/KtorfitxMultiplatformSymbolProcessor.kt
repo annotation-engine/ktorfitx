@@ -1,6 +1,7 @@
 package cn.ktorfitx.multiplatform.ksp
 
 import cn.ktorfitx.common.ksp.util.check.ktorfitxCheck
+import cn.ktorfitx.common.ksp.util.io.deleteDirectory
 import cn.ktorfitx.common.ksp.util.message.invoke
 import cn.ktorfitx.common.ksp.util.resolver.getCustomHttpMethodModels
 import cn.ktorfitx.common.ksp.util.resolver.safeResolver
@@ -20,12 +21,13 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.validate
+import com.squareup.kotlinpoet.FileSpec
 import java.io.File
-import java.io.OutputStream
 
 internal class KtorfitxMultiplatformSymbolProcessor(
 	private val codeGenerator: CodeGenerator,
-	private val sourceSetModel: SourceSetModel
+	private val sourceSetModel: SourceSetModel,
+	private val projectPath: String
 ) : SymbolProcessor {
 	
 	override fun process(resolver: Resolver): List<KSAnnotated> {
@@ -48,23 +50,12 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 	private fun Sequence<KSClassDeclaration>.deleteSharedSourceSetsDirs(): Sequence<KSClassDeclaration> {
 		if (sourceSetModel is MultiplatformSourceSetModel) {
 			sourceSetModel.sharedSourceSets.forEach {
-				val parent = "${sourceSetModel.projectPath}/build/generated/ksp/metadata/$it".replace('/', File.separatorChar)
+				val parent = "$projectPath/build/generated/ksp/metadata/$it"
 				val parentDir = File(parent)
-				deleteDirectory(parentDir)
+				parentDir.deleteDirectory()
 			}
 		}
 		return this
-	}
-	
-	private fun deleteDirectory(file: File) {
-		if (!file.exists()) return
-		
-		if (file.isDirectory) {
-			file.listFiles()?.forEach { child ->
-				deleteDirectory(child)
-			}
-		}
-		file.delete()
 	}
 	
 	private fun KSClassDeclaration.dispose(customHttpMethodModels: List<CustomHttpMethodModel>) {
@@ -80,31 +71,36 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 		val classModel = this.accept(ApiVisitor, customHttpMethodModels)
 		val fileSpec = ApiKotlinPoet.getFileSpec(classModel)
 		val className = classModel.className
+		val packageName = className.packageName
+		val fileName = className.simpleName
 		
-		createNewFile(
-			packageName = className.packageName,
-			fileName = className.simpleName
-		)?.bufferedWriter()?.use(fileSpec::writeTo)
+		createNewFile(packageName, fileName, fileSpec)
 	}
 	
-	private fun KSClassDeclaration.createNewFile(packageName: String, fileName: String): OutputStream? {
-		val getCodeGeneratorCreateNewFile = {
+	private fun KSClassDeclaration.createNewFile(
+		packageName: String,
+		fileName: String,
+		fileSpec: FileSpec
+	) {
+		val codeGeneratorCreateNewFile = {
 			codeGenerator.createNewFile(
 				dependencies = Dependencies.ALL_FILES,
 				packageName = packageName,
 				fileName = fileName
-			)
+			).bufferedWriter().use(fileSpec::writeTo)
 		}
 		if (sourceSetModel is AndroidOnlySourceSetModel) {
-			return getCodeGeneratorCreateNewFile()
+			codeGeneratorCreateNewFile()
+			return
 		}
 		sourceSetModel as MultiplatformSourceSetModel
 		val sourceSet = getSourceSet()
 		if (sourceSet in sourceSetModel.nonSharedSourceSets) {
-			return getCodeGeneratorCreateNewFile()
+			codeGeneratorCreateNewFile()
+			return
 		}
-		val parent = "${sourceSetModel.projectPath}/build/generated/ksp/metadata/$sourceSet/kotlin/".replace('/', File.separatorChar) +
-				packageName.replace('.', File.separatorChar)
+		val parent = "$projectPath/build/generated/ksp/metadata/$sourceSet/kotlin/" +
+				packageName.replace('.', '/')
 		val parentDir = File(parent)
 		if (parentDir.exists() && !parentDir.isDirectory) {
 			parentDir.delete()
@@ -117,14 +113,16 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 			file.delete()
 		}
 		file.createNewFile()
-		return file.outputStream()
+		file.outputStream()
+			.bufferedWriter()
+			.use(fileSpec::writeTo)
 	}
 	
 	private fun KSClassDeclaration.getSourceSet(): String? {
 		val filePath = this.containingFile?.filePath ?: return null
 		sourceSetModel as MultiplatformSourceSetModel
-		return filePath.removePrefix("${sourceSetModel.projectPath}/src/".replace('/', File.separatorChar))
-			.split(File.separatorChar)
+		return filePath.removePrefix("$projectPath/src/")
+			.split('/')
 			.firstOrNull()
 	}
 }
