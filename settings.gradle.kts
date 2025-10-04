@@ -11,9 +11,7 @@ pluginManagement {
 		maven("https://maven.aliyun.com/repository/public")
 		maven("https://maven.aliyun.com/repository/gradle-plugin")
 	}
-	includeBuild("android-gradle-plugin")
-	includeBuild("multiplatform-gradle-plugin")
-	includeBuild("server-gradle-plugin")
+	includeBuild("gradle-plugin")
 }
 
 plugins {

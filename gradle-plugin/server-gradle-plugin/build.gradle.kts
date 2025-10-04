@@ -21,7 +21,7 @@ gradlePlugin {
 }
 
 dependencies {
-	implementation(libs.ksp)
+	implementation(libs.bundles.server.gradle.plugin)
 }
 
 mavenPublishing {

@@ -21,7 +21,7 @@ gradlePlugin {
 }
 
 dependencies {
-	implementation(libs.bundles.gradle.plugin)
+	implementation(libs.bundles.multiplatform.gradle.plugin)
 }
 
 mavenPublishing {
