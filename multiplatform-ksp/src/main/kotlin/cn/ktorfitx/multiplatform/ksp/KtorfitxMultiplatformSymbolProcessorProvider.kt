@@ -10,8 +10,6 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
-import kotlinx.serialization.json.Json
-import java.io.File
 
 internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorProvider {
 	
@@ -19,10 +17,10 @@ internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorPro
 		
 		private const val OPTION_TYPE = "ktorfitx.type"
 		private const val OPTION_LANGUAGE = "ktorfitx.language"
-		private const val OPTION_SOURCE_SETS_NON_SHARED_NAMES = "ktorfitx.sourceSets.nonSharedNames"
-		private const val OPTION_PROJECT_PATH = "ktorfitx.project.path"
 		
-		private const val PATH_BUILD_KTORFITX = "build/ktorfitx"
+		private const val OPTION_SOURCE_SETS_ALL_NON_SHARED_NAMES = "ktorfitx.sourceSets.allNonSharedNames"
+		private const val OPTION_SOURCE_SETS_CURRENT_SHARED_NAMES = "ktorfitx.sourceSets.currentSharedNames"
+		private const val OPTION_PROJECT_PATH = "ktorfitx.project.path"
 		
 		private const val TYPE_KOTLIN_MULTIPLATFORM = "KOTLIN_MULTIPLATFORM"
 		private const val TYPE_ANDROID = "ANDROID"
@@ -43,9 +41,9 @@ internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorPro
 		val projectPath = environment.options[OPTION_PROJECT_PATH]!!
 		
 		val sourceSetModel = if (type == TYPE_KOTLIN_MULTIPLATFORM) {
-			val sharedSourceSets = getSharedSourceSets(projectPath)
-			val nonSharedSourceSets = Json.decodeFromString<Set<String>>(environment.options[OPTION_SOURCE_SETS_NON_SHARED_NAMES]!!)
-			MultiplatformSourceSetModel(sharedSourceSets, nonSharedSourceSets)
+			val currentSharedSets = environment.options[OPTION_SOURCE_SETS_CURRENT_SHARED_NAMES]!!.split(",")
+			val allNonSharedSourceSets = environment.options[OPTION_SOURCE_SETS_ALL_NON_SHARED_NAMES]!!.split(",")
+			MultiplatformSourceSetModel(currentSharedSets, allNonSharedSourceSets)
 		} else AndroidOnlySourceSetModel
 		
 		return KtorfitxMultiplatformSymbolProcessor(
@@ -58,23 +56,13 @@ internal class KtorfitxMultiplatformSymbolProcessorProvider : SymbolProcessorPro
 	private object EmptySymbolProcessor : SymbolProcessor {
 		override fun process(resolver: Resolver): List<KSAnnotated> = emptyList()
 	}
-	
-	private fun getSharedSourceSets(projectPath: String): Set<String> {
-		val file = File("$projectPath/$PATH_BUILD_KTORFITX", "sharedSourceSets.json")
-		if (!file.exists()) return emptySet()
-		return try {
-			Json.decodeFromString<Set<String>>(file.readText())
-		} catch (_: Exception) {
-			emptySet()
-		}
-	}
 }
 
 internal sealed interface SourceSetModel
 
 internal class MultiplatformSourceSetModel(
-	val sharedSourceSets: Set<String>,
-	val nonSharedSourceSets: Set<String>
+	val currentSharedSourceSets: List<String>,
+	val allNonSharedSourceSets: List<String>
 ) : SourceSetModel
 
 internal object AndroidOnlySourceSetModel : SourceSetModel

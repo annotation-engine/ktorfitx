@@ -2,12 +2,11 @@ package cn.ktorfitx.multiplatform.gradle.plugin
 
 import com.google.devtools.ksp.gradle.KspAATask
 import com.google.devtools.ksp.gradle.KspExtension
-import com.google.devtools.ksp.gradle.KspTask
-import kotlinx.serialization.json.Json
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
@@ -15,7 +14,6 @@ import org.gradle.kotlin.dsl.project
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
-import java.io.File
 
 @Suppress("unused")
 class KtorfitxMultiplatformPlugin : Plugin<Project> {
@@ -29,7 +27,8 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 		
 		private const val OPTION_TYPE = "ktorfitx.type"
 		private const val OPTION_LANGUAGE = "ktorfitx.language"
-		private const val OPTION_SOURCE_SETS_NON_SHARED_NAMES = "ktorfitx.sourceSets.nonSharedNames"
+		private const val OPTION_SOURCE_SETS_ALL_NON_SHARED_NAMES = "ktorfitx.sourceSets.allNonSharedNames"
+		private const val OPTION_SOURCE_SETS_CURRENT_SHARED_NAMES = "ktorfitx.sourceSets.currentSharedNames"
 		private const val OPTION_PROJECT_PATH = "ktorfitx.project.path"
 		
 		private const val PATH_BUILD_KTORFITX = "build/ktorfitx"
@@ -74,14 +73,14 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 					}
 				}
 				
-				val nonSharedNames = sourceSets.mapNotNull {
-					it.name.takeIf { "Test" !in it && it != "commonMain" }
-				}.toSet()
-				kspExtension[OPTION_SOURCE_SETS_NON_SHARED_NAMES] = Json.encodeToString(nonSharedNames)
+				val allNonSharedNames = sourceSets.mapNotNull { sourceSet ->
+					sourceSet.name.takeIf { "Test" !in it && it != "commonMain" }
+				}
+				kspExtension[OPTION_SOURCE_SETS_ALL_NON_SHARED_NAMES] = allNonSharedNames.joinToString(",")
 				
 				sourceSets.configureEach {
 					if ("Test" in name) return@configureEach
-					if (name in nonSharedNames) return@configureEach
+					if (name in allNonSharedNames) return@configureEach
 					this.kotlin.srcDir("build/generated/ksp/metadata/$name/kotlin")
 				}
 			}
@@ -94,12 +93,11 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 					add(this.name, "multiplatform-ksp", isDevelopmentMode)
 				}
 			}
-			tasks.withType<KspTask>().configureEach {
-				this.doFirst {
-					writeSharedSourceSetsNames(projectDir.absolutePath, this.name)
-				}
-			}
 			tasks.withType<KspAATask>().configureEach {
+				doFirst {
+					val currentSharedSourceSets = getCurrentSharedSourceSets(this.name)
+					kspConfig.processorOptions[OPTION_SOURCE_SETS_CURRENT_SHARED_NAMES] = currentSharedSourceSets.joinToString(",")
+				}
 				if (name != "kspCommonMainKotlinMetadata") {
 					dependsOn("kspCommonMainKotlinMetadata")
 				}
@@ -173,34 +171,16 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 		"web" to "common"
 	)
 	
-	private fun writeSharedSourceSetsNames(projectPath: String, taskName: String) {
-		if ("Test" in taskName) {
-			write(projectPath, emptySet())
-			return
-		}
-		var currentSourceSet = when {
-			taskName in listOf("kspDebugKotlinAndroid", "kspReleaseKotlinAndroid") -> "androidMain"
+	private fun getCurrentSharedSourceSets(taskName: String): List<String> {
+		if ("Test" in taskName) return emptyList()
+		val seed = when {
+			"Android" in taskName -> "android"
+			"CommonMain" in taskName -> "common"
 			else -> taskName.removePrefix("kspKotlin").replaceFirstChar { it.lowercaseChar() }
 		}
-		val sharedSourceSets = mutableSetOf<String>()
-		while (currentSourceSet in sourceSetRelationMap) {
-			currentSourceSet = sourceSetRelationMap[currentSourceSet]!!
-			sharedSourceSets += "${currentSourceSet}Main"
-		}
-		write(projectPath, sharedSourceSets)
-	}
-	
-	private fun write(projectPath: String, sharedSourceSets: Set<String>) {
-		val parent = File("$projectPath/$PATH_BUILD_KTORFITX")
-		if (!parent.exists()) {
-			parent.mkdirs()
-		}
-		val file = File(parent, "sharedSourceSets.json")
-		if (!file.exists()) {
-			file.createNewFile()
-		}
-		val json = Json.encodeToString(sharedSourceSets)
-		file.writeText(json)
+		return generateSequence(seed) { current ->
+			sourceSetRelationMap[current]
+		}.drop(1).toList()
 	}
 	
 	private fun Project.checkDependency(group: String, name: String) {
@@ -218,8 +198,12 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 		}
 	}
 	
-	private inline operator fun <reified T : Any> KspExtension.set(key: String, value: T) {
-		this.arg(key, value.toString())
+	private operator fun KspExtension.set(key: String, value: String) {
+		this.arg(key, value)
+	}
+	
+	private operator fun MapProperty<String, String>.set(key: String, value: String) {
+		this.put(key, value)
 	}
 	
 	private fun KotlinDependencyHandler.implementation(path: String, isDevelopmentMode: Property<Boolean>): Dependency? {

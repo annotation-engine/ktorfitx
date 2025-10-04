@@ -102,8 +102,7 @@ multiplatform-ksp = [
     'kotlin-reflect',
     'symbol-processing',
     'symbol-processing-api',
-    'kotlinpoet-ksp',
-    'kotlinx-serialization-json'
+    'kotlinpoet-ksp'
 ]
 
 multiplatform-websockets = [
@@ -142,8 +141,7 @@ server-sample = [
     'ktor-server-websockets',
     'ktor-server-netty',
     'logback-classic',
-    'ktor-server-config-yaml',
-    'ktor-serialization-kotlinx-json',
+    'ktor-server-config-yaml'
 ]
 
 android-gradle-plugin = [

@@ -41,15 +41,17 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 		resolver.getSymbolsWithAnnotation(TypeNames.Api.canonicalName)
 			.filterIsInstance<KSClassDeclaration>()
 			.filter { it.validate() }
+			.toList()
 			.deleteSharedSourceSetsDirs()
 			.forEach { it.dispose(customHttpMethods) }
 		
 		return emptyList()
 	}
 	
-	private fun Sequence<KSClassDeclaration>.deleteSharedSourceSetsDirs(): Sequence<KSClassDeclaration> {
+	private fun List<KSClassDeclaration>.deleteSharedSourceSetsDirs(): List<KSClassDeclaration> {
+		if (this.isEmpty()) return emptyList()
 		if (sourceSetModel is MultiplatformSourceSetModel) {
-			sourceSetModel.sharedSourceSets.forEach {
+			sourceSetModel.currentSharedSourceSets.forEach {
 				val parent = "$projectPath/build/generated/ksp/metadata/$it"
 				val parentDir = File(parent)
 				parentDir.deleteDirectory()
@@ -95,7 +97,7 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 		}
 		sourceSetModel as MultiplatformSourceSetModel
 		val sourceSet = getSourceSet()
-		if (sourceSet in sourceSetModel.nonSharedSourceSets) {
+		if (sourceSet in sourceSetModel.allNonSharedSourceSets) {
 			codeGeneratorCreateNewFile()
 			return
 		}
@@ -113,8 +115,7 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 			file.delete()
 		}
 		file.createNewFile()
-		file.outputStream()
-			.bufferedWriter()
+		file.bufferedWriter()
 			.use(fileSpec::writeTo)
 	}
 	
