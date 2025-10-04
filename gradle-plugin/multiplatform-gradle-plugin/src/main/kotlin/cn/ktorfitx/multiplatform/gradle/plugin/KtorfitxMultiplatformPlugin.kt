@@ -178,9 +178,10 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 			"CommonMain" in taskName -> "common"
 			else -> taskName.removePrefix("kspKotlin").replaceFirstChar { it.lowercaseChar() }
 		}
-		return generateSequence(seed) { current ->
-			sourceSetRelationMap[current]
-		}.drop(1).toList()
+		return generateSequence(seed) { sourceSetRelationMap[it] }
+			.drop(1)
+			.map { "${it}Main" }
+			.toList()
 	}
 	
 	private fun Project.checkDependency(group: String, name: String) {
