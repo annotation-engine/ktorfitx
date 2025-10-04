@@ -10,7 +10,7 @@ plugins {
 	alias(libs.plugins.kotlin.android) apply false
 }
 
-tasks.register("publishKtorfitx") {
+tasks.register("publishAll") {
 	group = "publishing"
 	
 	val projects = arrayOf(
