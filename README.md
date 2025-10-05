@@ -1,4 +1,4 @@
-# KtorfitX 3.3.0-3.2.0-RC2
+# KtorfitX 3.3.0-3.2.0
 
 [![Maven](https://img.shields.io/badge/Maven-Central-download.svg)](https://central.sonatype.com/search?q=cn.ktorfitx:multiplatform-core)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://annotation-engine.github.io/ktorfitx-document/index_md.html)
@@ -30,16 +30,18 @@ KSP `2.2.20-2.0.3`
 
 > 以下为支持的源集名
 
-- android
-- androidNativeArm32, androidNativeArm64, androidNativeX86, androidNativeX64
-- desktop (JVM)
-- iosArm64, iosSimulatorArm64, iosX64
-- watchosArm32, watchosArm64, watchosSimulatorArm64, watchosSimulatorDeviceArm64, watchosX64
-- tvosArm64, tvosSimulatorArm64, tvosX64
-- linuxArm32HfpMain, linuxArm64, linuxX64
-- mingwX64
-- macosArm64, macosX64
-- js, wasmJs
+- commonMain, nativeMain, appleMain
+- androidMain
+- androidNativeMain, androidNativeArm32Main, androidNativeArm64Main, androidNativeX86Main, androidNativeX64Main
+- desktopMain
+- iosMain, iosArm64Main, iosSimulatorArm64Main, iosX64Main
+- watchosMain, watchosArm32Main, watchosArm64Main, watchosSimulatorArm64Main, watchosSimulatorDeviceArm64Main,
+  watchosX64Main
+- tvosMain, tvosArm64Main, tvosSimulatorArm64Main, tvosX64Main
+- linuxMain, linuxArm32HfpMain, linuxArm64Main, linuxX64Main
+- mingwMain, mingwX64Main
+- macosMain, macosArm64Main, macosX64Main
+- webMain, jsMain, wasmJsMain
 
 ### Ktor Server
 
