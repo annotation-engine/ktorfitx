@@ -27,8 +27,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 		
 		private const val OPTION_TYPE = "ktorfitx.type"
 		private const val OPTION_LANGUAGE = "ktorfitx.language"
-		private const val OPTION_SOURCE_SETS_ALL_NON_SHARED_NAMES = "ktorfitx.sourceSets.allNonSharedNames"
-		private const val OPTION_SOURCE_SETS_CURRENT_SHARED_NAMES = "ktorfitx.sourceSets.currentSharedNames"
+		private const val OPTION_MIDDLE_SOURCE_SETS = "ktorfitx.middleSourceSets"
 		private const val OPTION_PROJECT_PATH = "ktorfitx.project.path"
 		
 		private const val PATH_BUILD_KTORFITX = "build/ktorfitx"
@@ -76,7 +75,6 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 				val allNonSharedNames = sourceSets.mapNotNull { sourceSet ->
 					sourceSet.name.takeIf { "Test" !in it && it != "commonMain" }
 				}
-				kspExtension[OPTION_SOURCE_SETS_ALL_NON_SHARED_NAMES] = allNonSharedNames.joinToString(",")
 				
 				sourceSets.configureEach {
 					if ("Test" in name) return@configureEach
@@ -95,8 +93,8 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 			}
 			tasks.withType<KspAATask>().configureEach {
 				doFirst {
-					val currentSharedSourceSets = getCurrentSharedSourceSets(this.name)
-					kspConfig.processorOptions[OPTION_SOURCE_SETS_CURRENT_SHARED_NAMES] = currentSharedSourceSets.joinToString(",")
+					val middleSourceSets = getMiddleSourceSets(this.name)
+					kspConfig.processorOptions[OPTION_MIDDLE_SOURCE_SETS] = middleSourceSets.joinToString(",")
 				}
 				if (name != "kspCommonMainKotlinMetadata") {
 					dependsOn("kspCommonMainKotlinMetadata")
@@ -171,7 +169,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 		"web" to "common"
 	)
 	
-	private fun getCurrentSharedSourceSets(taskName: String): List<String> {
+	private fun getMiddleSourceSets(taskName: String): List<String> {
 		if ("Test" in taskName) return emptyList()
 		val seed = when {
 			"Android" in taskName -> "android"
@@ -179,7 +177,9 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 			else -> taskName.removePrefix("kspKotlin").replaceFirstChar { it.lowercaseChar() }
 		}
 		return generateSequence(seed) { sourceSetRelationMap[it] }
+			.toList()
 			.drop(1)
+			.dropLast(1)
 			.map { "${it}Main" }
 			.toList()
 	}

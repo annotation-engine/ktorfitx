@@ -41,18 +41,24 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 		resolver.getSymbolsWithAnnotation(TypeNames.Api.canonicalName)
 			.filterIsInstance<KSClassDeclaration>()
 			.filter { it.validate() }
+			.filter {
+				if (sourceSetModel !is MultiplatformSourceSetModel) return@filter true
+				if (sourceSetModel.isCommonMain) return@filter true
+				val sourceSet = it.getSourceSet() ?: return@filter false
+				sourceSet != "commonMain"
+			}
 			.toList()
-			.deleteSharedSourceSetsDirs()
+			.deleteMiddleSourceSetsDirs()
 			.forEach { it.dispose(customHttpMethods) }
 		
 		return emptyList()
 	}
 	
-	private fun List<KSClassDeclaration>.deleteSharedSourceSetsDirs(): List<KSClassDeclaration> {
+	private fun List<KSClassDeclaration>.deleteMiddleSourceSetsDirs(): List<KSClassDeclaration> {
 		if (this.isEmpty()) return emptyList()
-		if (sourceSetModel is MultiplatformSourceSetModel) {
-			sourceSetModel.currentSharedSourceSets.forEach {
-				val parent = "$projectPath/build/generated/ksp/metadata/$it"
+		if (sourceSetModel is MultiplatformSourceSetModel && !sourceSetModel.isCommonMain) {
+			sourceSetModel.middleSourceSets.forEach { sourceSets ->
+				val parent = "$projectPath/build/generated/ksp/metadata/$sourceSets"
 				val parentDir = File(parent)
 				parentDir.deleteDirectory()
 			}
@@ -97,7 +103,7 @@ internal class KtorfitxMultiplatformSymbolProcessor(
 		}
 		sourceSetModel as MultiplatformSourceSetModel
 		val sourceSet = getSourceSet()
-		if (sourceSet in sourceSetModel.allNonSharedSourceSets) {
+		if (sourceSetModel.isCommonMain || sourceSet !in sourceSetModel.middleSourceSets) {
 			codeGeneratorCreateNewFile()
 			return
 		}

@@ -1,6 +1,6 @@
 package cn.ktorfitx.android.sample.api
 
-import cn.ktorfitx.android.sample.api.impls.testAndroidOnlyApi
+import cn.ktorfitx.android.sample.api.impls.androidOnlyApi
 import cn.ktorfitx.multiplatform.annotation.Api
 import cn.ktorfitx.multiplatform.annotation.GET
 import cn.ktorfitx.multiplatform.core.ktorfitx
@@ -12,14 +12,14 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
 @Api
-interface TestAndroidOnlyApi {
+interface AndroidOnlyApi {
 	
 	@GET("test01")
 	suspend fun test01(): String
 }
 
-suspend fun testAndroidOnlyApi() {
-	defaultKtorfitx.testAndroidOnlyApi.test01()
+suspend fun useAndroidOnlyApi() {
+	defaultKtorfitx.androidOnlyApi.test01()
 }
 
 val defaultKtorfitx = ktorfitx {
