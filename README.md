@@ -1,4 +1,4 @@
-# KtorfitX 3.3.0-3.2.1
+# KtorfitX 3.3.0-3.2.2
 
 [![Maven](https://img.shields.io/badge/Maven-Central-download.svg)](https://central.sonatype.com/search?q=cn.ktorfitx:multiplatform-core)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://annotation-engine.github.io/ktorfitx-document/index_md.html)
@@ -28,7 +28,7 @@ KSP `2.2.20-2.0.3`
 
 ### Kotlin Multiplatform
 
-> 以下为支持的源集名
+支持的源集：
 
 - commonMain, nativeMain, appleMain
 - androidMain
@@ -45,7 +45,7 @@ KSP `2.2.20-2.0.3`
 
 ### Ktor Server
 
-## 依赖说明
+依赖说明：
 
 请使用和 ktorfitx 相同版本的 ktor 版本，以保证他们的最佳兼容性
 

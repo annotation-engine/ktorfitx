@@ -20,7 +20,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 	
 	private companion object {
 		
-		private const val VERSION = "3.3.0-3.2.1"
+		private const val VERSION = "3.3.0-3.2.2"
 		private const val KTOR_VERSION = "3.3.0"
 		
 		private const val GROUP_NAME = "cn.ktorfitx"
@@ -29,8 +29,6 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 		private const val OPTION_LANGUAGE = "ktorfitx.language"
 		private const val OPTION_MIDDLE_SOURCE_SETS = "ktorfitx.middleSourceSets"
 		private const val OPTION_PROJECT_PATH = "ktorfitx.project.path"
-		
-		private const val PATH_BUILD_KTORFITX = "build/ktorfitx"
 		
 		private const val TYPE_KOTLIN_MULTIPLATFORM = "KOTLIN_MULTIPLATFORM"
 	}
@@ -51,7 +49,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 			val isDevelopmentMode = extension.isDevelopmentMode
 			val websocketsEnabled = extension.websockets.enabled.get()
 			val mockEnabled = extension.mock.enabled.get()
-			val kspExtension = extensions.getByType<KspExtension>().apply {
+			extensions.getByType<KspExtension>().apply {
 				this[OPTION_LANGUAGE] = language.name
 				this[OPTION_TYPE] = TYPE_KOTLIN_MULTIPLATFORM
 				this[OPTION_PROJECT_PATH] = projectDir.absolutePath
@@ -131,57 +129,55 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 	}
 	
 	private val sourceSetRelationMap = mapOf(
-		"macosArm64" to "macos",
-		"macosX64" to "macos",
-		"iosArm64" to "ios",
-		"iosSimulatorArm64" to "ios",
-		"iosX64" to "ios",
-		"tvosArm64" to "tvos",
-		"tvosSimulatorArm64" to "tvos",
-		"tvosX64" to "tvos",
-		"watchosArm32" to "watchos",
-		"watchosArm64" to "watchos",
-		"watchosSimulatorArm64" to "watchos",
-		"watchosSimulatorDeviceArm64" to "watchos",
-		"watchosX64" to "watchos",
-		"linuxArm32HfpMain" to "linux",
-		"linuxArm64" to "linux",
-		"linuxX64" to "linux",
-		"mingwX64" to "mingw",
-		"androidNativeArm32" to "androidNative",
-		"androidNativeArm64" to "androidNative",
-		"androidNativeX86" to "androidNative",
-		"androidNativeX64" to "androidNative",
-		"js" to "web",
-		"wasmJs" to "web",
-		"macos" to "apple",
-		"ios" to "apple",
-		"tvos" to "apple",
-		"watchos" to "apple",
-		"apple" to "native",
-		"linux" to "native",
-		"mingw" to "native",
-		"androidNative" to "native",
-		"native" to "common",
-		"android" to "common",
-		"jvm" to "common",
-		"desktop" to "common",
-		"web" to "common"
+		"macosArm64Main" to "macosMain",
+		"macosX64Main" to "macosMain",
+		"iosArm64Main" to "iosMain",
+		"iosSimulatorArm64Main" to "iosMain",
+		"iosX64Main" to "iosMain",
+		"tvosArm64Main" to "tvosMain",
+		"tvosSimulatorArm64Main" to "tvosMain",
+		"tvosX64Main" to "tvosMain",
+		"watchosArm32Main" to "watchosMain",
+		"watchosArm64Main" to "watchosMain",
+		"watchosSimulatorArm64Main" to "watchosMain",
+		"watchosSimulatorDeviceArm64Main" to "watchosMain",
+		"watchosX64Main" to "watchosMain",
+		"linuxArm32HfpMain" to "linuxMain",
+		"linuxArm64Main" to "linuxMain",
+		"linuxX64Main" to "linuxMain",
+		"mingwX64Main" to "mingwMain",
+		"androidNativeArm32Main" to "androidNativeMain",
+		"androidNativeArm64Main" to "androidNativeMain",
+		"androidNativeX86Main" to "androidNativeMain",
+		"androidNativeX64Main" to "androidNativeMain",
+		"jsMain" to "webMain",
+		"wasmJsMain" to "webMain",
+		"macosMain" to "appleMain",
+		"iosMain" to "appleMain",
+		"tvosMain" to "appleMain",
+		"watchosMain" to "appleMain",
+		"appleMain" to "nativeMain",
+		"linuxMain" to "nativeMain",
+		"mingwMain" to "nativeMain",
+		"androidNativeMain" to "nativeMain",
+		"nativeMain" to "commonMain",
+		"androidMain" to "commonMain",
+		"jvmMain" to "commonMain",
+		"desktopMain" to "commonMain",
+		"webMain" to "commonMain"
 	)
 	
 	private fun getMiddleSourceSets(taskName: String): List<String> {
 		if ("Test" in taskName) return emptyList()
 		val seed = when {
-			"Android" in taskName -> "android"
-			"CommonMain" in taskName -> "common"
-			else -> taskName.removePrefix("kspKotlin").replaceFirstChar { it.lowercaseChar() }
+			"Android" in taskName -> "androidMain"
+			"CommonMain" in taskName -> "commonMain"
+			else -> taskName.removePrefix("kspKotlin").replaceFirstChar { it.lowercaseChar() } + "Main"
 		}
 		return generateSequence(seed) { sourceSetRelationMap[it] }
 			.toList()
 			.drop(1)
 			.dropLast(1)
-			.map { "${it}Main" }
-			.toList()
 	}
 	
 	private fun Project.checkDependency(group: String, name: String) {
