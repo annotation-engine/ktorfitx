@@ -12,7 +12,7 @@ class KtorfitxAndroidPlugin : Plugin<Project> {
 	
 	private companion object {
 		private const val VERSION = "3.3.0-3.2.2"
-		private const val KTOR_VERSION = "3.3.0"
+		private const val KTOR_VERSION = "3.3.1"
 		
 		private const val GROUP_NAME = "cn.ktorfitx"
 		
