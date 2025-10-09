@@ -98,33 +98,6 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 					dependsOn("kspCommonMainKotlinMetadata")
 				}
 			}
-			val isAndroid = gradle.startParameter.taskNames.any { "assemble" in it }
-			if (isAndroid) {
-				val isRelease = gradle.startParameter.taskNames.any { "assembleRelease" in it }
-				if (isRelease) {
-					listOf(
-						"generateResourceAccessorsForAndroidRelease",
-						"generateResourceAccessorsForAndroidMain"
-					).forEach { name ->
-						if (name in tasks.names) {
-							tasks.named(name).configure {
-								this.dependsOn("kspReleaseKotlinAndroid")
-							}
-						}
-					}
-				} else {
-					listOf(
-						"generateResourceAccessorsForAndroidDebug",
-						"generateResourceAccessorsForAndroidMain"
-					).forEach { name ->
-						if (name in tasks.names) {
-							tasks.named(name).configure {
-								this.dependsOn("kspDebugKotlinAndroid")
-							}
-						}
-					}
-				}
-			}
 		}
 	}
 	
