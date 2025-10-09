@@ -20,9 +20,9 @@ http://annotation-engine.github.io/ktorfitx-document/start.html
 
 Kotlin `2.2.20`
 
-Ktor `3.3.0`
+Ktor `3.3.1`
 
-KSP `2.2.20-2.0.3`
+KSP `2.2.20-2.0.4`
 
 ## 支持平台
 
