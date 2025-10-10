@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import kotlin.math.sqrt
 
-private const val KTORFITX_VERSION = "3.3.1-3.2.3"
+private const val KTORFITX_VERSION = "3.3.1-3.2.4"
 private const val KOTLIN_VERSION = "2.2.20"
 private const val KTOR_VERSION = "3.3.1"
 private const val KSP_VERSION = "2.2.20-2.0.4"

@@ -11,7 +11,7 @@ import org.gradle.kotlin.dsl.*
 class KtorfitxAndroidPlugin : Plugin<Project> {
 	
 	private companion object {
-		private const val VERSION = "3.3.1-3.2.3"
+		private const val VERSION = "3.3.1-3.2.4"
 		private const val KTOR_VERSION = "3.3.1"
 		
 		private const val GROUP_NAME = "cn.ktorfitx"
@@ -64,8 +64,8 @@ class KtorfitxAndroidPlugin : Plugin<Project> {
 	}
 	
 	private fun Project.checkDependency(group: String, name: String) {
-		val contains = this.configurations.any {
-			val dependency = it.dependencies.find { it.group == group && it.name.startsWith(name) }
+		val contains = this.configurations.any { configuration ->
+			val dependency = configuration.dependencies.find { it.group == group && it.name.startsWith(name) }
 			if (dependency != null) {
 				if (dependency.version != KTOR_VERSION) {
 					error(VERSION_NOT_MATCH(dependency.group, dependency.name, dependency.version, KTOR_VERSION))
