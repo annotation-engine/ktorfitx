@@ -60,7 +60,10 @@ fun <R : Any> Resolver.getCustomHttpMethodModels(
 		ktorfitxCheck(method.isValidHttpMethod(), httpMethod) {
 			MESSAGE_ANNOTATION_HTTP_METHOD_USE_INVALID_HTTP_METHOD_NAME(it.simpleName, httpMethod)
 		}
-		ktorfitxCheck(defaultHttpMethods.all { it.simpleName != method }, httpMethod) {
+		val isDuplicatesProvided = defaultHttpMethods.all { className ->
+			className.simpleName != method
+		}
+		ktorfitxCheck(isDuplicatesProvided, httpMethod) {
 			MESSAGE_ANNOTATION_DUPLICATES_PROVIDED_SYSTEM_HTTP_METHOD_ANNOTATION(it.simpleName, method)
 		}
 		transform(method, it.toClassName())

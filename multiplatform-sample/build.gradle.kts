@@ -74,10 +74,8 @@ kotlin {
 					commonWebpackConfig {
 						outputFileName = "sampleApp.js"
 						devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-							static = (static ?: mutableListOf()).apply {
-								add(rootDirPath)
-								add(projectDirPath)
-							}
+							static(rootDirPath)
+							static(projectDirPath)
 						}
 					}
 				}

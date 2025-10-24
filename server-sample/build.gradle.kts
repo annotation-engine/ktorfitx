@@ -38,4 +38,10 @@ ktorfitx {
 	auth.enabled = true
 	websockets.enabled = true
 	language = KtorfitxLanguage.CHINESE
+	websockets {
+		enabled = true
+	}
+	auth {
+		enabled = true
+	}
 }

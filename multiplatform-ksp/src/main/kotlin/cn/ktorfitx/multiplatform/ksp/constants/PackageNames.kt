@@ -2,8 +2,6 @@ package cn.ktorfitx.multiplatform.ksp.constants
 
 internal object PackageNames {
 	
-	const val KTORFITX_MOCK = "cn.ktorfitx.multiplatform.mock"
-	
 	const val KTORFITX_MOCK_CONFIG = "cn.ktorfitx.multiplatform.mock.config"
 	
 	const val KTOR_HTTP = "io.ktor.http"

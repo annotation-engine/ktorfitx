@@ -67,16 +67,6 @@ internal val MESSAGE_ANNOTATION_URL_PARAMETER_FORMAT_INCORRECT = message {
 	chinese { "{1} 接口上的 @Api 注解的 url 参数格式错误" }
 }
 
-internal val MESSAGE_ANNOTATION_SCOPES_PARAMETER_NOT_ALLOW_NULLABLE_TYPE = message {
-	english { "The scopes parameter of the @ApiScope annotation on the {1} interface is not allowed to be empty." }
-	chinese { "{1} 接口上的 @ApiScope 注解的 scopes 参数不允许为 \"null\" 值" }
-}
-
-internal val MESSAGE_ANNOTATION_SCOPES_NOT_ALLOWED_USE_SAME_CLASS_NAME_K_CLASS = message {
-	english { "The scopes parameter of the @ApiScope annotation on the {1} interface is not allowed to use the KClass<*> of the same class name." }
-	chinese { "{1} 接口上的 @ApiScope 注解的 scopes 参数不允许使用相同类名的 KClass<*>" }
-}
-
 internal val MESSAGE_ANNOTATION_NOT_SET_URL_OR_ADDED_DYNAMIC_URL = message {
 	english { "The @{2} annotation on the {1} function is not set with a url parameter, or the @DynamicUrl annotation is not added to the parameters." }
 	chinese { "{1} 函数上的 @{2} 注解未设置 url 参数，或在参数上添加 @DynamicUrl 注解" }

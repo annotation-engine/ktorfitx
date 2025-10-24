@@ -5,6 +5,7 @@ import org.gradle.kotlin.dsl.newInstance
 import org.gradle.kotlin.dsl.property
 import javax.inject.Inject
 
+@Suppress("unused")
 open class KtorfitxServerExtension @Inject constructor(
 	objects: ObjectFactory
 ) {
