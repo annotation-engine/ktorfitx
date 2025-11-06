@@ -31,10 +31,10 @@ import kotlin.math.pow
 import kotlin.math.round
 import kotlin.math.sqrt
 
-private const val KTORFITX_VERSION = "3.3.1-3.2.5"
+private const val KTORFITX_VERSION = "3.3.2-3.2.6"
 private const val KOTLIN_VERSION = "2.2.21"
-private const val KTOR_VERSION = "3.3.1"
-private const val KSP_VERSION = "2.3.0"
+private const val KTOR_VERSION = "3.3.2"
+private const val KSP_VERSION = "2.3.1"
 
 @Composable
 fun App() {
