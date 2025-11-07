@@ -20,7 +20,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 	
 	private companion object {
 		
-		private const val VERSION = "3.3.1-3.2.5"
+		private const val VERSION = "3.3.2-3.2.6"
 		private const val KTOR_VERSION = "3.3.2"
 		
 		private const val GROUP_NAME = "cn.ktorfitx"
