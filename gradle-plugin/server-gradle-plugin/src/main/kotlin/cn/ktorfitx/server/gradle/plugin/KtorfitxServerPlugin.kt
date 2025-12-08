@@ -15,9 +15,9 @@ class KtorfitxServerPlugin : Plugin<Project> {
 	
 	private companion object {
 		
-		private const val VERSION = "3.3.2-3.2.6"
-		private const val KTOR_VERSION = "3.3.2"
-		private const val KSP_VERSION = "2.2.20-2.0.3"
+		private const val VERSION = "3.3.3-3.2.7"
+		private const val KTOR_VERSION = "3.3.3"
+		private const val KSP_VERSION = "2.3.3"
 		
 		private const val GROUP_NAME = "cn.ktorfitx"
 		

@@ -1,4 +1,4 @@
-# KtorfitX 3.3.2-3.2.6
+# KtorfitX 3.3.3-3.2.7
 
 [![Maven](https://img.shields.io/badge/Maven-Central-download.svg)](https://central.sonatype.com/search?q=cn.ktorfitx:multiplatform-core)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://annotation-engine.github.io/ktorfitx-document/index_md.html)
@@ -20,9 +20,9 @@ http://annotation-engine.github.io/ktorfitx-document/start.html
 
 Kotlin `2.2.21`
 
-Ktor `3.3.2`
+Ktor `3.3.3`
 
-KSP `2.3.1`
+KSP `2.3.3`
 
 ## 支持平台
 
