@@ -2,17 +2,18 @@
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
-kotlin = "2.2.21"
+kotlin = "2.3.0"
 agp = "8.12.3"
-ktor = "3.3.3"
-ksp = "2.3.3"
+ktor = "3.4.0"
+ksp = "2.3.4"
 kotlinpoet-ksp = "2.2.0"
 maven-publish = "0.35.0"
-compose-plugin = "1.9.3"
-logback-classic = "1.5.21"
-kotlinx-serialization-json = "1.9.0"
-androidx-activity-compose = "1.12.1"
-androidx-compose = "1.10.0"
+compose = "1.10.0"
+compose-material3 = "1.9.0"
+logback-classic = "1.5.25"
+kotlinx-serialization-json = "1.10.0"
+androidx-activity-compose = "1.12.2"
+androidx-compose = "1.10.1"
 androidx-material3 = "1.4.0"
 
 [libraries]
@@ -31,6 +32,11 @@ ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-conte
 symbol-processing-api = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
 symbol-processing = { group = "com.google.devtools.ksp", name = "symbol-processing", version.ref = "ksp" }
 kotlinpoet-ksp = { group = "com.squareup", name = "kotlinpoet-ksp", version.ref = "kotlinpoet-ksp" }
+compose-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "compose" }
+compose-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "compose" }
+compose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "compose-material3" }
+compose-ui = { group = "org.jetbrains.compose.ui", name = "ui", version.ref = "compose" }
+compose-components-resources = { group = "org.jetbrains.compose.components", name = "components-resources", version.ref = "compose" }
 
 # Android
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity-compose" }
@@ -55,9 +61,9 @@ kotlin-multiplatform-gradle-plugin = { group = "org.jetbrains.kotlin.multiplatfo
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
-android-library = { id = "com.android.library", version.ref = "agp" }
+android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
+jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }
@@ -116,7 +122,12 @@ multiplatform-sample = [
     'ktor-client-websockets',
     'ktor-client-serialization',
     'ktor-client-content-negotiation',
-    'ktor-serialization-kotlinx-json'
+    'ktor-serialization-kotlinx-json',
+    'compose-runtime',
+    'compose-ui',
+    'compose-foundation',
+    'compose-material3',
+    'compose-components-resources'
 ]
 
 server-core = [

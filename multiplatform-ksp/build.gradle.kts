@@ -22,8 +22,8 @@ kotlin {
 	
 	compilerOptions {
 		jvmTarget = JvmTarget.JVM_21
-		apiVersion = KotlinVersion.KOTLIN_2_2
-		languageVersion = KotlinVersion.KOTLIN_2_2
+		apiVersion = KotlinVersion.KOTLIN_2_3
+		languageVersion = KotlinVersion.KOTLIN_2_3
 	}
 }
 

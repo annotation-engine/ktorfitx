@@ -1,12 +1,13 @@
 import cn.ktorfitx.build.gradle.configurePlatformFeatures
 import cn.ktorfitx.build.gradle.toPlatforms
+import com.android.build.api.dsl.androidLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
 	alias(libs.plugins.kotlin.multiplatform)
-	alias(libs.plugins.android.library)
+	alias(libs.plugins.android.kotlin.multiplatform.library)
 	alias(libs.plugins.maven.publish)
 }
 
@@ -22,10 +23,10 @@ kotlin {
 	
 	configurePlatformFeatures(ktorfitxPlatforms) {
 		if (androidEnabled) {
-			androidTarget {
-				compilerOptions {
-					jvmTarget = JvmTarget.JVM_21
-				}
+			@Suppress("UnstableApiUsage")
+			androidLibrary {
+				namespace = "cn.ktorfitx.multiplatform.annotation"
+				compileSdk = 36
 			}
 		}
 		if (androidNativeEnabled) {
@@ -121,40 +122,8 @@ kotlin {
 	}
 	
 	compilerOptions {
-		languageVersion = KotlinVersion.KOTLIN_2_2
-		apiVersion = KotlinVersion.KOTLIN_2_2
-	}
-}
-
-android {
-	namespace = "cn.ktorfitx.multiplatform.annotation"
-	compileSdk = libs.versions.android.compileSdk.get().toInt()
-	buildToolsVersion = "36.1.0"
-	compileSdkVersion = "android-36.1"
-	
-	sourceSets["main"].apply {
-		manifest.srcFile("src/androidMain/AndroidManifest.xml")
-		res.srcDirs("src/androidMain/res")
-		resources.srcDirs("src/commonMain/resources")
-	}
-	
-	defaultConfig {
-		minSdk = libs.versions.android.minSdk.get().toInt()
-	}
-	packaging {
-		resources {
-			excludes += "/META-INF/{AL2.0,LGPL2.1}"
-			merges += "/META-INF/DEPENDENCIES"
-		}
-	}
-	buildTypes {
-		release {
-			isMinifyEnabled = false
-		}
-	}
-	compileOptions {
-		sourceCompatibility = JavaVersion.VERSION_21
-		targetCompatibility = JavaVersion.VERSION_21
+		languageVersion = KotlinVersion.KOTLIN_2_3
+		apiVersion = KotlinVersion.KOTLIN_2_3
 	}
 }
 

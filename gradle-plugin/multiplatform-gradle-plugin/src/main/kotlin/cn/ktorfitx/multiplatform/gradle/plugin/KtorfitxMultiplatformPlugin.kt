@@ -20,8 +20,8 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 	
 	private companion object {
 		
-		private const val VERSION = "3.3.3-3.2.7"
-		private const val KTOR_VERSION = "3.3.3"
+		private const val KTORFITX_VERSION = "3.3.3-3.2.7"
+		private const val KTOR_VERSION = "3.4.0"
 		
 		private const val GROUP_NAME = "cn.ktorfitx"
 		
@@ -180,7 +180,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 		return if (isDevelopmentMode.get()) {
 			this.implementation(project(":$path"))
 		} else {
-			this.implementation("$GROUP_NAME:$path:$VERSION")
+			this.implementation("$GROUP_NAME:$path:$KTORFITX_VERSION")
 		}
 	}
 	
@@ -188,7 +188,7 @@ class KtorfitxMultiplatformPlugin : Plugin<Project> {
 		return if (isDevelopmentMode.get()) {
 			this.add(configurationName, project(":$path"))
 		} else {
-			this.add(configurationName, "$GROUP_NAME:$path:$VERSION")
+			this.add(configurationName, "$GROUP_NAME:$path:$KTORFITX_VERSION")
 		}
 	}
 }

@@ -24,17 +24,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import androidx.compose.ui.util.fastForEach
 import cn.ktorfitx.multiplatform.sample.generated.resources.Res
 import cn.ktorfitx.multiplatform.sample.generated.resources.logo
 import org.jetbrains.compose.resources.painterResource
 import kotlin.math.pow
 import kotlin.math.round
 import kotlin.math.sqrt
-
-private const val KTORFITX_VERSION = "3.3.3-3.2.7"
-private const val KOTLIN_VERSION = "2.2.21"
-private const val KTOR_VERSION = "3.3.3"
-private const val KSP_VERSION = "2.3.3"
 
 @Composable
 fun App() {
@@ -94,7 +90,7 @@ fun App() {
 						)
 						Spacer(Modifier.width(12.dp))
 						Text(
-							text = "v$KTORFITX_VERSION",
+							text = "v${Versions.KTORFITX}",
 							fontSize = 14.sp,
 							fontWeight = FontWeight.Normal,
 							color = Color(0xFFB0BFD9),
@@ -123,9 +119,9 @@ fun App() {
 						.padding(16.dp),
 					verticalArrangement = Arrangement.spacedBy(12.dp)
 				) {
-					LibVersionRow("kotlin", "v$KOTLIN_VERSION")
-					LibVersionRow("ktor", "v$KTOR_VERSION")
-					LibVersionRow("ksp", "v$KSP_VERSION")
+					Versions.libraries.fastForEach { (name, version) ->
+						LibVersionRow(name, version)
+					}
 				}
 				
 				Row(
@@ -161,7 +157,9 @@ fun App() {
 @Composable
 private fun LibVersionRow(name: String, version: String) {
 	Row(
-		modifier = Modifier.fillMaxWidth(),
+		modifier = Modifier
+			.fillMaxWidth()
+			.padding(vertical = 2.dp),
 		verticalAlignment = Alignment.CenterVertically
 	) {
 		Text(
@@ -172,7 +170,7 @@ private fun LibVersionRow(name: String, version: String) {
 		)
 		Spacer(modifier = Modifier.weight(1f))
 		Text(
-			text = version,
+			text = "v$version",
 			color = Color.White,
 			fontWeight = FontWeight.Light,
 			fontSize = 13.sp
@@ -297,7 +295,7 @@ private val Primary = Color(0xFF3DA9FC)
 
 @Composable
 private fun MouseTrackingBox(
-	onMove: (Offset) -> Unit
+	onMove: (Offset) -> Unit,
 ) {
 	Box(
 		modifier = Modifier
@@ -397,4 +395,17 @@ private fun FpsCounter(modifier: Modifier = Modifier) {
 private fun Double.format(digits: Int): String {
 	val factor = 10.0.pow(digits)
 	return (round(this * factor) / factor).toString()
+}
+
+private object Versions {
+	
+	const val KTORFITX = "3.4.0-3.3.0"
+	
+	val libraries = listOf(
+		"kotlin" to "2.3.0",
+		"ktor" to "2.4.0",
+		"ksp" to "2.3.4",
+		"compose" to "1.10.0",
+		"material3" to "1.9.0"
+	)
 }

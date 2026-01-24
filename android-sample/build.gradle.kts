@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 plugins {
 	alias(libs.plugins.android.application)
 	alias(libs.plugins.kotlin.android)
+	alias(libs.plugins.jetbrains.compose)
 	alias(libs.plugins.compose.compiler)
 	alias(libs.plugins.ksp)
 	id("cn.ktorfitx.android")
@@ -42,13 +43,14 @@ android {
 
 kotlin {
 	compilerOptions {
-		apiVersion = KotlinVersion.KOTLIN_2_2
-		languageVersion = KotlinVersion.KOTLIN_2_2
+		apiVersion = KotlinVersion.KOTLIN_2_3
+		languageVersion = KotlinVersion.KOTLIN_2_3
 	}
 }
 
 dependencies {
 	implementation(libs.bundles.android.sample)
+	implementation(projects.multiplatformSample)
 }
 
 ktorfitx {

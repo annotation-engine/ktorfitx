@@ -15,9 +15,9 @@ class KtorfitxServerPlugin : Plugin<Project> {
 	
 	private companion object {
 		
-		private const val VERSION = "3.3.3-3.2.7"
-		private const val KTOR_VERSION = "3.3.3"
-		private const val KSP_VERSION = "2.3.3"
+		private const val KTORFITX_VERSION = "3.3.3-3.2.7"
+		private const val KTOR_VERSION = "3.4.0"
+		private const val KSP_VERSION = "2.3.4"
 		
 		private const val GROUP_NAME = "cn.ktorfitx"
 		
@@ -93,13 +93,13 @@ class KtorfitxServerPlugin : Plugin<Project> {
 		return if (isDevelopmentMode.get()) {
 			this.add("implementation", project(":$path"))
 		} else {
-			this.add("implementation", "$GROUP_NAME:$path:$VERSION")
+			this.add("implementation", "$GROUP_NAME:$path:$KTORFITX_VERSION")
 		}
 	}
 	
 	private fun DependencyHandlerScope.ksp(path: String, isDevelopmentMode: Property<Boolean>) {
 		this.addProvider("ksp", isDevelopmentMode.map {
-			if (it) project(":$path") else "$GROUP_NAME:$path:$VERSION"
+			if (it) project(":$path") else "$GROUP_NAME:$path:$KTORFITX_VERSION"
 		})
 	}
 }

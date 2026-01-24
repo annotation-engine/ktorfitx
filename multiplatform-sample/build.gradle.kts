@@ -2,6 +2,7 @@ import cn.ktorfitx.build.gradle.Platform
 import cn.ktorfitx.build.gradle.configurePlatformFeatures
 import cn.ktorfitx.build.gradle.toPlatforms
 import cn.ktorfitx.multiplatform.gradle.plugin.KtorfitxLanguage
+import com.android.build.api.dsl.androidLibrary
 import com.google.devtools.ksp.gradle.KspAATask
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -11,7 +12,7 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
 	alias(libs.plugins.kotlin.multiplatform)
-	alias(libs.plugins.android.application)
+	alias(libs.plugins.android.kotlin.multiplatform.library)
 	alias(libs.plugins.jetbrains.compose)
 	alias(libs.plugins.compose.compiler)
 	alias(libs.plugins.kotlin.serialization)
@@ -27,9 +28,13 @@ kotlin {
 	
 	configurePlatformFeatures(ktorfitxPlatforms) {
 		if (androidEnabled) {
-			androidTarget {
-				compilerOptions {
-					jvmTarget = JvmTarget.JVM_21
+			@Suppress("UnstableApiUsage")
+			androidLibrary {
+				namespace = "cn.ktorfitx.multiplatform.sample"
+				compileSdk = libs.versions.android.compileSdk.get().toInt()
+				
+				androidResources {
+					enable = true
 				}
 			}
 		}
@@ -86,18 +91,13 @@ kotlin {
 	}
 	
 	compilerOptions {
-		languageVersion = KotlinVersion.KOTLIN_2_2
-		apiVersion = KotlinVersion.KOTLIN_2_2
+		languageVersion = KotlinVersion.KOTLIN_2_3
+		apiVersion = KotlinVersion.KOTLIN_2_3
 	}
 	
 	sourceSets {
 		commonMain.dependencies {
 			implementation(libs.bundles.multiplatform.sample)
-			implementation(compose.runtime)
-			implementation(compose.foundation)
-			implementation(compose.material3)
-			implementation(compose.ui)
-			implementation(compose.components.resources)
 		}
 		
 		if (Platform.ANDROID in ktorfitxPlatforms) {
@@ -117,42 +117,6 @@ kotlin {
 
 tasks.withType<KspAATask>().configureEach {
 	group = "ksp"
-}
-
-android {
-	namespace = "cn.ktorfitx.multiplatform.sample"
-	compileSdk = libs.versions.android.compileSdk.get().toInt()
-	buildToolsVersion = "36.1.0"
-	compileSdkVersion = "android-36.1"
-	
-	sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-	sourceSets["main"].res.srcDirs("src/androidMain/res")
-	sourceSets["main"].resources.srcDirs("src/commonMain/resources")
-	
-	defaultConfig {
-		applicationId = "cn.ktorfitx.multiplatform.sample"
-		minSdk = libs.versions.android.minSdk.get().toInt()
-		targetSdk = libs.versions.android.targetSdk.get().toInt()
-		versionCode = 2
-		versionName = ktorfitxSampleVersion
-	}
-	packaging {
-		resources {
-			excludes += "/META-INF/{AL2.0,LGPL2.1}"
-		}
-	}
-	buildTypes {
-		release {
-			isMinifyEnabled = false
-		}
-	}
-	compileOptions {
-		sourceCompatibility = JavaVersion.VERSION_21
-		targetCompatibility = JavaVersion.VERSION_21
-	}
-	buildFeatures {
-		compose = true
-	}
 }
 
 compose.resources {
