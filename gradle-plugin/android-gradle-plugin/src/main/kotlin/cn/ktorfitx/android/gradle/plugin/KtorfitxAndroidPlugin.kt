@@ -11,7 +11,7 @@ import org.gradle.kotlin.dsl.*
 class KtorfitxAndroidPlugin : Plugin<Project> {
 	
 	private companion object {
-		private const val KTORFITX_VERSION = "3.3.3-3.2.7"
+		private const val KTORFITX_VERSION = "3.4.0-3.3.0"
 		private const val KTOR_VERSION = "3.4.0"
 		
 		private const val GROUP_NAME = "cn.ktorfitx"
