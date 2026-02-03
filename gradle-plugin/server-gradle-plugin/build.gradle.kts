@@ -1,7 +1,7 @@
 plugins {
-	`java-gradle-plugin`
-	`kotlin-dsl`
-	alias(libs.plugins.maven.publish)
+    `java-gradle-plugin`
+    `kotlin-dsl`
+    alias(libs.plugins.maven.publish)
 }
 
 val ktorfitxVersion = property("ktorfitx.version").toString()
@@ -10,50 +10,55 @@ val ktorfitxAutomaticRelease = property("ktorfitx.automaticRelease").toString().
 group = "cn.ktorfitx.server.gradle.plugin"
 version = ktorfitxVersion
 
+kotlin {
+    jvmToolchain(21)
+}
+
 gradlePlugin {
-	plugins {
-		create("KtorfitxServerGradlePlugin", Action<PluginDeclaration> {
-			id = "cn.ktorfitx.server"
-			displayName = "Ktorfitx Server Gradle Plugin"
-			implementationClass = "cn.ktorfitx.server.gradle.plugin.KtorfitxServerPlugin"
-		})
-	}
+    plugins {
+        create("KtorfitxServerGradlePlugin") {
+            id = "cn.ktorfitx.server"
+            displayName = "Ktorfitx Server Gradle Plugin"
+            implementationClass = "cn.ktorfitx.server.gradle.plugin.KtorfitxServerPlugin"
+        }
+    }
 }
 
 dependencies {
-	implementation(libs.bundles.server.gradle.plugin)
+    implementation(libs.bundles.server.gradle.plugin)
+    api(projects.commonGradlePlugin)
 }
 
 mavenPublishing {
-	publishToMavenCentral(automaticRelease = ktorfitxAutomaticRelease)
-	signAllPublications()
-	
-	coordinates("cn.ktorfitx", "server-gradle-plugin", ktorfitxVersion)
-	
-	pom {
-		name.set("server-gradle-plugin")
-		description.set("Ktorfitx 是一款专为 Ktor 设计的代码生成框架，致力于减少样板代码，为 Ktor Client 和 Ktor Server 提供代码生成服务，支持 Kotlin Multiplatform")
-		inceptionYear.set("2025")
-		url.set("https://github.com/annotation-engine/ktorfitx")
-		licenses {
-			license {
-				name.set("The Apache License, Version 2.0")
-				url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-				distribution.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-			}
-		}
-		developers {
-			developer {
-				id.set("JarvisLi")
-				name.set("JarvisLi")
-				url.set("https://github.com/annotation-engine/ktorfitx")
-			}
-		}
-		
-		scm {
-			url.set("https://github.com/annotation-engine/ktorfitx")
-			connection.set("scm:git:git://github.com/annotation-engine/ktorfitx.git")
-			developerConnection.set("scm:git:ssh://git@github.com:annotation-engine/ktorfitx.git")
-		}
-	}
+    publishToMavenCentral(automaticRelease = ktorfitxAutomaticRelease)
+    signAllPublications()
+
+    coordinates("cn.ktorfitx", "server-gradle-plugin", ktorfitxVersion)
+
+    pom {
+        name.set("server-gradle-plugin")
+        description.set("Ktorfitx 是一款专为 Ktor 设计的代码生成框架，致力于减少样板代码，为 Ktor Client 和 Ktor Server 提供代码生成服务，支持 Kotlin Multiplatform")
+        inceptionYear.set("2025")
+        url.set("https://github.com/annotation-engine/ktorfitx")
+        licenses {
+            license {
+                name.set("The Apache License, Version 2.0")
+                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                distribution.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+            }
+        }
+        developers {
+            developer {
+                id.set("JarvisLi")
+                name.set("JarvisLi")
+                url.set("https://github.com/annotation-engine/ktorfitx")
+            }
+        }
+
+        scm {
+            url.set("https://github.com/annotation-engine/ktorfitx")
+            connection.set("scm:git:git://github.com/annotation-engine/ktorfitx.git")
+            developerConnection.set("scm:git:ssh://git@github.com:annotation-engine/ktorfitx.git")
+        }
+    }
 }

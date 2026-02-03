@@ -399,12 +399,12 @@ private fun Double.format(digits: Int): String {
 
 private object Versions {
 	
-	const val KTORFITX = "3.4.0-3.3.0"
+	const val KTORFITX = "3.4.0-3.3.1"
 	
 	val libraries = listOf(
 		"kotlin" to "2.3.0",
 		"ktor" to "2.4.0",
-		"ksp" to "2.3.4",
+		"ksp" to "2.3.5",
 		"compose" to "1.10.0",
 		"material3" to "1.9.0"
 	)

@@ -5,14 +5,14 @@ android-targetSdk = "36"
 kotlin = "2.3.0"
 agp = "8.12.3"
 ktor = "3.4.0"
-ksp = "2.3.4"
+ksp = "2.3.5"
 kotlinpoet-ksp = "2.2.0"
 maven-publish = "0.35.0"
 compose = "1.10.0"
 compose-material3 = "1.9.0"
-logback-classic = "1.5.25"
+logback-classic = "1.5.26"
 kotlinx-serialization-json = "1.10.0"
-androidx-activity-compose = "1.12.2"
+androidx-activity-compose = "1.12.3"
 androidx-compose = "1.10.1"
 androidx-material3 = "1.4.0"
 
@@ -20,7 +20,6 @@ androidx-material3 = "1.4.0"
 # Common
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 
 # Kotlin Multiplatform
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
@@ -161,10 +160,13 @@ android-gradle-plugin = [
 
 multiplatform-gradle-plugin = [
     'ksp',
-    'kotlin-multiplatform-gradle-plugin',
-    'kotlinx-serialization-json'
+    'kotlin-multiplatform-gradle-plugin'
 ]
 
 server-gradle-plugin = [
+    'ksp'
+]
+
+common-gradle-plugin = [
     'ksp'
 ]
