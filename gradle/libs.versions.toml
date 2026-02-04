@@ -10,10 +10,9 @@ kotlinpoet-ksp = "2.2.0"
 maven-publish = "0.35.0"
 compose = "1.10.0"
 compose-material3 = "1.9.0"
-logback-classic = "1.5.26"
-kotlinx-serialization-json = "1.10.0"
+logback-classic = "1.5.27"
 androidx-activity-compose = "1.12.3"
-androidx-compose = "1.10.1"
+androidx-compose = "1.10.2"
 androidx-material3 = "1.4.0"
 
 [libraries]
