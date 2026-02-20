@@ -18,7 +18,7 @@ http://annotation-engine.github.io/ktorfitx-document/start.html
 
 ## 版本说明
 
-Kotlin `2.3.0`
+Kotlin `2.3.10`
 
 Ktor `3.4.0`
 
