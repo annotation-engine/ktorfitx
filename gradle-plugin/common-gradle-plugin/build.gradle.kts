@@ -1,5 +1,6 @@
 plugins {
     `kotlin-dsl`
+    `java-gradle-plugin`
     alias(libs.plugins.maven.publish)
 }
 
@@ -11,6 +12,10 @@ version = ktorfitxVersion
 
 kotlin {
     jvmToolchain(21)
+}
+
+gradlePlugin {
+
 }
 
 dependencies {
