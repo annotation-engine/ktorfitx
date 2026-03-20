@@ -14,9 +14,11 @@ val ktorfitxSampleVersion = property("ktorfitx.sample.version").toString()
 
 android {
     namespace = "cn.ktorfitx.android.sample"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    buildToolsVersion = "36.1.0"
-    compileSdkVersion = "android-36.1"
+    compileSdk {
+        version = release(libs.versions.android.compileSdk.get().toInt()) {
+            minorApiLevel = libs.versions.android.compileSdkMinor.get().toInt()
+        }
+    }
 
     defaultConfig {
         applicationId = "cn.ktorfitx.android.sample"

@@ -396,13 +396,13 @@ private fun Float.format(digits: Int): String {
 
 private object Versions {
 
-    const val KTORFITX = "3.4.0-3.3.2"
+    const val KTORFITX = "3.4.1-3.3.3"
 
     val libraries = listOf(
-        "kotlin" to "2.3.10",
-        "ktor" to "2.4.0",
-        "ksp" to "2.3.5",
-        "compose" to "1.10.1",
+        "kotlin" to "2.3.20",
+        "ktor" to "2.4.1",
+        "ksp" to "2.3.6",
+        "compose" to "1.10.3",
         "material3" to "1.9.0"
     )
 }

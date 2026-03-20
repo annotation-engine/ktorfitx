@@ -49,7 +49,8 @@ fun Project.checkDependency(group: String, name: String) {
                     VERSION_NOT_MATCH(
                         "${dependency.group}:${dependency.name}",
                         dependency.version,
-                        KtorfitxVersions.KTOR
+                        KtorfitxVersions.KTOR,
+                        dependency.version
                     )
                 )
             }

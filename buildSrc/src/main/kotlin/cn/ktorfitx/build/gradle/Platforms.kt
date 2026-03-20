@@ -4,7 +4,6 @@ import org.gradle.api.Project
 
 fun Project.supportPlatforms(
     android: (() -> Unit)? = null,
-    androidNative: (() -> Unit)? = null,
     ios: (() -> Unit)? = null,
     desktop: (() -> Unit)? = null,
     macos: (() -> Unit)? = null,
@@ -17,7 +16,6 @@ fun Project.supportPlatforms(
 ) {
     val platforms = property("ktorfitx.platforms").toString().toPlatforms()
     if (Platform.ANDROID in platforms) android?.invoke()
-    if (Platform.ANDROID_NATIVE in platforms) androidNative?.invoke()
     if (Platform.IOS in platforms) ios?.invoke()
     if (Platform.DESKTOP in platforms) desktop?.invoke()
     if (Platform.MACOS in platforms) macos?.invoke()
@@ -43,7 +41,6 @@ private fun String.toConstantCase(): String =
 
 private enum class Platform {
     ANDROID,
-    ANDROID_NATIVE,
     IOS,
     DESKTOP,
     MACOS,

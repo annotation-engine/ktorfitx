@@ -1,5 +1,4 @@
 import cn.ktorfitx.build.gradle.supportPlatforms
-import com.android.build.api.dsl.androidLibrary
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
@@ -25,12 +24,6 @@ kotlin {
                 compileSdk = 36
             }
         },
-        androidNative = {
-            androidNativeX86()
-            androidNativeX64()
-            androidNativeArm32()
-            androidNativeArm64()
-        },
         desktop = {
             jvm("desktop")
         },
@@ -40,18 +33,15 @@ kotlin {
             iosSimulatorArm64()
         },
         macos = {
-            macosX64()
             macosArm64()
         },
         watchos = {
-            watchosX64()
             watchosArm32()
             watchosArm64()
             watchosSimulatorArm64()
             watchosDeviceArm64()
         },
         tvos = {
-            tvosX64()
             tvosArm64()
             tvosSimulatorArm64()
         },

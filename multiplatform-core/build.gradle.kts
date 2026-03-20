@@ -25,12 +25,6 @@ kotlin {
                 compileSdk = 36
             }
         },
-        androidNative = {
-            androidNativeX86()
-            androidNativeX64()
-            androidNativeArm32()
-            androidNativeArm64()
-        },
         desktop = {
             jvm("desktop")
         },
@@ -40,18 +34,15 @@ kotlin {
             iosSimulatorArm64()
         },
         macos = {
-            macosX64()
             macosArm64()
         },
         watchos = {
-            watchosX64()
             watchosArm32()
             watchosArm64()
             watchosSimulatorArm64()
             watchosDeviceArm64()
         },
         tvos = {
-            tvosX64()
             tvosArm64()
             tvosSimulatorArm64()
         },
@@ -63,7 +54,7 @@ kotlin {
             mingwX64()
         },
         js = {
-             js(IR) {
+            js(IR) {
                 browser()
             }
         },
