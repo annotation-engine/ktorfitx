@@ -183,7 +183,7 @@ internal fun KSFunctionDeclaration.getParameterModels(isWebSocket: Boolean): Lis
 			this, errorMessage
 		)
 		val varName = valueParameter.name!!.asString()
-		return listOf(ParameterModel(varName, typeName))
+        listOf(ParameterModel(varName, typeName))
 	} else {
 		this.parameters.map { parameter ->
 			val varName = parameter.name!!.asString()

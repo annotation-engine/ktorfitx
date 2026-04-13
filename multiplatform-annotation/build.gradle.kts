@@ -18,10 +18,13 @@ kotlin {
 
     supportPlatforms(
         android = {
-            @Suppress("UnstableApiUsage")
             androidLibrary {
                 namespace = "cn.ktorfitx.multiplatform.annotation"
-                compileSdk = 36
+                compileSdk {
+                    version = release(libs.versions.android.compileSdk.get().toInt()) {
+                        minorApiLevel = libs.versions.android.compileSdkMinor.get().toInt()
+                    }
+                }
             }
         },
         desktop = {

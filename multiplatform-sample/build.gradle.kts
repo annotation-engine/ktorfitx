@@ -1,6 +1,5 @@
 import cn.ktorfitx.build.gradle.supportPlatforms
 import cn.ktorfitx.common.gradle.plugin.KtorfitxLanguage
-import com.android.build.api.dsl.androidLibrary
 import com.google.devtools.ksp.gradle.KspAATask
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -25,10 +24,13 @@ kotlin {
 
     supportPlatforms(
         android = {
-            @Suppress("UnstableApiUsage")
             androidLibrary {
                 namespace = "cn.ktorfitx.multiplatform.sample"
-                compileSdk = libs.versions.android.compileSdk.get().toInt()
+                compileSdk {
+                    version = release(libs.versions.android.compileSdk.get().toInt()) {
+                        minorApiLevel = libs.versions.android.compileSdkMinor.get().toInt()
+                    }
+                }
 
                 androidResources {
                     enable = true

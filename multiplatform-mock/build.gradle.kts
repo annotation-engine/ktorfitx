@@ -1,5 +1,4 @@
 import cn.ktorfitx.build.gradle.supportPlatforms
-import com.android.build.api.dsl.androidLibrary
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
@@ -19,10 +18,13 @@ kotlin {
 
     supportPlatforms(
         android = {
-            @Suppress("UnstableApiUsage")
             androidLibrary {
                 namespace = "cn.ktorfitx.multiplatform.mock"
-                compileSdk = 36
+                compileSdk {
+                    version = release(libs.versions.android.compileSdk.get().toInt()) {
+                        minorApiLevel = libs.versions.android.compileSdkMinor.get().toInt()
+                    }
+                }
             }
         },
         desktop = {
