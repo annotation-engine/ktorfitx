@@ -23,10 +23,10 @@ fun KSAnnotated.hasAnnotation(annotation: ClassName): Boolean {
  * 获取 KSAnnotation
  */
 fun KSAnnotated.getKSAnnotationByType(annotation: ClassName): KSAnnotation? {
-	return this.annotations.filter {
-		it.shortName.getShortName() == annotation.simpleName &&
-				it.annotationType.resolve().declaration.qualifiedName?.asString() == annotation.canonicalName
-	}.firstOrNull()
+	return this.annotations.firstOrNull {
+        it.shortName.getShortName() == annotation.simpleName &&
+                it.annotationType.resolve().declaration.qualifiedName?.asString() == annotation.canonicalName
+    }
 }
 
 /**

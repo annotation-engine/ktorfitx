@@ -1,4 +1,4 @@
-# KtorfitX 3.4.2-3.3.3
+# KtorfitX 3.6.0-3.4.0
 
 [![Maven](https://img.shields.io/badge/Maven-Central-download.svg)](https://central.sonatype.com/search?q=cn.ktorfitx:multiplatform-core)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://annotation-engine.github.io/ktorfitx-document/index_md.html)
@@ -18,13 +18,13 @@ http://annotation-engine.github.io/ktorfitx-document/start.html
 
 ## 版本说明
 
-Kotlin `2.3.20`
+Kotlin `2.4.21`
 
-Ktor `3.4.2`
+Ktor `3.6.0`
 
-KSP `2.3.6`
+KSP `2.3.12`
 
-KotlinPoet `2.3.0`
+KotlinPoet `2.4.0`
 
 ## 支持平台
 

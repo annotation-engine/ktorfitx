@@ -11,13 +11,13 @@ open class KtorfitxServerExtension @Inject constructor(
     objects: ObjectFactory
 ) {
 
-    val isDevelopmentMode = objects.property<Boolean>().convention(false)!!
+    val isDevelopmentMode = objects.property<Boolean>().convention(false)
 
     val websockets = objects.newInstance<WebsocketsConfig>()
 
     val auth = objects.newInstance<MockConfig>()
 
-    val language = objects.property<KtorfitxLanguage>().convention(KtorfitxLanguage.ENGLISH)!!
+    val language = objects.property<KtorfitxLanguage>().convention(KtorfitxLanguage.ENGLISH)
 
     val generate = objects.newInstance<GenerateConfig>()
 
@@ -35,15 +35,15 @@ open class KtorfitxServerExtension @Inject constructor(
 }
 
 open class WebsocketsConfig @Inject constructor(objects: ObjectFactory) {
-    val enabled = objects.property<Boolean>().convention(false)!!
+    val enabled = objects.property<Boolean>().convention(false)
 }
 
 open class MockConfig @Inject constructor(objects: ObjectFactory) {
-    val enabled = objects.property<Boolean>().convention(false)!!
+    val enabled = objects.property<Boolean>().convention(false)
 }
 
 open class GenerateConfig @Inject constructor(objects: ObjectFactory) {
     val packageName = objects.property<String>()
-    val fileName = objects.property<String>().convention("GenerateRoutes")!!
-    val funName = objects.property<String>().convention("generateRoutes")!!
+    val fileName = objects.property<String>().convention("GenerateRoutes")
+    val funName = objects.property<String>().convention("generateRoutes")
 }

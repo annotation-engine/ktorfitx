@@ -23,209 +23,215 @@ import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 
-internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassModel>() {
-	
-	private val apiUrlRegex = "^\\S*[a-zA-Z0-9]+\\S*$".toRegex()
-	
-	private var customHttpMethodModels: List<CustomHttpMethodModel>? = null
-	
-	override fun visitClassDeclaration(
-		classDeclaration: KSClassDeclaration,
-		data: List<CustomHttpMethodModel>
-	): ClassModel {
-		this.customHttpMethodModels = data
-		return classDeclaration.getClassModel()
-	}
-	
-	private fun KSClassDeclaration.getClassModel(): ClassModel {
-		ktorfitxCheck(!this.isGeneric(), this) {
-			MESSAGE_INTERFACE_NOT_ALLOW_GENERICS(simpleName)
-		}
-		val className = ClassName("${packageName.asString()}.impls", "${simpleName.asString()}Impl")
-		val superinterface = this.toClassName()
-		return ClassModel(
-			className = className,
-			superinterface = superinterface,
-			kModifier = this.getVisibilityKModifier(),
-			apiUrl = this.getApiUrl(),
-			funModels = getFunModel()
-		)
-	}
-	
-	private fun KSClassDeclaration.getApiUrl(): String? {
-		val annotation = getKSAnnotationByType(TypeNames.Api)!!
-		var url = annotation.getValueOrNull<String>("url")?.takeIf { it.isNotBlank() } ?: return null
-		ktorfitxCheck(!url.isContainSchemeSeparator(), annotation) {
-			MESSAGE_ANNOTATION_NOT_ALLOW_USE_PROTOCOL_FROM_STRINGS(simpleName)
-		}
-		ktorfitxCheck(!url.isContainBraceSymbol(), annotation) {
-			MESSAGE_ANNOTATION_NOT_ALLOW_USE_BRACE_SYMBOL(simpleName)
-		}
-		url = url.trim().trim('/')
-		ktorfitxCheck(apiUrlRegex.matches(url), annotation) {
-			MESSAGE_ANNOTATION_URL_PARAMETER_FORMAT_INCORRECT(simpleName)
-		}
-		return url
-	}
-	
-	/**
-	 * 获取访问权限的 KModifier
-	 */
-	private fun KSClassDeclaration.getVisibilityKModifier(): KModifier {
-		val visibility = this.getVisibility()
-		ktorfitxCheck(visibility == PUBLIC || visibility == INTERNAL, this) {
-			MESSAGE_INTERFACE_MUST_BE_DECLARED_PUBLIC_OR_INTERNAL_ACCESS_PERMISSION(simpleName)
-		}
-		return KModifier.entries.first { it.name == visibility.name }
-	}
-	
-	private fun KSClassDeclaration.getFunModel(): List<FunModel> {
-		return this.getDeclaredFunctions().toList()
-			.filter { it.isAbstract }
-			.map { function ->
-				ktorfitxCheck(Modifier.SUSPEND in function.modifiers, function) {
-					MESSAGE_FUNCTION_LACKS_SUSPEND_MODIFIER(function.simpleName)
-				}
-				val routeModel = function.getRouteModel()
-				val isWebSocket = routeModel is WebSocketModel
-				val mockModel = function.getMockModel(isWebSocket)
-				val isPrepareType = function.hasAnnotation(TypeNames.Prepare)
-				FunModel(
-					funName = function.simpleName.asString(),
-					returnModel = function.getReturnModel(isWebSocket, isPrepareType, mockModel != null),
-					parameterModels = function.getParameterModels(isWebSocket),
-					routeModel = routeModel,
-					mockModel = mockModel,
-					hasBearerAuth = function.hasBearerAuth(),
-					isPrepareType = isPrepareType,
-					timeoutModel = function.getTimeoutModel(),
-					queryModels = function.getQueryModels(),
-					pathModels = function.getPathModels(routeModel.url, isWebSocket),
-					cookieModels = function.getCookieModels(),
-					attributeModels = function.getAttributeModels(),
-					headerModels = function.getHeaderModels(),
-					headersModel = function.getHeadersModel(),
-					requestBodyModel = function.getRequestBodyModel(),
-					queriesModels = function.getQueriesModels(),
-					attributesModels = function.getAttributesModels(),
-				)
-			}
-	}
-	
-	private val urlRegex = "^\\S*[a-zA-Z0-9]+\\S*$".toRegex()
-	
-	private fun KSFunctionDeclaration.getRouteModel(): RouteModel {
-		val customClassNames = customHttpMethodModels!!.map { it.className }
-		val availableRoutes = TypeNames.routes + customClassNames
-		val classNames = availableRoutes.filter { hasAnnotation(it) }
-		ktorfitxCheck(classNames.size <= 1, this) {
-			val useAnnotations = classNames.joinToString { "@${it.simpleName}" }
-			MESSAGE_FUNCTION_ONLY_ALLOW_USE_ONE_REQUEST_TYPE_ANNOTATION(simpleName, useAnnotations, if (classNames.size > 1) "s" else "")
-		}
-		ktorfitxCheck(classNames.size == 1, this) {
-			MESSAGE_FUNCTION_NOT_USE_ROUTE_ANNOTATION(simpleName)
-		}
-		val className = classNames.single()
-		val isWebSocket = className == TypeNames.WebSocket
-		val dynamicUrl = this.getDynamicUrl()
-		
-		if (isWebSocket) {
-			ktorfitxCheck(dynamicUrl == null, this) {
-				MESSAGE_FUNCTION_NOT_ALLOW_DYNAMIC_URL_ANNOTATION_MARKED_IN_PARAMETERS(simpleName)
-			}
-		}
-		val rawUrl = getKSAnnotationByType(className)!!.getValueOrNull<String>("url")?.trim('/')
-		val url = if (dynamicUrl != null) {
-			ktorfitxCheck(rawUrl.isNullOrBlank(), this) {
-				MESSAGE_FUNCTION_NOW_ALLOW_SETTING_URL_WHEN_MARKED_DYNAMIC_URL(simpleName, className.simpleName)
-			}
-			dynamicUrl
-		} else {
-			ktorfitxCheck(!rawUrl.isNullOrBlank(), this) {
-				MESSAGE_ANNOTATION_NOT_SET_URL_OR_ADDED_DYNAMIC_URL(simpleName, className.simpleName)
-			}
-			if (isWebSocket) {
-				ktorfitxCheck(!rawUrl.isContainSchemeSeparator() || rawUrl.isWSOrWSS(), this) {
-					MESSAGE_ANNOTATION_URL_ONLY_SUPPORTED_WS_AND_WSS_PROTOCOLS(simpleName, className.simpleName)
-				}
-			} else {
-				ktorfitxCheck(!rawUrl.isContainSchemeSeparator() || rawUrl.isHttpOrHttps(), this) {
-					MESSAGE_ANNOTATION_URL_ONLY_SUPPORTED_HTTP_AND_HTTPS_PROTOCOLS(simpleName, className.simpleName)
-				}
-			}
-			ktorfitxCheck(urlRegex.matches(rawUrl), this) {
-				MESSAGE_ANNOTATION_URL_FORMAT_INCORRECT(simpleName, className.simpleName)
-			}
-			StaticUrl(rawUrl)
-		}
-		return when (className) {
-			TypeNames.WebSocket -> WebSocketModel(url as StaticUrl)
-			in TypeNames.httpMethods -> HttpRequestModel(url, className.simpleName, false)
-			else -> {
-				val method = customHttpMethodModels!!.first { it.className == className }.method
-				HttpRequestModel(url, method, true)
-			}
-		}
-	}
-	
-	private fun KSFunctionDeclaration.getReturnModel(
-		isWebSocket: Boolean,
-		isPrepareType: Boolean,
-		isMock: Boolean
-	): ReturnModel {
-		val returnType = this.returnType!!
-		val typeName = returnType.toTypeName()
-		return when {
-			isPrepareType -> {
-				ktorfitxCheck(returnType.toTypeName() == TypeNames.HttpStatement, returnType) {
-					MESSAGE_FUNCTION_MUST_USE_HTTP_STATEMENT_RETURN_TYPE(simpleName)
-				}
-				ktorfitxCheck(!isMock, this) {
-					MESSAGE_FUNCTION_NOT_ALLOW_SIMULTANEOUS_USE_PREPARE_AND_MOCK_ANNOTATIONS(simpleName)
-				}
-				ktorfitxCheck(!isWebSocket, this) {
-					MESSAGE_FUNCTION_NOT_ALLOW_SIMULTANEOUS_USE_PREPARE_AND_WEBSOCKET_ANNOTATIONS(simpleName)
-				}
-				ReturnModel(typeName, typeName, ReturnKind.Any)
-			}
-			
-			isWebSocket -> {
-				ktorfitxCheck(!typeName.isNullable && typeName == TypeNames.Unit, returnType) {
-					MESSAGE_FUNCTION_HAS_BEEN_WEBSOCKET_SO_RETURN_TYPE_MUST_BE_UNIT(simpleName)
-				}
-				ReturnModel(typeName, typeName, ReturnKind.Unit)
-			}
-			
-			typeName.rawType == TypeNames.Result -> {
-				ktorfitxCheck(!typeName.isNullable && typeName is ParameterizedTypeName, returnType) {
-					MESSAGE_FUNCTION_NOT_ALLOW_RETURN_TYPE_RESULT_SET_NULLABLE_TYPE(simpleName)
-				}
-				val serializedTypeName = typeName.typeArguments.single()
-				
-				ktorfitxCheck(serializedTypeName.isSerializableType(), returnType) {
-					MESSAGE_CLASS_NOT_MEET_SERIALIZATION_REQUIREMENTS(simpleName)
-				}
-				ReturnModel(typeName, serializedTypeName, ReturnKind.Result)
-			}
-			
-			typeName == TypeNames.Unit -> {
-				ktorfitxCheck(!typeName.isNullable, returnType) {
-					MESSAGE_FUNCTION_NOT_ALLOW_RETURN_TYPE_UNIT_USE_NULLABLE_TYPE(simpleName)
-				}
-				ReturnModel(typeName, typeName, ReturnKind.Unit)
-			}
-			
-			else -> {
-				ktorfitxCheck(!typeName.equals(TypeNames.Nothing, ignoreNullable = true), returnType) {
-					MESSAGE_FUNCTION_NOT_ALLOW_USE_RETURN_TYPE_NOTHING(simpleName, if (typeName.isNullable) "?" else "")
-				}
-				ktorfitxCheck(typeName.isSerializableType(), returnType) {
-					MESSAGE_CLASS_NOT_MEET_SERIALIZATION_REQUIREMENTS(simpleName)
-				}
-				ReturnModel(typeName, typeName, ReturnKind.Any)
-			}
-		}
-	}
-	
-	override fun defaultHandler(node: KSNode, data: List<CustomHttpMethodModel>): ClassModel = error("Not Implemented.")
+internal object ApiVisitor : KSEmptyVisitor<List<CustomHttpMethodModel>, ClassModel>(
+    enableNewFeatures = true
+) {
+
+    private val apiUrlRegex = "^\\S*[a-zA-Z0-9]+\\S*$".toRegex()
+
+    private var customHttpMethodModels: List<CustomHttpMethodModel>? = null
+
+    override fun visitClassDeclaration(
+        classDeclaration: KSClassDeclaration,
+        data: List<CustomHttpMethodModel>
+    ): ClassModel {
+        this.customHttpMethodModels = data
+        return classDeclaration.getClassModel()
+    }
+
+    private fun KSClassDeclaration.getClassModel(): ClassModel {
+        ktorfitxCheck(!this.isGeneric(), this) {
+            MESSAGE_INTERFACE_NOT_ALLOW_GENERICS(simpleName)
+        }
+        val className = ClassName("${packageName.asString()}.impls", "${simpleName.asString()}Impl")
+        val superinterface = this.toClassName()
+        return ClassModel(
+            className = className,
+            superinterface = superinterface,
+            kModifier = this.getVisibilityKModifier(),
+            apiUrl = this.getApiUrl(),
+            funModels = getFunModel()
+        )
+    }
+
+    private fun KSClassDeclaration.getApiUrl(): String? {
+        val annotation = getKSAnnotationByType(TypeNames.Api)!!
+        var url = annotation.getValueOrNull<String>("url")?.takeIf { it.isNotBlank() } ?: return null
+        ktorfitxCheck(!url.isContainSchemeSeparator(), annotation) {
+            MESSAGE_ANNOTATION_NOT_ALLOW_USE_PROTOCOL_FROM_STRINGS(simpleName)
+        }
+        ktorfitxCheck(!url.isContainBraceSymbol(), annotation) {
+            MESSAGE_ANNOTATION_NOT_ALLOW_USE_BRACE_SYMBOL(simpleName)
+        }
+        url = url.trim().trim('/')
+        ktorfitxCheck(apiUrlRegex.matches(url), annotation) {
+            MESSAGE_ANNOTATION_URL_PARAMETER_FORMAT_INCORRECT(simpleName)
+        }
+        return url
+    }
+
+    /**
+     * 获取访问权限的 KModifier
+     */
+    private fun KSClassDeclaration.getVisibilityKModifier(): KModifier {
+        val visibility = this.getVisibility()
+        ktorfitxCheck(visibility == PUBLIC || visibility == INTERNAL, this) {
+            MESSAGE_INTERFACE_MUST_BE_DECLARED_PUBLIC_OR_INTERNAL_ACCESS_PERMISSION(simpleName)
+        }
+        return KModifier.entries.first { it.name == visibility.name }
+    }
+
+    private fun KSClassDeclaration.getFunModel(): List<FunModel> {
+        return this.getDeclaredFunctions().toList()
+            .filter { it.isAbstract }
+            .map { function ->
+                ktorfitxCheck(Modifier.SUSPEND in function.modifiers, function) {
+                    MESSAGE_FUNCTION_LACKS_SUSPEND_MODIFIER(function.simpleName)
+                }
+                val routeModel = function.getRouteModel()
+                val isWebSocket = routeModel is WebSocketModel
+                val mockModel = function.getMockModel(isWebSocket)
+                val isPrepareType = function.hasAnnotation(TypeNames.Prepare)
+                FunModel(
+                    funName = function.simpleName.asString(),
+                    returnModel = function.getReturnModel(isWebSocket, isPrepareType, mockModel != null),
+                    parameterModels = function.getParameterModels(isWebSocket),
+                    routeModel = routeModel,
+                    mockModel = mockModel,
+                    hasBearerAuth = function.hasBearerAuth(),
+                    isPrepareType = isPrepareType,
+                    timeoutModel = function.getTimeoutModel(),
+                    queryModels = function.getQueryModels(),
+                    pathModels = function.getPathModels(routeModel.url, isWebSocket),
+                    cookieModels = function.getCookieModels(),
+                    attributeModels = function.getAttributeModels(),
+                    headerModels = function.getHeaderModels(),
+                    headersModel = function.getHeadersModel(),
+                    requestBodyModel = function.getRequestBodyModel(),
+                    queriesModels = function.getQueriesModels(),
+                    attributesModels = function.getAttributesModels(),
+                )
+            }
+    }
+
+    private val urlRegex = "^\\S*[a-zA-Z0-9]+\\S*$".toRegex()
+
+    private fun KSFunctionDeclaration.getRouteModel(): RouteModel {
+        val customClassNames = customHttpMethodModels!!.map { it.className }
+        val availableRoutes = TypeNames.routes + customClassNames
+        val classNames = availableRoutes.filter { hasAnnotation(it) }
+        ktorfitxCheck(classNames.size <= 1, this) {
+            val useAnnotations = classNames.joinToString { "@${it.simpleName}" }
+            MESSAGE_FUNCTION_ONLY_ALLOW_USE_ONE_REQUEST_TYPE_ANNOTATION(
+                simpleName,
+                useAnnotations,
+                if (classNames.size > 1) "s" else ""
+            )
+        }
+        ktorfitxCheck(classNames.size == 1, this) {
+            MESSAGE_FUNCTION_NOT_USE_ROUTE_ANNOTATION(simpleName)
+        }
+        val className = classNames.single()
+        val isWebSocket = className == TypeNames.WebSocket
+        val dynamicUrl = this.getDynamicUrl()
+
+        if (isWebSocket) {
+            ktorfitxCheck(dynamicUrl == null, this) {
+                MESSAGE_FUNCTION_NOT_ALLOW_DYNAMIC_URL_ANNOTATION_MARKED_IN_PARAMETERS(simpleName)
+            }
+        }
+        val rawUrl = getKSAnnotationByType(className)!!.getValueOrNull<String>("url")?.trim('/')
+        val url = if (dynamicUrl != null) {
+            ktorfitxCheck(rawUrl.isNullOrBlank(), this) {
+                MESSAGE_FUNCTION_NOW_ALLOW_SETTING_URL_WHEN_MARKED_DYNAMIC_URL(simpleName, className.simpleName)
+            }
+            dynamicUrl
+        } else {
+            ktorfitxCheck(!rawUrl.isNullOrBlank(), this) {
+                MESSAGE_ANNOTATION_NOT_SET_URL_OR_ADDED_DYNAMIC_URL(simpleName, className.simpleName)
+            }
+            if (isWebSocket) {
+                ktorfitxCheck(!rawUrl.isContainSchemeSeparator() || rawUrl.isWSOrWSS(), this) {
+                    MESSAGE_ANNOTATION_URL_ONLY_SUPPORTED_WS_AND_WSS_PROTOCOLS(simpleName, className.simpleName)
+                }
+            } else {
+                ktorfitxCheck(!rawUrl.isContainSchemeSeparator() || rawUrl.isHttpOrHttps(), this) {
+                    MESSAGE_ANNOTATION_URL_ONLY_SUPPORTED_HTTP_AND_HTTPS_PROTOCOLS(simpleName, className.simpleName)
+                }
+            }
+            ktorfitxCheck(urlRegex.matches(rawUrl), this) {
+                MESSAGE_ANNOTATION_URL_FORMAT_INCORRECT(simpleName, className.simpleName)
+            }
+            StaticUrl(rawUrl)
+        }
+        return when (className) {
+            TypeNames.WebSocket -> WebSocketModel(url as StaticUrl)
+            in TypeNames.httpMethods -> HttpRequestModel(url, className.simpleName, false)
+            else -> {
+                val method = customHttpMethodModels!!.first { it.className == className }.method
+                HttpRequestModel(url, method, true)
+            }
+        }
+    }
+
+    private fun KSFunctionDeclaration.getReturnModel(
+        isWebSocket: Boolean,
+        isPrepareType: Boolean,
+        isMock: Boolean
+    ): ReturnModel {
+        val returnType = this.returnType!!
+        val typeName = returnType.toTypeName()
+        return when {
+            isPrepareType -> {
+                ktorfitxCheck(returnType.toTypeName() == TypeNames.HttpStatement, returnType) {
+                    MESSAGE_FUNCTION_MUST_USE_HTTP_STATEMENT_RETURN_TYPE(simpleName)
+                }
+                ktorfitxCheck(!isMock, this) {
+                    MESSAGE_FUNCTION_NOT_ALLOW_SIMULTANEOUS_USE_PREPARE_AND_MOCK_ANNOTATIONS(simpleName)
+                }
+                ktorfitxCheck(!isWebSocket, this) {
+                    MESSAGE_FUNCTION_NOT_ALLOW_SIMULTANEOUS_USE_PREPARE_AND_WEBSOCKET_ANNOTATIONS(simpleName)
+                }
+                ReturnModel(typeName, typeName, ReturnKind.Any)
+            }
+
+            isWebSocket -> {
+                ktorfitxCheck(!typeName.isNullable && typeName == TypeNames.Unit, returnType) {
+                    MESSAGE_FUNCTION_HAS_BEEN_WEBSOCKET_SO_RETURN_TYPE_MUST_BE_UNIT(simpleName)
+                }
+                ReturnModel(typeName, typeName, ReturnKind.Unit)
+            }
+
+            typeName.rawType == TypeNames.Result -> {
+                ktorfitxCheck(!typeName.isNullable && typeName is ParameterizedTypeName, returnType) {
+                    MESSAGE_FUNCTION_NOT_ALLOW_RETURN_TYPE_RESULT_SET_NULLABLE_TYPE(simpleName)
+                }
+                val serializedTypeName = typeName.typeArguments.single()
+
+                ktorfitxCheck(serializedTypeName.isSerializableType(), returnType) {
+                    MESSAGE_CLASS_NOT_MEET_SERIALIZATION_REQUIREMENTS(simpleName)
+                }
+                ReturnModel(typeName, serializedTypeName, ReturnKind.Result)
+            }
+
+            typeName == TypeNames.Unit -> {
+                ktorfitxCheck(!typeName.isNullable, returnType) {
+                    MESSAGE_FUNCTION_NOT_ALLOW_RETURN_TYPE_UNIT_USE_NULLABLE_TYPE(simpleName)
+                }
+                ReturnModel(typeName, typeName, ReturnKind.Unit)
+            }
+
+            else -> {
+                ktorfitxCheck(!typeName.equals(TypeNames.Nothing, ignoreNullable = true), returnType) {
+                    MESSAGE_FUNCTION_NOT_ALLOW_USE_RETURN_TYPE_NOTHING(simpleName, if (typeName.isNullable) "?" else "")
+                }
+                ktorfitxCheck(typeName.isSerializableType(), returnType) {
+                    MESSAGE_CLASS_NOT_MEET_SERIALIZATION_REQUIREMENTS(simpleName)
+                }
+                ReturnModel(typeName, typeName, ReturnKind.Any)
+            }
+        }
+    }
+
+    override fun defaultHandler(node: KSNode, data: List<CustomHttpMethodModel>): ClassModel = error("Not Implemented.")
 }

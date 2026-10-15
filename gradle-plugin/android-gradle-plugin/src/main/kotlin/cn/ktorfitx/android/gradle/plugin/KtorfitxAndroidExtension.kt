@@ -10,10 +10,10 @@ open class KtorfitxAndroidExtension @Inject constructor(
     objects: ObjectFactory
 ) {
 
-    val isDevelopmentMode = objects.property<Boolean>().convention(false)!!
+    val isDevelopmentMode = objects.property<Boolean>().convention(false)
     val websockets = objects.newInstance<WebsocketsConfig>()
     val mock = objects.newInstance<MockConfig>()
-    val language = objects.property<KtorfitxLanguage>().convention(KtorfitxLanguage.ENGLISH)!!
+    val language = objects.property<KtorfitxLanguage>().convention(KtorfitxLanguage.ENGLISH)
 
     fun websockets(action: WebsocketsConfig.() -> Unit) {
         websockets.action()
@@ -25,9 +25,9 @@ open class KtorfitxAndroidExtension @Inject constructor(
 }
 
 open class WebsocketsConfig @Inject constructor(objects: ObjectFactory) {
-    val enabled = objects.property<Boolean>().convention(false)!!
+    val enabled = objects.property<Boolean>().convention(false)
 }
 
 open class MockConfig @Inject constructor(objects: ObjectFactory) {
-    val enabled = objects.property<Boolean>().convention(false)!!
+    val enabled = objects.property<Boolean>().convention(false)
 }
